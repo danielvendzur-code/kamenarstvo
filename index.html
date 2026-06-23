@@ -528,7 +528,7 @@ var S = {
 
 /* ========================= POMÔCKY ========================= */
 function $(id){ return document.getElementById(id); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];}); }
 
 function splitNameLines(name){
   name = String(name||'').replace(/\s+/g,' ').trim();
@@ -549,7 +549,6 @@ function nameLinesHtml(name){
   return splitNameLines(name).map(esc).join('<br>');
 }
 
-[c];}); }
 function graveUrl(size,shape,stone){ return CONFIG.assetBase+'graves/'+size+'-'+shape+'-'+stone+'.webp'; }
 function letterUrl(stone,letter){ return CONFIG.assetBase+'lettering/'+stone+'-'+letter+'.webp'; }
 
