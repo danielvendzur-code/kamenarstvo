@@ -329,6 +329,54 @@
 .jk-insc .nm,.jk-insc .dt{width:100%;text-align:center;overflow-wrap:break-word}
 @media(min-width:521px){#jk-panel{top:18px;bottom:18px;height:auto}}
 
+
+/* ---- Final text centering patch v3 ---- */
+.jk-photo>img{object-fit:contain!important;object-position:center center!important;background:#050505!important}
+.jk-insc{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  hyphens:none!important;
+  line-height:.96!important;
+  padding:0!important;
+  min-height:0!important;
+}
+.jk-insc .nm{
+  display:block!important;
+  width:100%!important;
+  text-align:center!important;
+  font-weight:700!important;
+  line-height:.96!important;
+  letter-spacing:.035em!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  hyphens:none!important;
+}
+.jk-insc .nm .ln{
+  display:block!important;
+  width:100%!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+  hyphens:none!important;
+}
+.jk-insc .dt{
+  display:block!important;
+  width:100%!important;
+  text-align:center!important;
+  margin-top:.18em!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  letter-spacing:.03em!important;
+}
+
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -473,13 +521,14 @@ var DATA = {
 // pozícia živého nápisu na fotke (center x%, center y%, font cqw, max-šírka cqw)
 // pozícia živého nápisu na fotke per konkrétny záber (center x%, center y%, font cqw, max-šírka cqw)
 var POS = {
-  // centrované na hlavu pomníka pri 3:2 fotkách; y je nižšie, aby text nesedel pri hornom okraji
-  'single-rect-black':{x:63,y:20,fs:3.4,w:30}, 'single-rect-gray':{x:63,y:20,fs:3.4,w:30}, 'single-rect-red':{x:63,y:20,fs:3.4,w:30},
-  'single-arch-black':{x:63,y:22,fs:3.4,w:30}, 'single-arch-gray':{x:63,y:22,fs:3.4,w:30}, 'single-arch-red':{x:63,y:22,fs:3.4,w:30},
-  'single-book-black':{x:62,y:18,fs:3.3,w:32}, 'single-book-gray':{x:62,y:18,fs:3.3,w:32}, 'single-book-red':{x:62,y:18,fs:3.3,w:32},
-  'double-rect-black':{x:62,y:19,fs:3.2,w:34}, 'double-rect-gray':{x:62,y:19,fs:3.2,w:34}, 'double-rect-red':{x:62,y:19,fs:3.2,w:34},
-  'double-arch-black':{x:62,y:21,fs:3.2,w:34}, 'double-arch-gray':{x:62,y:21,fs:3.2,w:34}, 'double-arch-red':{x:62,y:21,fs:3.2,w:34},
-  'double-book-black':{x:62,y:18,fs:3.1,w:36}, 'double-book-gray':{x:62,y:18,fs:3.1,w:36}, 'double-book-red':{x:62,y:18,fs:3.1,w:36}
+  // Finálne centrovanie podľa reálnych náhľadov: stred textu má sedieť v hlave pomníka, nie pri hornom okraji.
+  // x/y sú stred overlayu v % celej fotky; fs a w sú v cqw, aby sa správali rovnako pri rôznej šírke widgetu.
+  'single-rect-black':{x:62,y:24,fs:3.15,w:38}, 'single-rect-gray':{x:62,y:24,fs:3.15,w:38}, 'single-rect-red':{x:62,y:24,fs:3.15,w:38},
+  'single-arch-black':{x:61,y:25,fs:3.10,w:38}, 'single-arch-gray':{x:61,y:25,fs:3.10,w:38}, 'single-arch-red':{x:61,y:25,fs:3.10,w:38},
+  'single-book-black':{x:61,y:24,fs:3.05,w:40}, 'single-book-gray':{x:61,y:24,fs:3.05,w:40}, 'single-book-red':{x:61,y:24,fs:3.05,w:40},
+  'double-rect-black':{x:62,y:23,fs:3.00,w:42}, 'double-rect-gray':{x:62,y:23,fs:3.00,w:42}, 'double-rect-red':{x:62,y:23,fs:3.00,w:42},
+  'double-arch-black':{x:59,y:25,fs:2.95,w:44}, 'double-arch-gray':{x:59,y:25,fs:2.95,w:44}, 'double-arch-red':{x:59,y:25,fs:2.95,w:44},
+  'double-book-black':{x:62,y:24,fs:2.95,w:44}, 'double-book-gray':{x:62,y:24,fs:2.95,w:44}, 'double-book-red':{x:62,y:24,fs:2.95,w:44}
 };
 
 var STEPS = ['Tvar','Veľkosť','Kameň','Nápis','Doplnky','Miesto','Dopyt'];
@@ -511,17 +560,41 @@ function markSvg(stroke,fill){
 }
 
 /* ========================= ŽIVÝ FOTONÁHĽAD ========================= */
+function splitNameLines(name){
+  name = String(name||'').replace(/\s+/g,' ').trim();
+  if(!name) return [];
+  var words = name.split(' ');
+  if(words.length < 2 || name.length <= 11) return [name];
+  var best = 1, bestDiff = 999;
+  for(var i=1;i<words.length;i++){
+    var a = words.slice(0,i).join(' ').length;
+    var b = words.slice(i).join(' ').length;
+    var d = Math.abs(a-b);
+    if(d < bestDiff){ best = i; bestDiff = d; }
+  }
+  return [words.slice(0,best).join(' '), words.slice(best).join(' ')];
+}
+function nameLinesHtml(name){
+  return splitNameLines(name).map(function(line){
+    return '<span class="ln">'+esc(line)+'</span>';
+  }).join('');
+}
 function inscOverlay(){
-  var p = POS[S.size+'-'+S.shape+'-'+S.stone] || {x:47,y:25,fs:4.6,w:28};
+  var p = POS[S.size+'-'+S.shape+'-'+S.stone] || {x:62,y:24,fs:3.05,w:40};
   var f = DATA.fonts[S.font], col = DATA.letters[S.letter].fill;
-  var nm = (S.inscription||'').trim().replace(/\s+/g,' '); if(f.up) nm = nm.toUpperCase();
+  var nm = (S.inscription||'').trim().replace(/\s+/g,' ');
+  if(f.up) nm = nm.toUpperCase();
   var dt = (S.dates||'').trim();
   if(!nm && !dt) return '';
-  var nLen = nm.length;
-  var fs = Math.max(p.fs - Math.max(0,nLen-16)*0.07, p.fs*0.72);
+
+  var lines = splitNameLines(nm);
+  var longest = lines.reduce(function(m,line){ return Math.max(m,line.length); },0);
+  var penalty = Math.max(0,longest-13)*0.07 + Math.max(0,nm.length-22)*0.025;
+  var fs = Math.max(p.fs - penalty, p.fs*0.68);
+
   return '<div class="jk-insc" style="left:'+p.x+'%;top:'+p.y+'%;width:'+p.w+'cqw;max-width:'+p.w+'cqw;font-family:'+f.css+';color:'+col+'">'
-    +(nm?'<span class="nm" style="font-size:'+fs.toFixed(2)+'cqw">'+esc(nm)+'</span>':'')
-    +(dt?'<span class="dt" style="font-size:'+(fs*0.62).toFixed(2)+'cqw">'+esc(dt)+'</span>':'')
+    +(nm?'<span class="nm" style="font-size:'+fs.toFixed(2)+'cqw">'+nameLinesHtml(nm)+'</span>':'')
+    +(dt?'<span class="dt" style="font-size:'+(fs*0.58).toFixed(2)+'cqw">'+esc(dt)+'</span>':'')
     +'</div>';
 }
 function capChip(){ return '<div class="jk-cap-chip">'+esc(DATA.shapes[S.shape].title+' · '+DATA.sizes[S.size].title+' · '+DATA.stones[S.stone].title)+'</div>'; }
