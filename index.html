@@ -116,8 +116,14 @@
 .jk-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
 .jk-prog-label{font:700 12px var(--jk-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--jk-stone)}
 .jk-prog-count{font:700 12px var(--jk-ui);color:var(--jk-muted)}
-.jk-prog-track{height:6px;border-radius:99px;background:#ece1ce;overflow:hidden}
-.jk-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--jk-stone),var(--jk-bronze));transition:width .45s cubic-bezier(.34,1.2,.64,1)}
+.jk-steps{display:flex;gap:5px}
+.jk-seg{flex:1;height:7px;border-radius:99px;background:#ece1ce;position:relative;overflow:hidden;
+  transition:background .35s ease}
+.jk-seg::after{content:"";position:absolute;inset:0;border-radius:inherit;transform:scaleX(0);transform-origin:left;
+  background:linear-gradient(90deg,var(--jk-stone),var(--jk-bronze));transition:transform .45s cubic-bezier(.34,1.2,.64,1)}
+.jk-seg.done::after{transform:scaleX(1)}
+.jk-seg.active::after{transform:scaleX(1)}
+.jk-seg.active{box-shadow:0 0 0 2px rgba(176,125,51,.18)}
 
 /* ---- Fotonáhľad pomníka ---- */
 .jk-stage{padding:10px 16px 0}
@@ -137,7 +143,10 @@
 
 /* ---- Krok ---- */
 .jk-step{padding:8px 16px 16px}
-.jk-step-title{font:600 19px/1.05 var(--jk-serif);color:var(--jk-ink);margin:8px 0 10px}
+@keyframes jkStepIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.jk-step.in{animation:jkStepIn .3s cubic-bezier(.22,1,.36,1)}
+.jk-step-title{font:600 19px/1.05 var(--jk-serif);color:var(--jk-ink);margin:8px 0 2px}
+.jk-step-sub{font:500 13px var(--jk-ui);color:var(--jk-muted);line-height:1.45;margin:0 0 12px}
 
 /* karty s fotkou */
 .jk-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
@@ -169,16 +178,21 @@
 .jk-letter span{display:block;text-align:center;font:700 12px var(--jk-ui);color:var(--jk-ink);padding:6px 4px}
 .jk-letter.sel span{color:var(--jk-stone-dk)}
 
-.jk-chips{display:flex;flex-wrap:wrap;gap:8px}
-.jk-pick{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:11px;padding:9px 13px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;font:700 13px var(--jk-ui);color:var(--jk-ink);transition:all .2s}
-.jk-pick:hover{border-color:#d8c3a0}
-.jk-pick.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.14)}
-.jk-pick .demo-classic{font:600 18px var(--jk-eng)}
-.jk-pick .demo-roman{font:600 19px var(--jk-serif)}
-.jk-pick .demo-modern{font:700 16px var(--jk-ui)}
-.jk-pick .demo-script{font:700 22px 'Dancing Script',cursive}
-.jk-pick small{font-size:11px;color:var(--jk-muted);font-weight:600}
+.jk-chips{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.jk-pick{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;
+  padding:12px 10px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  color:var(--jk-ink);transition:border-color .2s,box-shadow .2s,transform .2s,background .2s}
+.jk-pick:hover{border-color:#d8c3a0;transform:translateY(-2px);box-shadow:0 8px 18px rgba(110,81,53,.1)}
+.jk-pick.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.16),0 8px 18px rgba(110,81,53,.12)}
+.jk-pick.sel::after{content:"✓";position:absolute;top:6px;right:7px;width:18px;height:18px;border-radius:50%;
+  background:var(--jk-stone);color:#fff;font:800 10px var(--jk-ui);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.jk-pick [class^="demo-"]{line-height:1;color:var(--jk-stone-dk)}
+.jk-pick .demo-classic{font:600 26px var(--jk-eng);letter-spacing:.02em}
+.jk-pick .demo-roman{font:600 28px var(--jk-serif)}
+.jk-pick .demo-modern{font:800 24px var(--jk-ui)}
+.jk-pick .demo-script{font:700 30px 'Dancing Script',cursive}
+.jk-pick small{font:700 11.5px var(--jk-ui);color:var(--jk-muted);letter-spacing:.02em}
+.jk-pick.sel small{color:var(--jk-stone-dk)}
 
 /* doplnky (multi) */
 .jk-addon{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:12px 13px;cursor:pointer;
@@ -244,10 +258,13 @@
 .jk-typing i:nth-child(2){animation-delay:.18s}.jk-typing i:nth-child(3){animation-delay:.36s}
 @keyframes jkType{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
 .jk-quick{display:flex;flex-wrap:wrap;gap:8px;padding:6px 16px 10px;background:var(--jk-cream)}
-.jk-quick button{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:99px;padding:8px 13px;cursor:pointer;
-  font:600 12.5px var(--jk-ui);color:var(--jk-stone-dk);transition:all .2s}
-.jk-quick button:hover{border-color:var(--jk-stone);background:#fdf6ea}
-.jk-quick button.cfg{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;border-color:transparent}
+.jk-quick button{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:99px;padding:8px 14px;cursor:pointer;
+  font:600 12.5px var(--jk-ui);color:var(--jk-stone-dk);transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
+.jk-quick button:hover{border-color:var(--jk-stone);background:#fdf6ea;transform:translateY(-2px);box-shadow:0 6px 14px rgba(110,81,53,.14)}
+.jk-quick button.cfg{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;border-color:transparent;
+  font-weight:700;box-shadow:0 6px 16px rgba(78,57,36,.26)}
+.jk-quick button.cfg::before{content:"✦";margin-right:6px;opacity:.85}
+.jk-quick button.cfg:hover{filter:brightness(1.06);box-shadow:0 10px 22px rgba(78,57,36,.32)}
 .jk-inbar{display:flex;gap:9px;padding:11px 14px;background:var(--jk-cream);border-top:1px solid var(--jk-line)}
 .jk-inbar input{flex:1;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:13px 15px;
   font:500 14.5px var(--jk-ui);color:var(--jk-ink)}
@@ -323,7 +340,7 @@
           <span class="jk-prog-label" id="jk-prog-label">Tvar</span>
           <span class="jk-prog-count" id="jk-prog-count">1 / 7</span>
         </div>
-        <div class="jk-prog-track"><div class="jk-prog-fill" id="jk-prog-fill" style="width:14%"></div></div>
+        <div class="jk-steps" id="jk-steps"></div>
       </div>
       <div class="jk-stage" id="jk-stage"></div>
       <div class="jk-step" id="jk-step"></div>
@@ -405,12 +422,12 @@ var DATA = {
 // pozícia živého nápisu na fotke (center x%, center y%, font cqw, max-šírka cqw)
 // pozícia živého nápisu na fotke per konkrétny záber (center x%, center y%, font cqw, max-šírka cqw)
 var POS = {
-  'single-rect-black':{x:57,y:22,fs:4.2,w:26}, 'single-rect-gray':{x:57,y:21,fs:4.2,w:26}, 'single-rect-red':{x:66,y:23,fs:4.2,w:26},
-  'single-arch-black':{x:54,y:20,fs:4.2,w:26}, 'single-arch-gray':{x:57,y:20,fs:4.2,w:26}, 'single-arch-red':{x:66,y:18,fs:4.2,w:26},
-  'single-book-black':{x:56,y:22,fs:4.0,w:25}, 'single-book-gray':{x:57,y:22,fs:4.0,w:25}, 'single-book-red':{x:66,y:22,fs:4.0,w:25},
-  'double-rect-black':{x:57,y:22,fs:3.9,w:25}, 'double-rect-gray':{x:57,y:20,fs:3.9,w:25}, 'double-rect-red':{x:66,y:22,fs:3.9,w:25},
-  'double-arch-black':{x:56,y:21,fs:3.9,w:25}, 'double-arch-gray':{x:58,y:19,fs:3.9,w:25}, 'double-arch-red':{x:68,y:19,fs:3.9,w:25},
-  'double-book-black':{x:56,y:23,fs:3.9,w:25}, 'double-book-gray':{x:57,y:22,fs:3.9,w:25}, 'double-book-red':{x:67,y:22,fs:3.9,w:25}
+  'single-rect-black':{x:63,y:17,fs:4.2,w:26}, 'single-rect-gray':{x:63,y:17,fs:4.2,w:26}, 'single-rect-red':{x:67,y:17,fs:4.2,w:26},
+  'single-arch-black':{x:62,y:18,fs:4.2,w:26}, 'single-arch-gray':{x:62,y:18,fs:4.2,w:26}, 'single-arch-red':{x:66,y:18,fs:4.2,w:26},
+  'single-book-black':{x:60,y:15,fs:4.0,w:25}, 'single-book-gray':{x:60,y:15,fs:4.0,w:25}, 'single-book-red':{x:64,y:15,fs:4.0,w:25},
+  'double-rect-black':{x:65,y:17,fs:3.9,w:25}, 'double-rect-gray':{x:65,y:17,fs:3.9,w:25}, 'double-rect-red':{x:69,y:17,fs:3.9,w:25},
+  'double-arch-black':{x:63,y:20,fs:3.9,w:25}, 'double-arch-gray':{x:63,y:20,fs:3.9,w:25}, 'double-arch-red':{x:67,y:20,fs:3.9,w:25},
+  'double-book-black':{x:64,y:15,fs:3.9,w:25}, 'double-book-gray':{x:64,y:15,fs:3.9,w:25}, 'double-book-red':{x:68,y:15,fs:3.9,w:25}
 };
 
 var STEPS = ['Tvar','Veľkosť','Kameň','Nápis','Doplnky','Miesto','Dopyt'];
@@ -459,7 +476,13 @@ function stageHtml(){
     +'<img src="'+graveUrl(S.size,S.shape,S.stone)+'" alt="'+esc(DATA.shapes[S.shape].title+', '+DATA.sizes[S.size].title+', '+DATA.stones[S.stone].title)+'" loading="eager" decoding="async">'
     +inscOverlay()+capChip()+'</div>';
 }
-function renderStage(){ $('jk-stage').innerHTML = stageHtml(); }
+var lastStageKey='';
+function renderStage(){ $('jk-stage').innerHTML = stageHtml(); lastStageKey = S.size+'-'+S.shape+'-'+S.stone; }
+function refreshOverlay(){
+  var ph = $('jk-stage').querySelector('.jk-photo');
+  if(!ph || !ph.querySelector('img')){ renderStage(); return; }
+  ph.innerHTML = ph.querySelector('img').outerHTML + inscOverlay() + capChip();
+}
 
 /* ========================= KARTY ========================= */
 function shapeCard(key,item){
@@ -487,35 +510,41 @@ function letterCard(key,item){
 function renderProgress(){
   $('jk-prog-label').textContent = STEPS[S.step];
   $('jk-prog-count').textContent = (S.step+1)+' / '+STEPS.length;
-  $('jk-prog-fill').style.width = Math.round((S.step+1)/STEPS.length*100)+'%';
+  $('jk-steps').innerHTML = STEPS.map(function(_,i){
+    var cls = i<S.step ? 'done' : (i===S.step ? 'active' : '');
+    return '<i class="jk-seg '+cls+'"></i>';
+  }).join('');
 }
+function head(t,s){ return '<div class="jk-step-title">'+t+'</div>'+(s?'<div class="jk-step-sub">'+s+'</div>':''); }
 function acts(back){
   return '<div class="jk-actions">'
     +(back?'<button class="jk-btn ghost" onclick="jkBack()">Späť</button>':'')
     +'<button class="jk-btn" onclick="jkNext()">'+(S.step===STEPS.length-2?'Zhrnutie':'Pokračovať')+'</button></div>';
 }
-function renderStep(){
+function renderStep(keepScroll){
+  var body=$('jk-view-config');
+  var prevScroll = body ? body.scrollTop : 0;
   renderProgress();
-  renderStage();
+  if((S.size+'-'+S.shape+'-'+S.stone)!==lastStageKey) renderStage(); else refreshOverlay();
   var html='';
 
   if(S.step===0){
-    html='<div class="jk-step-title">Tvar pomníka</div>'
+    html=head('Tvar pomníka','Vyberte základný tvar hlavy pomníka.')
       +'<div class="jk-grid">'+Object.keys(DATA.shapes).map(function(k){return shapeCard(k,DATA.shapes[k]);}).join('')+'</div>'
       +acts(false);
   }
   else if(S.step===1){
-    html='<div class="jk-step-title">Veľkosť miesta</div>'
+    html=head('Veľkosť miesta','Jednohrob alebo dvojhrob podľa hrobového miesta.')
       +'<div class="jk-grid two">'+Object.keys(DATA.sizes).map(function(k){return sizeCard(k,DATA.sizes[k]);}).join('')+'</div>'
       +acts(true);
   }
   else if(S.step===2){
-    html='<div class="jk-step-title">Kameň</div>'
+    html=head('Kameň','Druh a farba žuly určujú kontrast nápisu.')
       +'<div class="jk-grid">'+Object.keys(DATA.stones).map(function(k){return stoneCard(k,DATA.stones[k]);}).join('')+'</div>'
       +acts(true);
   }
   else if(S.step===3){
-    html='<div class="jk-step-title">Nápis a písmo</div>'
+    html=head('Nápis a písmo','Meno, dátumy a štýl písma — náhľad vidíte hore naživo.')
       +'<input class="jk-input" id="f-insc" value="'+esc(S.inscription)+'" placeholder="Meno / priezvisko, napr. Rodina Nováková" oninput="jkLive()">'
       +'<input class="jk-input" id="f-dates" value="'+esc(S.dates)+'" placeholder="Dátumy, napr. 1948 – 2024" style="margin-top:10px" oninput="jkLive()">'
       +'<div class="jk-label">Farba písma</div>'
@@ -528,7 +557,7 @@ function renderStep(){
       +acts(true);
   }
   else if(S.step===4){
-    html='<div class="jk-step-title">Doplnky</div>'
+    html=head('Doplnky','Nepovinné prvky, ktoré viete pridať k pomníku.')
       +Object.keys(DATA.addons).map(function(k){var it=DATA.addons[k];var on=!!S.addons[k];
         return '<button class="jk-addon'+(on?' sel':'')+'" onclick="jkAddon(\''+k+'\')">'
           +'<span class="jk-addon-box"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span>'
@@ -536,7 +565,7 @@ function renderStep(){
       +acts(true);
   }
   else if(S.step===5){
-    html='<div class="jk-step-title">Miesto realizácie</div>'
+    html=head('Miesto realizácie','Kde má pomník stáť — dostupnosť potvrdíme telefonicky.')
       +'<div class="jk-label">Mesto / obec</div>'
       +'<input class="jk-input" id="f-city" value="'+esc(S.city)+'" placeholder="napr. Nitra" oninput="jkSyncPlace()">'
       +'<div class="jk-label">Cintorín (nepovinné)</div>'
@@ -550,7 +579,7 @@ function renderStep(){
       +acts(true);
   }
   else {
-    html='<div class="jk-step-title">Zhrnutie a dopyt</div>'
+    html=head('Zhrnutie a dopyt','Skontrolujte návrh a pošlite nezáväzný dopyt.')
       +summary()
       +'<div class="jk-form-2">'
         +'<input class="jk-input" id="f-name" value="'+esc(S.name)+'" placeholder="Meno a priezvisko" oninput="jkSyncContact()">'
@@ -568,8 +597,10 @@ function renderStep(){
       +'</div>'
       +'<div class="jk-actions" style="margin-top:10px"><button class="jk-btn ghost" style="flex:1" onclick="jkCopy()">Skopírovať dopyt</button></div>';
   }
-  $('jk-step').innerHTML=html;
-  var body=$('jk-view-config'); if(body) body.scrollTop=0;
+  var stepEl=$('jk-step');
+  stepEl.innerHTML=html;
+  if(keepScroll!==true){ stepEl.classList.remove('in'); void stepEl.offsetWidth; stepEl.classList.add('in'); }
+  if(body) body.scrollTop = keepScroll===true ? prevScroll : 0;
 }
 
 function summary(){
@@ -592,12 +623,12 @@ window.jkPick=function(kind,key){
   syncInscription();
   if(kind==='shape')S.shape=key; else if(kind==='size')S.size=key; else if(kind==='stone')S.stone=key;
   else if(kind==='letter')S.letter=key; else if(kind==='font')S.font=key;
-  renderStep();
+  renderStep(true);
 };
-window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(); };
+window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(true); };
 window.jkNext=function(){ syncInscription(); jkSyncPlace(); jkSyncContact(); if(S.step<STEPS.length-1){S.step++;renderStep();} };
 window.jkBack=function(){ syncInscription(); if(S.step>0){S.step--;renderStep();} };
-window.jkLive=function(){ syncInscription(); var ov=$('jk-stage').querySelector('.jk-photo'); if(ov){ ov.innerHTML = ov.querySelector('img').outerHTML + inscOverlay() + capChip(); } };
+window.jkLive=function(){ syncInscription(); refreshOverlay(); };
 function syncInscription(){ var i=$('f-insc'),d=$('f-dates'),e=$('f-epi'); if(i)S.inscription=i.value; if(d)S.dates=d.value; if(e)S.epitaph=e.value; }
 window.jkSyncPlace=function(){ var c=$('f-city'),cm=$('f-cem'),r=$('f-region'); if(c)S.city=c.value; if(cm)S.cemetery=cm.value; if(r)S.region=r.value; };
 window.jkSyncContact=function(){ var n=$('f-name'),p=$('f-phone'),m=$('f-mail'),msg=$('f-msg'),g=$('f-gdpr');
