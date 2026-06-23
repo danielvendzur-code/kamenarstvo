@@ -1,0 +1,13 @@
+/* Final visual fixes: fuller photos, centered inscription, compact steps */
+#panel{height:min(770px,88vh)}
+.stage{padding:8px 12px 0}
+.photo{height:250px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#f4ede2,#e9ddcc)}
+.photo img{width:100%;height:100%;object-fit:cover;object-position:center;transition:opacity .14s ease,transform .14s ease;will-change:opacity,transform;background:transparent}
+.photo img.is-changing{opacity:.35;transform:scale(1.018)}
+.insc{display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:normal;word-break:normal;overflow:hidden;text-wrap:balance;text-align:center;padding:0 2px;max-height:78px;border-radius:6px;-webkit-text-stroke:.25px rgba(35,25,18,.5);paint-order:stroke fill}
+.insc span{display:block;width:100%;text-align:center}.insc small{display:block;width:100%;font-size:.52em;line-height:1.05;margin-top:.12em;text-align:center}
+.stepMeta{margin-top:8px}.bar{margin-top:6px}.step{padding:8px 12px 0}.step h2{font-size:19px;margin-bottom:4px}.step p{font-size:11.5px;margin-bottom:7px;line-height:1.28}
+.optGrid{gap:6px}.opt{min-height:46px;padding:6px 7px;border-radius:11px;gap:6px}.ico{width:24px;height:24px;border-radius:8px;font-size:13px}.ot b{font-size:12px}.ot span{font-size:10px;line-height:1.05}
+.opt.sel:after{width:17px;height:17px;font-size:10px;right:5px;top:5px}.dot{width:23px;height:23px}.fields{gap:6px}.field input,.field select,.field textarea{padding:8px 9px;font-size:12px}.field label{font-size:9.5px}.checks{gap:6px}.check{min-height:42px;padding:7px}.check b{font-size:11.5px}.check span span{font-size:10px}.summary{padding:7px;margin-bottom:6px}.srow{font-size:11px;padding:4px 0}.actions{padding:9px 12px 11px}.btn{padding:11px 13px}
+#configView[data-step="3"] .photo{height:268px}#configView[data-step="3"] .step{padding-top:7px}#configView[data-step="3"] .step h2{font-size:18px}#configView[data-step="3"] .step p{display:none}#configView[data-step="3"] .optGrid{grid-template-columns:repeat(3,1fr);gap:6px}#configView[data-step="3"] .step .optGrid:last-of-type{grid-template-columns:repeat(4,1fr)}#configView[data-step="3"] .opt{min-height:42px;justify-content:center;text-align:center;flex-direction:column;gap:3px;padding:6px}#configView[data-step="3"] .ot span{display:none}#configView[data-step="3"] .ico{width:22px;height:22px}
+@media(max-width:520px){.photo{height:32vh}.step h2{font-size:18px}.step p{display:none}.opt{min-height:44px}.ot span{display:none}#configView[data-step="3"] .photo{height:34vh}.fields{grid-template-columns:1fr 1fr}.field input,.field select{padding:8px}.checks{grid-template-columns:1fr 1fr}}
