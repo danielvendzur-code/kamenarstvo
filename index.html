@@ -116,8 +116,14 @@
 .jk-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
 .jk-prog-label{font:700 12px var(--jk-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--jk-stone)}
 .jk-prog-count{font:700 12px var(--jk-ui);color:var(--jk-muted)}
-.jk-prog-track{height:6px;border-radius:99px;background:#ece1ce;overflow:hidden}
-.jk-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--jk-stone),var(--jk-bronze));transition:width .45s cubic-bezier(.34,1.2,.64,1)}
+.jk-steps{display:flex;gap:5px}
+.jk-seg{flex:1;height:7px;border-radius:99px;background:#ece1ce;position:relative;overflow:hidden;
+  transition:background .35s ease}
+.jk-seg::after{content:"";position:absolute;inset:0;border-radius:inherit;transform:scaleX(0);transform-origin:left;
+  background:linear-gradient(90deg,var(--jk-stone),var(--jk-bronze));transition:transform .45s cubic-bezier(.34,1.2,.64,1)}
+.jk-seg.done::after{transform:scaleX(1)}
+.jk-seg.active::after{transform:scaleX(1)}
+.jk-seg.active{box-shadow:0 0 0 2px rgba(176,125,51,.18)}
 
 /* ---- Fotonáhľad pomníka ---- */
 .jk-stage{padding:10px 16px 0}
@@ -169,16 +175,21 @@
 .jk-letter span{display:block;text-align:center;font:700 12px var(--jk-ui);color:var(--jk-ink);padding:6px 4px}
 .jk-letter.sel span{color:var(--jk-stone-dk)}
 
-.jk-chips{display:flex;flex-wrap:wrap;gap:8px}
-.jk-pick{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:11px;padding:9px 13px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;font:700 13px var(--jk-ui);color:var(--jk-ink);transition:all .2s}
-.jk-pick:hover{border-color:#d8c3a0}
-.jk-pick.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.14)}
-.jk-pick .demo-classic{font:600 18px var(--jk-eng)}
-.jk-pick .demo-roman{font:600 19px var(--jk-serif)}
-.jk-pick .demo-modern{font:700 16px var(--jk-ui)}
-.jk-pick .demo-script{font:700 22px 'Dancing Script',cursive}
-.jk-pick small{font-size:11px;color:var(--jk-muted);font-weight:600}
+.jk-chips{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.jk-pick{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;
+  padding:12px 10px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  color:var(--jk-ink);transition:border-color .2s,box-shadow .2s,transform .2s,background .2s}
+.jk-pick:hover{border-color:#d8c3a0;transform:translateY(-2px);box-shadow:0 8px 18px rgba(110,81,53,.1)}
+.jk-pick.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.16),0 8px 18px rgba(110,81,53,.12)}
+.jk-pick.sel::after{content:"✓";position:absolute;top:6px;right:7px;width:18px;height:18px;border-radius:50%;
+  background:var(--jk-stone);color:#fff;font:800 10px var(--jk-ui);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.jk-pick [class^="demo-"]{line-height:1;color:var(--jk-stone-dk)}
+.jk-pick .demo-classic{font:600 26px var(--jk-eng);letter-spacing:.02em}
+.jk-pick .demo-roman{font:600 28px var(--jk-serif)}
+.jk-pick .demo-modern{font:800 24px var(--jk-ui)}
+.jk-pick .demo-script{font:700 30px 'Dancing Script',cursive}
+.jk-pick small{font:700 11.5px var(--jk-ui);color:var(--jk-muted);letter-spacing:.02em}
+.jk-pick.sel small{color:var(--jk-stone-dk)}
 
 /* doplnky (multi) */
 .jk-addon{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:12px 13px;cursor:pointer;
@@ -323,7 +334,7 @@
           <span class="jk-prog-label" id="jk-prog-label">Tvar</span>
           <span class="jk-prog-count" id="jk-prog-count">1 / 7</span>
         </div>
-        <div class="jk-prog-track"><div class="jk-prog-fill" id="jk-prog-fill" style="width:14%"></div></div>
+        <div class="jk-steps" id="jk-steps"></div>
       </div>
       <div class="jk-stage" id="jk-stage"></div>
       <div class="jk-step" id="jk-step"></div>
@@ -487,14 +498,19 @@ function letterCard(key,item){
 function renderProgress(){
   $('jk-prog-label').textContent = STEPS[S.step];
   $('jk-prog-count').textContent = (S.step+1)+' / '+STEPS.length;
-  $('jk-prog-fill').style.width = Math.round((S.step+1)/STEPS.length*100)+'%';
+  $('jk-steps').innerHTML = STEPS.map(function(_,i){
+    var cls = i<S.step ? 'done' : (i===S.step ? 'active' : '');
+    return '<i class="jk-seg '+cls+'"></i>';
+  }).join('');
 }
 function acts(back){
   return '<div class="jk-actions">'
     +(back?'<button class="jk-btn ghost" onclick="jkBack()">Späť</button>':'')
     +'<button class="jk-btn" onclick="jkNext()">'+(S.step===STEPS.length-2?'Zhrnutie':'Pokračovať')+'</button></div>';
 }
-function renderStep(){
+function renderStep(keepScroll){
+  var body=$('jk-view-config');
+  var prevScroll = body ? body.scrollTop : 0;
   renderProgress();
   renderStage();
   var html='';
@@ -569,7 +585,7 @@ function renderStep(){
       +'<div class="jk-actions" style="margin-top:10px"><button class="jk-btn ghost" style="flex:1" onclick="jkCopy()">Skopírovať dopyt</button></div>';
   }
   $('jk-step').innerHTML=html;
-  var body=$('jk-view-config'); if(body) body.scrollTop=0;
+  if(body) body.scrollTop = keepScroll===true ? prevScroll : 0;
 }
 
 function summary(){
@@ -592,9 +608,9 @@ window.jkPick=function(kind,key){
   syncInscription();
   if(kind==='shape')S.shape=key; else if(kind==='size')S.size=key; else if(kind==='stone')S.stone=key;
   else if(kind==='letter')S.letter=key; else if(kind==='font')S.font=key;
-  renderStep();
+  renderStep(true);
 };
-window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(); };
+window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(true); };
 window.jkNext=function(){ syncInscription(); jkSyncPlace(); jkSyncContact(); if(S.step<STEPS.length-1){S.step++;renderStep();} };
 window.jkBack=function(){ syncInscription(); if(S.step>0){S.step--;renderStep();} };
 window.jkLive=function(){ syncInscription(); var ov=$('jk-stage').querySelector('.jk-photo'); if(ov){ ov.innerHTML = ov.querySelector('img').outerHTML + inscOverlay() + capChip(); } };
