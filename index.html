@@ -1,38 +1,755 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="sk">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Kamenárstvo | Konfigurátor pomníka</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Kamenárstvo Jantár — konfigurátor pomníka a AI asistent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Voliteľné: EmailJS na odosielanie dopytov (ID doplniť v CONFIG nižšie) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-:root{--gold:#c99a3d;--gold2:#efd08a;--dark:#211b16;--muted:#74695e;--line:#e4d8ca;--card:#fffdf8;--soft:#f8f0e6;--green:#2f8a57;--shadow:0 18px 64px rgba(27,20,14,.24);font-family:Inter,DM Sans,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,#fff8ea 0 22%,transparent 45%),linear-gradient(135deg,#fbf7f0,#ece1d3);color:var(--dark)}button,input,select,textarea{font:inherit}.page{min-height:100vh;display:grid;place-items:center;padding:38px 18px}.hero{max-width:980px;width:100%;border:1px solid var(--line);border-radius:30px;background:rgba(255,253,248,.88);box-shadow:0 28px 90px rgba(35,27,19,.14);padding:38px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-100px;top:-120px;width:290px;height:290px;border-radius:50%;background:rgba(201,154,61,.12)}.tag{display:inline-flex;gap:8px;align-items:center;background:rgba(201,154,61,.13);color:#74521d;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;position:relative;z-index:1}.tag:before{content:"";width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 0 5px rgba(47,138,87,.12)}h1{font-size:clamp(36px,6vw,70px);line-height:.94;letter-spacing:-.065em;margin:18px 0 12px;position:relative;z-index:1}.hero p{max-width:720px;font-size:17px;line-height:1.65;color:var(--muted);margin:0;position:relative;z-index:1}.mini{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px;position:relative;z-index:1}.mini span{border:1px solid var(--line);border-radius:999px;background:#fff;padding:8px 12px;font-size:12px;font-weight:850;color:#62574e}.logoSvg{display:block;width:100%;height:100%}#tip{position:fixed;right:18px;bottom:98px;z-index:99998;background:#fff;border:1px solid var(--line);box-shadow:0 10px 34px rgba(25,19,14,.18);border-radius:16px;padding:12px 38px 12px 15px;font-size:14px;font-weight:900;line-height:1.25;cursor:pointer;animation:show .35s ease .4s both}#tip:after{content:"";position:absolute;right:34px;bottom:-8px;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff}.tipx{position:absolute;right:7px;top:6px;width:22px;height:22px;border:0;background:transparent;color:#9b9085;cursor:pointer;border-radius:50%;font-size:16px}@keyframes show{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}#bubble{position:fixed;right:18px;bottom:18px;width:74px;height:74px;border-radius:50%;border:2px solid rgba(201,154,61,.6);background:linear-gradient(145deg,#fff,#fff7df 72%,#ead190);box-shadow:0 8px 28px rgba(30,24,18,.22),inset 0 0 0 2px rgba(255,255,255,.85);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s;animation:pulse 2.8s ease-in-out infinite}#bubble:hover{transform:scale(1.06) rotate(-2deg);animation:none;box-shadow:0 14px 36px rgba(30,24,18,.28),0 0 0 8px rgba(201,154,61,.12)}#bubble.open{opacity:0;pointer-events:none}.logoBox{width:54px;height:54px;border-radius:18px;overflow:hidden;box-shadow:0 2px 8px rgba(40,30,20,.18)}@keyframes pulse{50%{transform:scale(1.035)}}#chat{position:fixed;right:18px;bottom:96px;width:410px;height:min(670px,78vh);z-index:99999;background:var(--card);border:1px solid rgba(228,217,203,.9);border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:scale(.86) translateY(18px);transform-origin:bottom right;pointer-events:none;transition:.3s cubic-bezier(.34,1.4,.64,1)}#chat.visible{opacity:1;transform:scale(1);pointer-events:all}.hdr{height:78px;background:linear-gradient(145deg,#221b15,#4a392b);color:#fff;padding:13px 14px;display:flex;align-items:center;gap:11px;flex:0 0 auto}.hdrLogo{width:52px;height:52px;border-radius:16px;overflow:hidden;box-shadow:0 0 0 5px rgba(201,154,61,.12)}.hdrInfo{flex:1;min-width:0}.hdrTitle{font-size:15px;font-weight:950}.hdrSub{margin-top:2px;font-size:11px;color:#d9c59e;display:flex;align-items:center;gap:6px;font-weight:750}.dot{width:7px;height:7px;border-radius:50%;background:#53d36a;animation:blink 2s infinite}@keyframes blink{50%{opacity:.35}}.hdrBtn{width:34px;height:34px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:18px}.msgs{flex:1;overflow:auto;padding:15px;display:flex;flex-direction:column;gap:9px;background:linear-gradient(#fffdf8,#fbf5eb)}.row{display:flex;gap:8px;align-items:flex-end;animation:msg .3s ease}.row.user{justify-content:flex-end}.av{width:30px;height:30px;border-radius:10px;background:#251f18;color:var(--gold2);display:grid;place-items:center;font-size:16px;font-weight:950;flex:0 0 auto}.row.user .av{display:none}.msg{max-width:82%;padding:11px 13px;border-radius:17px;font-size:13.5px;line-height:1.5}.bot{background:#f1e9df;border-bottom-left-radius:5px}.user .msg{background:linear-gradient(135deg,var(--gold),var(--gold2));font-weight:750;border-bottom-right-radius:5px}@keyframes msg{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}.chips{display:flex;gap:7px;flex-wrap:wrap;padding:0 15px 12px;background:#fbf5eb}.chip{border:1px solid var(--line);border-radius:999px;background:#fff;color:#342b23;font-size:12px;font-weight:900;padding:9px 13px;cursor:pointer}.chip.main{background:linear-gradient(135deg,var(--gold),var(--gold2));border:0;box-shadow:0 7px 18px rgba(201,154,61,.28)}.ibar{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:#fffdf8}.ibar input{flex:1;border:1.5px solid var(--line);border-radius:13px;padding:11px 13px;background:#f7f0e6;outline:0;font-size:13.5px}.send{width:42px;height:42px;border:0;border-radius:13px;background:var(--gold);font-weight:950;cursor:pointer}.calc{display:none;flex:1;min-height:0;background:var(--card);overflow:hidden}.calcHead{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1px solid var(--line)}.calcTitle{font-size:14px;font-weight:950}.calcClose{border:0;background:#f1e8dc;border-radius:10px;width:34px;height:34px;cursor:pointer}.progress{height:7px;background:#eadfce}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:.3s}.step{display:none;flex:1;overflow-y:auto;padding:14px}.step.on{display:block;animation:step .25s ease}@keyframes step{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.step h3{font-size:20px;line-height:1.08;margin:0 0 6px;letter-spacing:-.03em}.step p{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.opt{border:1.5px solid var(--line);background:linear-gradient(#fffdf8,#f7efe4);border-radius:16px;padding:9px;text-align:left;cursor:pointer;position:relative}.opt.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,154,61,.13);background:#fff}.opt.sel:after{content:"✓";position:absolute;right:8px;top:8px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#fff;display:grid;place-items:center;font-weight:950}.pic{height:98px;border-radius:13px;overflow:hidden;background:#e5dbce;border:1px solid rgba(228,217,203,.8);margin-bottom:8px;display:grid;place-items:center;color:#85786b;font-size:11px;text-align:center}.pic img{width:100%;height:100%;object-fit:cover;display:block}.letterPic{height:82px}.ot{font-size:13px;font-weight:950;line-height:1.2}.od{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.25}.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field{display:flex;flex-direction:column;gap:5px}.full{grid-column:1/-1}.field label{font-size:10.5px;font-weight:950;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 11px;background:#fff;outline:0;font-size:13px}.field textarea{min-height:70px;resize:vertical}.checks{display:grid;grid-template-columns:1fr;gap:7px}.check{display:flex;gap:9px;align-items:flex-start;border:1.5px solid var(--line);border-radius:13px;background:#fff;padding:10px;cursor:pointer}.check input{width:17px;height:17px;accent-color:var(--gold);margin-top:2px}.check strong{font-size:13px}.check span span{display:block;font-size:11px;color:var(--muted);margin-top:1px}.summary{background:#f7f0e6;border:1px solid var(--line);border-radius:16px;padding:11px;margin-bottom:10px}.sumrow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed rgba(122,112,103,.24);padding:6px 0;font-size:12px}.sumrow:last-child{border:0}.sumrow span:first-child{color:var(--muted)}.sumrow span:last-child{text-align:right;font-weight:900}.price{border-radius:16px;background:linear-gradient(135deg,#211813,#4a392b);color:#fff;padding:14px;margin:8px 0 10px;position:relative;overflow:hidden}.price:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transform:translateX(-120%);animation:shine 2.4s infinite}@keyframes shine{75%,to{transform:translateX(120%)}}.price small{display:block;color:#dec89a;font-size:10.5px;font-weight:950;text-transform:uppercase;letter-spacing:.07em}.price strong{display:block;font-size:27px;line-height:1.05;margin-top:4px}.actions{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:linear-gradient(rgba(255,253,248,.8),#fffdf8);flex:0 0 auto}.btn{border:0;border-radius:13px;padding:11px 13px;font-size:13px;font-weight:950;cursor:pointer}.back{background:#efe4d7}.next{flex:1;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:0 8px 18px rgba(201,154,61,.2)}.btn:disabled{opacity:.45;cursor:not-allowed}.loading{display:none;align-items:center;gap:7px;color:var(--muted);font-size:12px;font-weight:900}.loading.on{display:flex}.loading span{width:7px;height:7px;background:var(--gold);border-radius:50%;animation:b 1s infinite}.loading span:nth-child(2){animation-delay:.12s}.loading span:nth-child(3){animation-delay:.24s}@keyframes b{35%{transform:translateY(-5px);opacity:1}0%,70%,to{opacity:.45}}.done{display:none;text-align:center;border:1.5px solid rgba(47,138,87,.35);background:rgba(47,138,87,.08);border-radius:14px;padding:12px;font-size:12.5px;line-height:1.4}.done.on{display:block}.warn{display:none;margin-top:8px;border:1px solid #efc1b9;background:#fff3f1;color:#7b261d;border-radius:12px;padding:9px;font-size:12px;font-weight:850}.warn.on{display:block}#chat.calcOpen .msgs,#chat.calcOpen .chips,#chat.calcOpen .ibar{display:none}#chat.calcOpen .calc{display:flex;flex-direction:column}@media(max-width:520px){.page{padding:22px 12px}.hero{padding:24px;border-radius:22px}.hero h1{font-size:38px}#tip{display:none!important}#bubble{width:60px;height:60px;right:12px;bottom:12px}.logoBox{width:46px;height:46px;border-radius:15px}#chat{inset:0;width:100vw;height:100dvh;max-height:100dvh;border-radius:0;border:0;right:auto;bottom:auto}.hdr{padding-top:calc(12px + env(safe-area-inset-top));height:calc(78px + env(safe-area-inset-top))}.grid{grid-template-columns:1fr 1fr}.pic{height:92px}.fields{grid-template-columns:1fr}.actions{padding-bottom:calc(12px + env(safe-area-inset-bottom))}}
+/* =========================================================================
+   KAMENÁRSTVO JANTÁR — widget (konfigurátor pomníka + AI asistent)
+   Fotorealistický náhľad z fotiek v assets/images/. Bez cenovej kalkulačky.
+   Vložiť cez iframe (max ~ 470 × 760 px, vpravo dole).
+   ========================================================================= */
+:root{
+  --jk-ink:#2A211B; --jk-stone:#6E5135; --jk-stone-dk:#4E3924;
+  --jk-bronze:#B07D33; --jk-bronze-lt:#C9A35B; --jk-cream:#FBF7F0; --jk-paper:#FFFFFF;
+  --jk-line:#E7DCC9; --jk-line-soft:#F0E8DA; --jk-muted:#8A7A68;
+  --jk-ok:#3E7C4F; --jk-err:#C0492F; --jk-r:20px;
+  --jk-ui:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --jk-serif:'Cormorant Garamond',Georgia,serif; --jk-eng:'Cinzel',Georgia,serif;
+  --jk-shadow:0 22px 60px rgba(42,33,27,.26);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+#jk-root,#jk-root *{font-family:var(--jk-ui)}
+#jk-root img{max-width:100%;display:block}
+
+/* ---- Demo pozadie (na ostrej stránke zmazať celý blok .jk-demo) ---- */
+.jk-demo{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 22px 160px;
+  background:radial-gradient(circle at 16% 14%,#fffdf8,transparent 42%),linear-gradient(160deg,#f7efe3,#e8dccb)}
+.jk-demo-card{max-width:560px;width:100%;background:var(--jk-paper);border:1px solid var(--jk-line);border-radius:26px;
+  padding:40px 34px;box-shadow:0 26px 64px rgba(42,33,27,.12);text-align:center}
+.jk-demo-card .eyebrow{font:700 12px var(--jk-ui);letter-spacing:.22em;text-transform:uppercase;color:var(--jk-bronze)}
+.jk-demo-card h1{font:600 clamp(30px,5vw,46px)/1.05 var(--jk-eng);color:var(--jk-ink);margin:14px 0 12px}
+.jk-demo-card p{color:#6c5e50;font-size:17px;line-height:1.6;max-width:440px;margin:0 auto}
+.jk-demo-card .hint{margin-top:22px;font-size:14px;color:var(--jk-muted)}
+.jk-demo-card .hint b{color:var(--jk-stone-dk)}
+
+/* ===================== LAUNCHER ===================== */
+#jk-launcher{position:fixed;bottom:20px;right:20px;width:66px;height:66px;border-radius:50%;cursor:pointer;z-index:2147483000;
+  background:linear-gradient(150deg,#5C4630,#3A2C20);border:2px solid #fdf8ef;
+  box-shadow:0 12px 30px rgba(42,33,27,.4),0 0 0 0 rgba(176,125,51,.45);
+  display:flex;align-items:center;justify-content:center;transition:transform .35s cubic-bezier(.34,1.5,.64,1),box-shadow .35s;
+  animation:jkPulse 3.6s ease-in-out infinite}
+@keyframes jkPulse{0%,100%{box-shadow:0 12px 30px rgba(42,33,27,.4),0 0 0 0 rgba(176,125,51,.42)}
+  50%{box-shadow:0 12px 30px rgba(42,33,27,.4),0 0 0 9px rgba(176,125,51,0)}}
+#jk-launcher:hover{transform:scale(1.07);animation:none}
+#jk-launcher .jk-mark{width:34px;height:34px}
+#jk-launcher.open{opacity:0;pointer-events:none;transform:scale(.6)}
+#jk-launcher .jk-dot{position:absolute;top:5px;right:6px;width:15px;height:15px;background:var(--jk-bronze-lt);border:2.5px solid #fdf8ef;border-radius:50%;
+  opacity:0;transform:scale(.5);transition:opacity .35s,transform .35s}
+#jk-launcher .jk-dot.show{opacity:1;transform:scale(1);animation:jkDot 2.2s ease-in-out infinite}
+@keyframes jkDot{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+#jk-teaser{position:fixed;right:96px;bottom:34px;z-index:2147482999;max-width:230px;background:var(--jk-paper);color:var(--jk-ink);
+  border:1px solid var(--jk-line);border-radius:16px;border-bottom-right-radius:5px;padding:12px 34px 12px 15px;
+  box-shadow:0 16px 40px rgba(42,33,27,.2);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .4s,transform .4s}
+#jk-teaser.show{opacity:1;transform:translateY(0);pointer-events:auto;cursor:pointer}
+#jk-teaser b{display:block;font:700 14px var(--jk-ui);margin-bottom:2px}
+#jk-teaser span{font-size:12.5px;color:var(--jk-muted);line-height:1.45}
+#jk-teaser .tx{position:absolute;top:5px;right:6px;width:20px;height:20px;border:none;background:var(--jk-line-soft);border-radius:50%;
+  cursor:pointer;color:var(--jk-muted);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center}
+@media(max-width:520px){#jk-teaser{display:none}}
+
+/* ===================== PANEL ===================== */
+#jk-panel{position:fixed;bottom:98px;right:20px;width:404px;height:min(82vh,720px);background:var(--jk-cream);
+  border-radius:var(--jk-r);box-shadow:var(--jk-shadow);z-index:2147483000;display:flex;flex-direction:column;overflow:hidden;
+  transform:scale(.9) translateY(18px);opacity:0;pointer-events:none;transform-origin:bottom right;
+  transition:transform .42s cubic-bezier(.34,1.5,.64,1),opacity .3s}
+#jk-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+@media(max-width:520px){
+  #jk-panel{right:0;bottom:0;width:100vw;height:100dvh;border-radius:0}
+  #jk-launcher{bottom:16px;right:16px}
+}
+
+/* ---- Hlavička ---- */
+.jk-head{position:relative;padding:15px 14px 14px 16px;color:#fdf6ea;overflow:hidden;flex:0 0 auto;
+  background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%)}
+.jk-head::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--jk-bronze) 22%,var(--jk-bronze-lt) 50%,var(--jk-bronze) 78%,transparent);
+  background-size:220% 100%;animation:jkLine 5s ease-in-out infinite}
+@keyframes jkLine{0%{background-position:0 0}100%{background-position:200% 0}}
+.jk-head-top{display:flex;align-items:center;gap:12px}
+.jk-av{flex:0 0 auto;width:46px;height:46px;border-radius:13px;background:linear-gradient(150deg,#8a6a45,#4E3924);
+  display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px rgba(255,247,232,.28),0 6px 16px rgba(0,0,0,.3)}
+.jk-av svg{width:26px;height:26px}
+.jk-head-txt{flex:1 1 auto;min-width:0}
+.jk-head-txt b{display:block;font:600 19px/1.1 var(--jk-eng);letter-spacing:.04em}
+.jk-head-txt span{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(253,246,234,.78);margin-top:2px}
+.jk-live{width:7px;height:7px;border-radius:50%;background:#8fd29f;box-shadow:0 0 0 0 rgba(143,210,159,.7);animation:jkLive 2.4s infinite}
+@keyframes jkLive{0%,100%{box-shadow:0 0 0 0 rgba(143,210,159,.6)}50%{box-shadow:0 0 0 5px rgba(143,210,159,0)}}
+.jk-hbtns{display:flex;gap:7px}
+.jk-hbtn{width:34px;height:34px;border:none;border-radius:11px;background:rgba(255,247,232,.14);color:#fdf6ea;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s,transform .2s}
+.jk-hbtn:hover{background:rgba(255,247,232,.26);transform:translateY(-1px)}
+.jk-hbtn svg{width:18px;height:18px;fill:currentColor}
+
+.jk-modes{display:flex;gap:6px;margin-top:13px;padding:4px;background:rgba(0,0,0,.2);border-radius:13px;position:relative;z-index:1}
+.jk-mode{flex:1;border:none;background:transparent;color:rgba(253,246,234,.72);cursor:pointer;font:700 13px var(--jk-ui);
+  padding:9px 8px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .25s}
+.jk-mode svg{width:16px;height:16px;fill:currentColor}
+.jk-mode.active{background:var(--jk-cream);color:var(--jk-stone-dk);box-shadow:0 4px 12px rgba(0,0,0,.22)}
+
+/* ===================== TELO ===================== */
+.jk-body{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative}
+.jk-body::-webkit-scrollbar{width:7px}.jk-body::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
+.jk-view{display:none}
+.jk-view.active{display:block;animation:jkFade .32s ease}
+@keyframes jkFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.jk-prog{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--jk-cream),rgba(251,247,240,.92));
+  backdrop-filter:blur(6px);padding:10px 16px 9px;border-bottom:1px solid var(--jk-line)}
+.jk-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.jk-prog-label{font:700 12px var(--jk-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--jk-stone)}
+.jk-prog-count{font:700 12px var(--jk-ui);color:var(--jk-muted)}
+.jk-prog-track{height:6px;border-radius:99px;background:#ece1ce;overflow:hidden}
+.jk-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--jk-stone),var(--jk-bronze));transition:width .45s cubic-bezier(.34,1.2,.64,1)}
+
+/* ---- Fotonáhľad pomníka ---- */
+.jk-stage{padding:10px 16px 0}
+.jk-photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--jk-line);background:#e9e2d4;
+  box-shadow:0 12px 28px rgba(42,33,27,.15);container-type:inline-size;animation:jkRise .5s cubic-bezier(.22,1,.36,1)}
+@keyframes jkRise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+.jk-photo>img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center 20%}
+.jk-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 0,transparent 60%,rgba(42,33,27,.14))}
+.jk-insc{position:absolute;transform:translate(-50%,-50%);text-align:center;line-height:1.04;pointer-events:none;
+  white-space:normal;max-width:34cqw;text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4);z-index:2}
+.jk-insc .nm{display:block;font-weight:600;letter-spacing:.04em}
+.jk-insc .dt{display:block;margin-top:.18em;opacity:.94}
+.jk-cap-chip{position:absolute;left:8px;bottom:8px;z-index:3;background:rgba(34,27,21,.6);color:#fdf6ea;
+  font:600 11px var(--jk-ui);padding:5px 10px;border-radius:9px;backdrop-filter:blur(4px);letter-spacing:.01em;
+  box-shadow:0 4px 12px rgba(0,0,0,.25)}
+
+/* ---- Krok ---- */
+.jk-step{padding:8px 16px 16px}
+.jk-step-title{font:600 19px/1.05 var(--jk-serif);color:var(--jk-ink);margin:8px 0 10px}
+
+/* karty s fotkou */
+.jk-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.jk-grid.two{grid-template-columns:1fr 1fr}
+.jk-pcard{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;overflow:hidden;
+  cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s;text-align:left}
+.jk-pcard:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(110,81,53,.12)}
+.jk-pcard.sel{border-color:var(--jk-stone);box-shadow:0 0 0 2px rgba(110,81,53,.16),0 12px 24px rgba(110,81,53,.14)}
+.jk-pcard.sel::after{content:"✓";position:absolute;top:7px;right:8px;width:21px;height:21px;border-radius:50%;
+  background:var(--jk-stone);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.jk-pcard .ph{width:100%;aspect-ratio:1/1;object-fit:cover;background:#e9e2d4}
+.jk-pcard .lbl{padding:8px 9px}
+.jk-pcard .lbl b{display:block;font:700 13px var(--jk-ui);color:var(--jk-ink);line-height:1.15}
+.jk-pcard .lbl small{display:block;font-size:11px;color:var(--jk-muted);margin-top:1px;line-height:1.3}
+
+/* nápis a štýl */
+.jk-label{font:700 12px var(--jk-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--jk-stone);margin:13px 0 7px}
+.jk-input,.jk-textarea,.jk-select{width:100%;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:12px;
+  padding:13px 14px;font:500 15px var(--jk-ui);color:var(--jk-ink);transition:border-color .2s,box-shadow .2s}
+.jk-input:focus,.jk-textarea:focus,.jk-select:focus{outline:none;border-color:var(--jk-stone);box-shadow:0 0 0 3px rgba(110,81,53,.13)}
+.jk-textarea{min-height:74px;resize:vertical;line-height:1.5}
+
+.jk-letter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.jk-letter{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:all .2s}
+.jk-letter:hover{transform:translateY(-2px)}
+.jk-letter.sel{border-color:var(--jk-stone);box-shadow:0 0 0 2px rgba(110,81,53,.16)}
+.jk-letter .ph{width:100%;aspect-ratio:16/10;object-fit:cover;background:#1c1c1c}
+.jk-letter span{display:block;text-align:center;font:700 12px var(--jk-ui);color:var(--jk-ink);padding:6px 4px}
+.jk-letter.sel span{color:var(--jk-stone-dk)}
+
+.jk-chips{display:flex;flex-wrap:wrap;gap:8px}
+.jk-pick{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:11px;padding:9px 13px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;font:700 13px var(--jk-ui);color:var(--jk-ink);transition:all .2s}
+.jk-pick:hover{border-color:#d8c3a0}
+.jk-pick.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.14)}
+.jk-pick .demo-classic{font:600 18px var(--jk-eng)}
+.jk-pick .demo-roman{font:600 19px var(--jk-serif)}
+.jk-pick .demo-modern{font:700 16px var(--jk-ui)}
+.jk-pick .demo-script{font:700 22px 'Dancing Script',cursive}
+.jk-pick small{font-size:11px;color:var(--jk-muted);font-weight:600}
+
+/* doplnky (multi) */
+.jk-addon{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:12px 13px;cursor:pointer;
+  display:flex;gap:11px;align-items:flex-start;transition:all .2s;margin-bottom:9px}
+.jk-addon:hover{border-color:#d8c3a0}
+.jk-addon.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.13)}
+.jk-addon-box{flex:0 0 auto;width:22px;height:22px;border-radius:7px;border:2px solid var(--jk-line);margin-top:1px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s}
+.jk-addon.sel .jk-addon-box{background:var(--jk-stone);border-color:var(--jk-stone)}
+.jk-addon-box svg{width:13px;height:13px;fill:#fff;opacity:0;transition:opacity .2s}
+.jk-addon.sel .jk-addon-box svg{opacity:1}
+.jk-addon-tx b{display:block;font:700 14px var(--jk-ui);color:var(--jk-ink)}
+.jk-addon-tx small{display:block;font-size:12px;color:var(--jk-muted);margin-top:2px;line-height:1.4}
+
+/* tlačidlá */
+.jk-actions{display:flex;gap:10px;margin-top:14px}
+.jk-btn{flex:1;border:none;border-radius:13px;padding:14px;font:700 14.5px var(--jk-ui);cursor:pointer;transition:all .2s;
+  background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;box-shadow:0 10px 22px rgba(78,57,36,.22)}
+.jk-btn:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 14px 28px rgba(78,57,36,.3)}
+.jk-btn.ghost{background:var(--jk-paper);color:var(--jk-stone-dk);border:1.5px solid var(--jk-line);box-shadow:none;flex:0 0 auto;padding:14px 18px}
+.jk-btn.ghost:hover{border-color:#d8c3a0;background:#fdf8f0}
+.jk-btn:disabled{opacity:.45;cursor:default;transform:none;filter:none}
+
+/* zhrnutie + formulár */
+.jk-summary{background:var(--jk-paper);border:1px solid var(--jk-line);border-radius:16px;padding:6px 16px;margin:4px 0 14px}
+.jk-srow{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--jk-line-soft)}
+.jk-srow:last-child{border-bottom:none}
+.jk-srow .k{font-size:13px;color:var(--jk-muted)}
+.jk-srow .v{font:700 13.5px var(--jk-ui);color:var(--jk-ink);text-align:right}
+.jk-note{background:#fdf6ea;border:1px solid var(--jk-line);border-left:3px solid var(--jk-bronze);border-radius:11px;
+  padding:12px 14px;font-size:12.5px;line-height:1.55;color:#6c5e50;margin-bottom:14px}
+.jk-form-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.jk-gdpr{display:flex;gap:10px;align-items:flex-start;margin:12px 0 4px;cursor:pointer}
+.jk-gdpr input{margin-top:2px;width:18px;height:18px;accent-color:var(--jk-stone);flex:0 0 auto}
+.jk-gdpr span{font-size:12px;color:var(--jk-muted);line-height:1.5}
+.jk-gdpr a{color:var(--jk-stone)}
+.jk-status{display:none;margin-top:10px;padding:11px 13px;border-radius:11px;font:600 13px var(--jk-ui);text-align:center}
+.jk-status.ok{display:block;background:#eaf5ec;color:var(--jk-ok);border:1px solid #cfe7d4}
+.jk-status.err{display:block;background:#fbeae5;color:var(--jk-err);border:1px solid #f1d2c8}
+.jk-alt{display:flex;gap:9px;margin-top:10px}
+.jk-alt a{flex:1;text-decoration:none;text-align:center;border-radius:12px;padding:12px;font:700 13px var(--jk-ui);
+  border:1.5px solid var(--jk-line);color:var(--jk-stone-dk);background:var(--jk-paper);display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
+.jk-alt a:hover{border-color:#d8c3a0;background:#fdf8f0}
+.jk-alt a.wa{background:#25d366;border-color:#25d366;color:#fff}
+.jk-alt a svg{width:16px;height:16px;fill:currentColor}
+
+/* ===================== CHAT ===================== */
+.jk-chat{display:flex;flex-direction:column;height:100%}
+.jk-msgs{flex:1 1 auto;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:13px;
+  background:radial-gradient(circle at 12% 0,rgba(176,125,51,.06),transparent 40%),var(--jk-cream)}
+.jk-msgs::-webkit-scrollbar{width:7px}.jk-msgs::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
+.jk-row{display:flex;gap:9px;align-items:flex-end;max-width:88%}
+.jk-row.me{align-self:flex-end;flex-direction:row-reverse}
+.jk-row .ava{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:linear-gradient(150deg,#8a6a45,#4E3924);
+  display:flex;align-items:center;justify-content:center}
+.jk-row .ava svg{width:17px;height:17px}
+.jk-bub{padding:11px 14px;border-radius:15px;font-size:14px;line-height:1.5;box-shadow:0 4px 14px rgba(42,33,27,.07)}
+.jk-row.bot .jk-bub{background:var(--jk-paper);border:1px solid var(--jk-line);border-bottom-left-radius:5px;color:var(--jk-ink)}
+.jk-row.me .jk-bub{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;border-bottom-right-radius:5px}
+.jk-bub b{font-weight:700}
+.jk-typing{display:flex;gap:4px;padding:13px 15px}
+.jk-typing i{width:7px;height:7px;border-radius:50%;background:var(--jk-bronze);animation:jkType 1.3s infinite}
+.jk-typing i:nth-child(2){animation-delay:.18s}.jk-typing i:nth-child(3){animation-delay:.36s}
+@keyframes jkType{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
+.jk-quick{display:flex;flex-wrap:wrap;gap:8px;padding:6px 16px 10px;background:var(--jk-cream)}
+.jk-quick button{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:99px;padding:8px 13px;cursor:pointer;
+  font:600 12.5px var(--jk-ui);color:var(--jk-stone-dk);transition:all .2s}
+.jk-quick button:hover{border-color:var(--jk-stone);background:#fdf6ea}
+.jk-quick button.cfg{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;border-color:transparent}
+.jk-inbar{display:flex;gap:9px;padding:11px 14px;background:var(--jk-cream);border-top:1px solid var(--jk-line)}
+.jk-inbar input{flex:1;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:13px 15px;
+  font:500 14.5px var(--jk-ui);color:var(--jk-ink)}
+.jk-inbar input:focus{outline:none;border-color:var(--jk-stone);box-shadow:0 0 0 3px rgba(110,81,53,.12)}
+.jk-send{flex:0 0 auto;width:48px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.jk-send:hover{filter:brightness(1.08)}.jk-send svg{width:20px;height:20px;fill:#fdf6ea}
+.jk-cbar{display:flex;gap:8px;padding:10px 14px;background:var(--jk-cream);border-top:1px solid var(--jk-line-soft)}
+.jk-cbar a{flex:1;text-decoration:none;border:1px solid var(--jk-line);border-radius:11px;padding:9px;display:flex;flex-direction:column;
+  align-items:center;gap:3px;font:700 11px var(--jk-ui);color:var(--jk-stone-dk);background:var(--jk-paper);transition:all .2s}
+.jk-cbar a:hover{border-color:var(--jk-stone);background:#fdf6ea}
+.jk-cbar a svg{width:17px;height:17px;fill:var(--jk-stone)}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="page"><section class="hero"><span class="tag">Ukážka pre stránku kamenárstva</span><h1>Konfigurátor pomníka priamo na webe.</h1><p>Táto stránka ukazuje, ako môže zákazník jednoducho vybrať typ hrobu, tvar pomníka, farbu kameňa, písmo, lokalitu cintorína a doplnky. Kliknutím na bublinu vpravo dole sa otvorí asistent s konfigurátorom.</p><div class="mini"><span>1. výber pomníka</span><span>2. kameň a písmo</span><span>3. lokalita cintorína</span><span>4. odoslanie dopytu</span></div></section></div>
-<div id="tip">Navrhnite si pomník online<button class="tipx" id="tipClose">×</button></div>
-<button id="bubble" aria-label="Otvoriť konfigurátor"><span class="logoBox" id="bubbleLogo"></span></button>
-<div id="chat" aria-live="polite"><div class="hdr"><div class="hdrLogo" id="hdrLogo"></div><div class="hdrInfo"><div class="hdrTitle">Kamenárstvo asistent</div><div class="hdrSub"><span class="dot"></span>online · konfigurátor pomníka</div></div><button class="hdrBtn" id="reset">↺</button><button class="hdrBtn" id="close">×</button></div><div class="msgs" id="msgs"></div><div class="chips"><button class="chip main" id="startCalc">Spustiť konfigurátor</button><button class="chip" data-reply="Najprv si vyberiete jednohrob alebo dvojhrob. Potom sa fotky pomníkov menia podľa tvaru a farby kameňa.">Jednohrob / dvojhrob</button><button class="chip" data-reply="Písmo si môžete pozrieť priamo na zvolenej farbe kameňa: zlaté, strieborné alebo biele gravírované.">Farby písma</button></div><div class="ibar"><input id="chatInput" placeholder="Napíšte otázku..."><button class="send" id="send">➜</button></div><div class="calc" id="calc"><div class="calcHead"><div><div class="calcTitle">Konfigurátor pomníka</div><div style="font-size:11px;color:var(--muted);font-weight:800" id="stepTxt">Krok 1 / 7</div></div><button class="calcClose" id="calcClose">×</button></div><div class="progress"><i id="prog"></i></div><div class="step on"><h3>Vyberte typ hrobu</h3><p>V konfigurátore sú dve základné možnosti: jednohrob a dvojhrob.</p><div class="grid" id="sizeGrid"></div></div><div class="step"><h3>Vyberte tvar</h3><p>Kockový pomník, kniha alebo oblúkový tvar.</p><div class="grid" id="shapeGrid"></div></div><div class="step"><h3>Vyberte farbu kameňa</h3><p>Vyberte si z troch farieb pomníka: čierna, sivá alebo červená.</p><div class="grid" id="stoneGrid"></div></div><div class="step"><h3>Vyberte písmo</h3><p>Detail mena na kameni ukáže farbu a štýl písma.</p><div class="grid" id="letterGrid"></div></div><div class="step"><h3>Lokalita cintorína</h3><p>Dôležité pre dopravu, prístup na miesto a montáž.</p><div class="fields"><div class="field"><label>Obec / mesto</label><input id="city" placeholder="napr. Nitra"></div><div class="field"><label>Cintorín</label><input id="cem" placeholder="napr. Mestský cintorín"></div><div class="field"><label>Prístup</label><select id="access"><option value="standard">Bežný prístup</option><option value="narrow">Úzky prístup</option><option value="stairs">Schody / komplikovaný terén</option></select></div><div class="field"><label>Stav miesta</label><select id="place"><option value="new">Nové miesto</option><option value="existing">Existujúci hrob</option><option value="old">Starý pomník na demontáž</option></select></div><div class="field full"><label>Poznámka</label><textarea id="note" placeholder="Napr. úzky chodník, staré obrubníky..."></textarea></div></div></div><div class="step"><h3>Doplnky</h3><p>Doplňujúce práce a prvky, ktoré sa hodí riešiť pred ponukou.</p><div class="checks" id="addonGrid"></div></div><div class="step"><h3>Kontakt a odoslanie</h3><p>Na záver zákazník odošle dopyt s vybranými údajmi.</p><div class="summary" id="summary"></div><div class="price"><small>Orientačná suma</small><strong id="price">1 980 €</strong></div><div class="fields"><div class="field"><label>Meno</label><input placeholder="Vaše meno"></div><div class="field"><label>Telefón</label><input placeholder="+421..."></div><div class="field full"><label>E-mail</label><input placeholder="vas@email.sk"></div></div><label class="check" style="margin-top:8px"><input id="gdpr" type="checkbox"><span><strong>Súhlasím so spracovaním údajov</strong><span>Potrebné pre odoslanie dopytu.</span></span></label><div class="loading" id="load"><span></span><span></span><span></span> odosielam dopyt...</div><div class="done" id="done"><strong>Dopyt bol odoslaný.</strong><br>Ďakujeme, kamenárstvo vás bude kontaktovať.</div><div class="warn" id="warn">Najprv potvrďte súhlas so spracovaním údajov.</div></div><div class="actions"><button class="btn back" id="back" disabled>Späť</button><button class="btn next" id="next">Pokračovať</button></div></div></div>
+
+<!-- ============ DEMO POZADIE (na ostrej stránke zmazať celý blok .jk-demo) ============ -->
+<div class="jk-demo">
+  <div class="jk-demo-card">
+    <div class="eyebrow">Kamenárstvo Jantár</div>
+    <h1>Dôstojný pomník<br>na pár klikov</h1>
+    <p>Online konfigurátor pomníka s AI asistentom. Zákazník si v pokoji navrhne tvar, kameň, nápis a miesto realizácie — a požiada o nezáväznú ponuku.</p>
+    <div class="hint">Vpravo dole kliknite na <b>bronzové tlačidlo</b> a otvorí sa konfigurátor.</div>
+  </div>
+</div>
+
+<!-- ============ WIDGET (toto vložte do stránky) ============ -->
+<div id="jk-root">
+  <div id="jk-teaser">
+    <button class="tx" aria-label="Zavrieť" onclick="jkCloseTeaser(event)">✕</button>
+    <b>Navrhnite pomník online</b>
+    <span>Tvar, kameň, nápis a AI asistent — nezáväzne.</span>
+  </div>
+
+  <button id="jk-launcher" aria-label="Otvoriť konfigurátor pomníka" onclick="jkToggle()">
+    <span class="jk-dot" id="jk-dot"></span>
+    <span class="jk-mark" id="jk-launch-mark"></span>
+  </button>
+
+  <section id="jk-panel" aria-label="Konfigurátor Kamenárstvo Jantár">
+    <header class="jk-head">
+      <div class="jk-head-top">
+        <div class="jk-av" id="jk-head-av"></div>
+        <div class="jk-head-txt">
+          <b>Kamenárstvo Jantár</b>
+          <span><i class="jk-live"></i> Konfigurátor &amp; AI asistent</span>
+        </div>
+        <div class="jk-hbtns">
+          <button class="jk-hbtn" aria-label="Začať odznova" onclick="jkReset()" title="Začať odznova">
+            <svg viewBox="0 0 24 24"><path d="M12 5V2L7 7l5 5V8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+          </button>
+          <button class="jk-hbtn" aria-label="Zavrieť" onclick="jkToggle()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="jk-modes">
+        <button class="jk-mode active" id="jk-tab-cfg" onclick="jkSetMode('config')">
+          <svg viewBox="0 0 24 24"><path d="M6 20h12v-3H6v3Zm2-5h8V8.6a4 4 0 0 0-8 0V15Z"/></svg> Konfigurátor
+        </button>
+        <button class="jk-mode" id="jk-tab-chat" onclick="jkSetMode('chat')">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V5a1 1 0 0 1 1-1Zm3 6h10V8H7v2Zm0 4h7v-2H7v2Z"/></svg> AI asistent
+        </button>
+      </div>
+    </header>
+
+    <!-- KONFIGURÁTOR -->
+    <div class="jk-body jk-view active" id="jk-view-config">
+      <div class="jk-prog">
+        <div class="jk-prog-row">
+          <span class="jk-prog-label" id="jk-prog-label">Tvar</span>
+          <span class="jk-prog-count" id="jk-prog-count">1 / 7</span>
+        </div>
+        <div class="jk-prog-track"><div class="jk-prog-fill" id="jk-prog-fill" style="width:14%"></div></div>
+      </div>
+      <div class="jk-stage" id="jk-stage"></div>
+      <div class="jk-step" id="jk-step"></div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="jk-view" id="jk-view-chat">
+      <div class="jk-chat">
+        <div class="jk-msgs" id="jk-msgs"></div>
+        <div class="jk-quick" id="jk-quick"></div>
+        <div class="jk-inbar">
+          <input id="jk-input" placeholder="Opýtajte sa na kameň, nápis, údržbu…" onkeydown="if(event.key==='Enter')jkSend()" autocomplete="off">
+          <button class="jk-send" aria-label="Odoslať" onclick="jkSend()">
+            <svg viewBox="0 0 24 24"><path d="M2 21 23 12 2 3l.01 7L17 12 2.01 14z"/></svg>
+          </button>
+        </div>
+        <div class="jk-cbar" id="jk-cbar"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
 <script>
-const logo=`<svg class="logoSvg" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="g1" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#181310"/><stop offset="1" stop-color="#59432f"/></linearGradient></defs><rect x="4" y="6" width="88" height="68" rx="24" fill="url(#g1)"/><path d="M36 74 22 88l4-18" fill="url(#g1)"/><path d="M26 28h44M26 40h30M26 52h22" stroke="#efd08a" stroke-width="6" stroke-linecap="round"/><circle cx="74" cy="28" r="5" fill="#efd08a"/></svg>`;
-document.getElementById('bubbleLogo').innerHTML=logo;document.getElementById('hdrLogo').innerHTML=logo;
-const labels={size:{single:'Jednohrob',double:'Dvojhrob'},shape:{rect:'Kockový',book:'Kniha',arch:'Oblúkový'},stone:{black:'Čierny granit',gray:'Sivý granit',red:'Červený granit'},letter:{gold:'Zlaté písmo',silver:'Strieborné písmo',white:'Biele gravírovanie'},access:{standard:'bežný prístup',narrow:'úzky prístup',stairs:'komplikovaný terén'},place:{new:'nové miesto',existing:'existujúci hrob',old:'starý pomník na demontáž'}};
-const data={size:[['single','Jednohrob','Klasické jedno miesto'],['double','Dvojhrob','Širší pomník pre dve miesta']],shape:[['rect','Kockový','Rovný moderný tvar'],['book','Kniha','Pamätník v tvare knihy'],['arch','Oblúk','Zaoblený vrch']],stone:[['black','Čierny','Lesklý tmavý granit'],['gray','Sivý','Svetlejší prírodný vzhľad'],['red','Červený','Červenohnedý granit']],letter:[['gold','Zlaté','Kovový serif štýl'],['silver','Strieborné','Elegantný svetlý kov'],['white','Biele','Gravírované písmo']],addons:[['vase','Váza','Kamenná alebo kovová váza'],['lantern','Lampáš','Jeden alebo dva lampáše'],['flower','Otvor na kvety','Výrez pre výsadbu'],['photo','Fotokeramika','Miesto na fotku'],['edge','Lemovanie','Doplnkové obrubníky'],['transport','Doprava a montáž','Výjazd a osadenie']]};
-const cost={size:{single:1600,double:2700},shape:{rect:0,book:260,arch:180},stone:{black:0,gray:120,red:260},letter:{gold:180,silver:150,white:90},access:{standard:0,narrow:160,stairs:260},place:{new:0,existing:90,old:320},addon:{vase:95,lantern:140,flower:120,photo:180,edge:220,transport:160}};
-const st={step:0,size:'single',shape:'rect',stone:'black',letter:'gold',addons:[],loc:{city:'',cem:'',access:'standard',place:'new'}};const $=q=>document.querySelector(q),$$=q=>Array.from(document.querySelectorAll(q));
-function addMsg(t,type='bot'){const r=document.createElement('div');r.className='row '+(type==='user'?'user':'');r.innerHTML=(type==='bot'?'<div class="av">💬</div>':'')+'<div class="msg '+(type==='bot'?'bot':'')+'">'+t+'</div>';msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight}
-function openChat(){chat.classList.add('visible');bubble.classList.add('open');tip.style.display='none';if(!msgs.children.length){addMsg('Dobrý deň, pomôžem vám vyskladať pomník a pripraviť dopyt pre kamenárstvo.');addMsg('Môžete spustiť konfigurátor alebo sa opýtať na typ hrobu, kameň a písmo.')}}
-function closeChat(){chat.classList.remove('visible','calcOpen');bubble.classList.remove('open')}
-function grave(s=st.size,h=st.shape,c=st.stone){return `assets/images/graves/${s}-${h}-${c}.webp`}
-function letter(l=st.letter){return `assets/images/lettering/${st.stone}-${l}.webp`}
-function money(n){return new Intl.NumberFormat('sk-SK').format(n)+' €'}
-function opt(group,item){const key=item[0],b=document.createElement('button');b.className='opt '+(st[group]===key?'sel':'');const src=group==='size'?grave(key):group==='shape'?grave(st.size,key):group==='stone'?grave(st.size,st.shape,key):letter(key);b.innerHTML='<div class="pic '+(group==='letter'?'letterPic':'')+'"><img src="'+src+'" loading="lazy" alt="'+item[1]+'"></div><div class="ot">'+item[1]+'</div><div class="od">'+item[2]+'</div>';b.onclick=()=>{st[group]=key;render()};return b}
-function render(){[['size','sizeGrid'],['shape','shapeGrid'],['stone','stoneGrid'],['letter','letterGrid']].forEach(([g,id])=>{const box=$('#'+id);box.innerHTML='';data[g].forEach(i=>box.appendChild(opt(g,i)))});addonGrid.innerHTML='';data.addons.forEach(i=>{const l=document.createElement('label');l.className='check';l.innerHTML='<input type="checkbox" '+(st.addons.includes(i[0])?'checked':'')+'><span><strong>'+i[1]+'</strong><span>'+i[2]+'</span></span>';l.querySelector('input').onchange=e=>{st.addons=e.target.checked?[...st.addons,i[0]]:st.addons.filter(x=>x!==i[0]);updateSummary()};addonGrid.appendChild(l)});updateSummary();updateStep()}
-function calcPrice(){return cost.size[st.size]+cost.shape[st.shape]+cost.stone[st.stone]+cost.letter[st.letter]+cost.access[st.loc.access]+cost.place[st.loc.place]+st.addons.reduce((s,a)=>s+(cost.addon[a]||0),0)}
-function updateSummary(){['city','cem','access','place'].forEach(id=>{const el=$('#'+id);if(el)st.loc[id]=el.value.trim?el.value.trim():el.value});const loc=[st.loc.city,st.loc.cem].filter(Boolean).join(' · ')||'Zatiaľ nezadané';const adds=st.addons.length?st.addons.map(a=>data.addons.find(x=>x[0]===a)[1]).join(', '):'Bez doplnkov';summary.innerHTML='<div class="sumrow"><span>Typ</span><span>'+labels.size[st.size]+'</span></div><div class="sumrow"><span>Tvar</span><span>'+labels.shape[st.shape]+'</span></div><div class="sumrow"><span>Kameň</span><span>'+labels.stone[st.stone]+'</span></div><div class="sumrow"><span>Písmo</span><span>'+labels.letter[st.letter]+'</span></div><div class="sumrow"><span>Lokalita</span><span>'+loc+'</span></div><div class="sumrow"><span>Doplnky</span><span>'+adds+'</span></div>';price.textContent=money(calcPrice())}
-function updateStep(){const steps=$$('.step');steps.forEach((s,i)=>s.classList.toggle('on',i===st.step));stepTxt.textContent='Krok '+(st.step+1)+' / '+steps.length;prog.style.width=(st.step/(steps.length-1)*100)+'%';back.disabled=st.step===0;next.textContent=st.step===steps.length-1?'Odoslať dopyt':'Pokračovať'}
-function go(n){st.step=Math.max(0,Math.min($$('.step').length-1,n));updateStep()}
-bubble.onclick=openChat;tip.onclick=openChat;tipClose.onclick=e=>{e.stopPropagation();tip.style.display='none'};close.onclick=closeChat;reset.onclick=()=>{st.step=0;chat.classList.remove('calcOpen');render()};startCalc.onclick=()=>{chat.classList.add('calcOpen');render()};calcClose.onclick=()=>chat.classList.remove('calcOpen');$$('[data-reply]').forEach(b=>b.onclick=()=>{addMsg(b.textContent,'user');setTimeout(()=>addMsg(b.dataset.reply),220)});send.onclick=()=>{const v=chatInput.value.trim();if(!v)return;addMsg(v,'user');chatInput.value='';setTimeout(()=>addMsg('Najrýchlejšie bude spustiť konfigurátor a doplniť typ hrobu, kameň, písmo a lokalitu cintorína.'),250)};chatInput.addEventListener('keydown',e=>{if(e.key==='Enter')send.click()});['city','cem','access','place'].forEach(id=>$('#'+id).addEventListener('input',updateSummary));back.onclick=()=>go(st.step-1);next.onclick=()=>{if(st.step<$$('.step').length-1){go(st.step+1);return}warn.classList.remove('on');done.classList.remove('on');if(!gdpr.checked){warn.classList.add('on');return}load.classList.add('on');next.disabled=true;setTimeout(()=>{load.classList.remove('on');done.classList.add('on');next.disabled=false},1200)};render();
+(function(){
+"use strict";
+
+/* ========================= NASTAVENIA ========================= */
+var CONFIG = {
+  brand:    'Kamenárstvo Jantár',
+  phone:    '+421900000000',          // ← doplniť reálne číslo
+  phoneTxt: '+421 900 000 000',
+  email:    'info@kamenarstvojantar.sk',
+  whatsapp: '421900000000',           // medzinárodný formát bez +
+  privacyUrl: '#',
+  assetBase: 'assets/images/',        // cesta k fotkám (graves/ , lettering/)
+  chatApiUrl: '',                     // voliteľný AI backend (Anthropic proxy). Prázdne = lokálny asistent
+  emailjs: { publicKey:'', serviceId:'', templateId:'' }  // voliteľný EmailJS
+};
+
+/* ========================= DÁTA (žiadne ceny) ========================= */
+var DATA = {
+  // kľúče tvarov/veľkostí/kameňov zodpovedajú názvom fotiek: {size}-{shape}-{stone}.webp
+  shapes: {
+    rect: { title:'Rovný',  sub:'klasický stojaci pomník' },
+    arch: { title:'Oblúk',  sub:'jemná oblúková hlava' },
+    book: { title:'Kniha',  sub:'otvorená spomienka' }
+  },
+  sizes: {
+    single: { title:'Jednohrob', sub:'cca 90 × 200 cm' },
+    double: { title:'Dvojhrob',  sub:'cca 160 × 220 cm' }
+  },
+  stones: {
+    black: { title:'Čierna žula',  sub:'najsilnejší kontrast nápisu' },
+    gray:  { title:'Sivá žula',    sub:'pokojná a praktická' },
+    red:   { title:'Červenohnedá', sub:'teplejší výraz kameňa' }
+  },
+  // farby písma – fotovzorky lettering/{stone}-{letter}.webp
+  letters: {
+    gold:   { title:'Zlatá',     fill:'#E3C36A' },
+    silver: { title:'Strieborná', fill:'#EBEEF2' },
+    white:  { title:'Biela',     fill:'#F6F1E6' }
+  },
+  fonts: {
+    classic: { title:'Klasické',  css:"'Cinzel',Georgia,serif",       up:true },
+    roman:   { title:'Elegantné', css:"'Cormorant Garamond',serif",   up:false },
+    modern:  { title:'Moderné',   css:"'Inter',sans-serif",           up:false },
+    script:  { title:'Písané',    css:"'Dancing Script',cursive",     up:false }
+  },
+  addons: {
+    vase:  { title:'Kamenná váza',       sub:'na živé alebo umelé kvety' },
+    lamp:  { title:'Lampáš / kahanec',   sub:'miesto pre sviečku' },
+    photo: { title:'Fotokeramika',       sub:'oválna fotografia do kameňa' },
+    gild:  { title:'Zlátenie písma',     sub:'ručné dozlátenie nápisu' },
+    cover: { title:'Krycia doska / rám', sub:'uzatvorenie hrobového miesta' }
+  },
+  regions: ['Bratislavský','Trnavský','Nitriansky','Trenčiansky','Žilinský','Banskobystrický','Prešovský','Košický']
+};
+
+// pozícia živého nápisu na fotke (center x%, center y%, font cqw, max-šírka cqw)
+// pozícia živého nápisu na fotke per konkrétny záber (center x%, center y%, font cqw, max-šírka cqw)
+var POS = {
+  'single-rect-black':{x:40,y:23,fs:4.8,w:28}, 'single-rect-gray':{x:47,y:25,fs:4.8,w:28}, 'single-rect-red':{x:47,y:23,fs:4.8,w:28},
+  'single-arch-black':{x:40,y:23,fs:4.6,w:28}, 'single-arch-gray':{x:47,y:19,fs:4.6,w:28}, 'single-arch-red':{x:47,y:21,fs:4.6,w:28},
+  'single-book-black':{x:38,y:30,fs:4.2,w:26}, 'single-book-gray':{x:46,y:35,fs:4.2,w:26}, 'single-book-red':{x:48,y:36,fs:4.2,w:26},
+  'double-rect-black':{x:28,y:27,fs:3.4,w:20}, 'double-rect-gray':{x:47,y:27,fs:3.4,w:20}, 'double-rect-red':{x:78,y:23,fs:3.4,w:20},
+  'double-arch-black':{x:40,y:24,fs:3.4,w:20}, 'double-arch-gray':{x:47,y:23,fs:3.4,w:20}, 'double-arch-red':{x:77,y:20,fs:3.4,w:20},
+  'double-book-black':{x:40,y:29,fs:3.6,w:22}, 'double-book-gray':{x:48,y:36,fs:3.6,w:22}, 'double-book-red':{x:74,y:24,fs:3.6,w:22}
+};
+
+var STEPS = ['Tvar','Veľkosť','Kameň','Nápis','Doplnky','Miesto','Dopyt'];
+
+/* ========================= STAV ========================= */
+var S = {
+  open:false, mode:'config', step:0,
+  shape:'rect', size:'single', stone:'black',
+  inscription:'Rodina Nováková', dates:'1948 – 2024', epitaph:'',
+  letter:'gold', font:'classic',
+  addons:{},
+  city:'', cemetery:'', region:'',
+  name:'', phone:'', mail:'', message:'', gdpr:false,
+  chat:[], chatBusy:false
+};
+
+/* ========================= POMÔCKY ========================= */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];}); }
+function graveUrl(size,shape,stone){ return CONFIG.assetBase+'graves/'+size+'-'+shape+'-'+stone+'.webp'; }
+function letterUrl(stone,letter){ return CONFIG.assetBase+'lettering/'+stone+'-'+letter+'.webp'; }
+
+function markSvg(stroke,fill){
+  stroke=stroke||'#fdf6ea';
+  return '<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">'
+    +'<path d="M9 13C9 9.7 11.7 7 15 7h18c3.3 0 6 2.7 6 6v13c0 3.3-2.7 6-6 6H22l-8 6v-6.3A6 6 0 0 1 9 26V13Z" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.4" stroke-linejoin="round"/>'
+    +'<circle cx="18" cy="20" r="2.1" fill="'+stroke+'"/><circle cx="24" cy="20" r="2.1" fill="'+stroke+'"/><circle cx="30" cy="20" r="2.1" fill="'+stroke+'"/>'
+    +'</svg>';
+}
+
+/* ========================= ŽIVÝ FOTONÁHĽAD ========================= */
+function inscOverlay(){
+  var p = POS[S.size+'-'+S.shape+'-'+S.stone] || {x:47,y:25,fs:4.6,w:28};
+  var f = DATA.fonts[S.font], col = DATA.letters[S.letter].fill;
+  var nm = (S.inscription||'').trim(); if(f.up) nm = nm.toUpperCase();
+  var dt = (S.dates||'').trim();
+  if(!nm && !dt) return '';
+  return '<div class="jk-insc" style="left:'+p.x+'%;top:'+p.y+'%;max-width:'+p.w+'cqw;font-family:'+f.css+';color:'+col+'">'
+    +(nm?'<span class="nm" style="font-size:'+p.fs+'cqw">'+esc(nm)+'</span>':'')
+    +(dt?'<span class="dt" style="font-size:'+(p.fs*0.62)+'cqw">'+esc(dt)+'</span>':'')
+    +'</div>';
+}
+function capChip(){ return '<div class="jk-cap-chip">'+esc(DATA.shapes[S.shape].title+' · '+DATA.sizes[S.size].title+' · '+DATA.stones[S.stone].title)+'</div>'; }
+function stageHtml(){
+  return '<div class="jk-photo">'
+    +'<img src="'+graveUrl(S.size,S.shape,S.stone)+'" alt="'+esc(DATA.shapes[S.shape].title+', '+DATA.sizes[S.size].title+', '+DATA.stones[S.stone].title)+'" loading="eager" decoding="async">'
+    +inscOverlay()+capChip()+'</div>';
+}
+function renderStage(){ $('jk-stage').innerHTML = stageHtml(); }
+
+/* ========================= KARTY ========================= */
+function shapeCard(key,item){
+  return '<button class="jk-pcard'+(S.shape===key?' sel':'')+'" onclick="jkPick(\'shape\',\''+key+'\')">'
+    +'<img class="ph" src="'+graveUrl(S.size,key,S.stone)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async">'
+    +'<span class="lbl"><b>'+item.title+'</b><small>'+item.sub+'</small></span></button>';
+}
+function sizeCard(key,item){
+  return '<button class="jk-pcard'+(S.size===key?' sel':'')+'" onclick="jkPick(\'size\',\''+key+'\')">'
+    +'<img class="ph" src="'+graveUrl(key,S.shape,S.stone)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async">'
+    +'<span class="lbl"><b>'+item.title+'</b><small>'+item.sub+'</small></span></button>';
+}
+function stoneCard(key,item){
+  return '<button class="jk-pcard'+(S.stone===key?' sel':'')+'" onclick="jkPick(\'stone\',\''+key+'\')">'
+    +'<img class="ph" src="'+graveUrl(S.size,S.shape,key)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async">'
+    +'<span class="lbl"><b>'+item.title+'</b><small>'+item.sub+'</small></span></button>';
+}
+function letterCard(key,item){
+  return '<button class="jk-letter'+(S.letter===key?' sel':'')+'" onclick="jkPick(\'letter\',\''+key+'\')">'
+    +'<img class="ph" src="'+letterUrl(S.stone,key)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async">'
+    +'<span>'+item.title+'</span></button>';
+}
+
+/* ========================= RENDER KROKU ========================= */
+function renderProgress(){
+  $('jk-prog-label').textContent = STEPS[S.step];
+  $('jk-prog-count').textContent = (S.step+1)+' / '+STEPS.length;
+  $('jk-prog-fill').style.width = Math.round((S.step+1)/STEPS.length*100)+'%';
+}
+function acts(back){
+  return '<div class="jk-actions">'
+    +(back?'<button class="jk-btn ghost" onclick="jkBack()">Späť</button>':'')
+    +'<button class="jk-btn" onclick="jkNext()">'+(S.step===STEPS.length-2?'Zhrnutie':'Pokračovať')+'</button></div>';
+}
+function renderStep(){
+  renderProgress();
+  renderStage();
+  var html='';
+
+  if(S.step===0){
+    html='<div class="jk-step-title">Tvar pomníka</div>'
+      +'<div class="jk-grid">'+Object.keys(DATA.shapes).map(function(k){return shapeCard(k,DATA.shapes[k]);}).join('')+'</div>'
+      +acts(false);
+  }
+  else if(S.step===1){
+    html='<div class="jk-step-title">Veľkosť miesta</div>'
+      +'<div class="jk-grid two">'+Object.keys(DATA.sizes).map(function(k){return sizeCard(k,DATA.sizes[k]);}).join('')+'</div>'
+      +acts(true);
+  }
+  else if(S.step===2){
+    html='<div class="jk-step-title">Kameň</div>'
+      +'<div class="jk-grid">'+Object.keys(DATA.stones).map(function(k){return stoneCard(k,DATA.stones[k]);}).join('')+'</div>'
+      +acts(true);
+  }
+  else if(S.step===3){
+    html='<div class="jk-step-title">Nápis a písmo</div>'
+      +'<input class="jk-input" id="f-insc" value="'+esc(S.inscription)+'" placeholder="Meno / priezvisko, napr. Rodina Nováková" oninput="jkLive()">'
+      +'<input class="jk-input" id="f-dates" value="'+esc(S.dates)+'" placeholder="Dátumy, napr. 1948 – 2024" style="margin-top:10px" oninput="jkLive()">'
+      +'<div class="jk-label">Farba písma</div>'
+      +'<div class="jk-letter-grid">'+Object.keys(DATA.letters).map(function(k){return letterCard(k,DATA.letters[k]);}).join('')+'</div>'
+      +'<div class="jk-label">Štýl písma</div>'
+      +'<div class="jk-chips">'+Object.keys(DATA.fonts).map(function(k){var it=DATA.fonts[k];
+          return '<button class="jk-pick'+(S.font===k?' sel':'')+'" onclick="jkPick(\'font\',\''+k+'\')"><span class="demo-'+k+'">Aa</span><small>'+it.title+'</small></button>';}).join('')+'</div>'
+      +'<div class="jk-label">Epitaf / venovanie (nepovinné)</div>'
+      +'<textarea class="jk-textarea" id="f-epi" placeholder="napr. S láskou spomíname…" oninput="jkLive()">'+esc(S.epitaph)+'</textarea>'
+      +acts(true);
+  }
+  else if(S.step===4){
+    html='<div class="jk-step-title">Doplnky</div>'
+      +Object.keys(DATA.addons).map(function(k){var it=DATA.addons[k];var on=!!S.addons[k];
+        return '<button class="jk-addon'+(on?' sel':'')+'" onclick="jkAddon(\''+k+'\')">'
+          +'<span class="jk-addon-box"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span>'
+          +'<span class="jk-addon-tx"><b>'+it.title+'</b><small>'+it.sub+'</small></span></button>';}).join('')
+      +acts(true);
+  }
+  else if(S.step===5){
+    html='<div class="jk-step-title">Miesto realizácie</div>'
+      +'<div class="jk-label">Mesto / obec</div>'
+      +'<input class="jk-input" id="f-city" value="'+esc(S.city)+'" placeholder="napr. Nitra" oninput="jkSyncPlace()">'
+      +'<div class="jk-label">Cintorín (nepovinné)</div>'
+      +'<input class="jk-input" id="f-cem" value="'+esc(S.cemetery)+'" placeholder="napr. Mestský cintorín" oninput="jkSyncPlace()">'
+      +'<div class="jk-label">Kraj</div>'
+      +'<select class="jk-select" id="f-region" onchange="jkSyncPlace()">'
+        +'<option value="">— vyberte kraj —</option>'
+        +DATA.regions.map(function(r){return '<option'+(S.region===r?' selected':'')+'>'+r+'</option>';}).join('')
+      +'</select>'
+      +'<div class="jk-note">Presnú dostupnosť a termín potvrdíme telefonicky. Pri starom pomníku zahŕňame aj demontáž a likvidáciu.</div>'
+      +acts(true);
+  }
+  else {
+    html='<div class="jk-step-title">Zhrnutie a dopyt</div>'
+      +summary()
+      +'<div class="jk-form-2">'
+        +'<input class="jk-input" id="f-name" value="'+esc(S.name)+'" placeholder="Meno a priezvisko" oninput="jkSyncContact()">'
+        +'<input class="jk-input" id="f-phone" value="'+esc(S.phone)+'" placeholder="Telefón" oninput="jkSyncContact()">'
+      +'</div>'
+      +'<input class="jk-input" id="f-mail" value="'+esc(S.mail)+'" placeholder="E-mail" style="margin-bottom:10px" oninput="jkSyncContact()">'
+      +'<textarea class="jk-textarea" id="f-msg" placeholder="Poznámka pre kamenára (nepovinné)" oninput="jkSyncContact()">'+esc(S.message)+'</textarea>'
+      +'<label class="jk-gdpr"><input type="checkbox" id="f-gdpr"'+(S.gdpr?' checked':'')+' onchange="jkSyncContact()">'
+        +'<span>Súhlasím so spracovaním osobných údajov za účelom vybavenia dopytu. <a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">Zásady ochrany</a>.</span></label>'
+      +'<div class="jk-actions"><button class="jk-btn ghost" onclick="jkBack()">Späť</button><button class="jk-btn" id="jk-submit" onclick="jkSubmit()">Odoslať dopyt</button></div>'
+      +'<div class="jk-status" id="jk-status"></div>'
+      +'<div class="jk-alt">'
+        +'<a href="tel:'+CONFIG.phone+'"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg> Zavolať</a>'
+        +'<a class="wa" href="'+waLink()+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.2-4.8-4.4-.2-.2-1.2-1.6-1.2-3s.8-2.2 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .7.5l.9 2c.1.2.1.4 0 .6l-.4.6c-.2.2-.4.5-.2.8.2.4.9 1.5 2 2.4 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4.1.1.1.8-.1 1.4Z"/></svg> WhatsApp</a>'
+      +'</div>'
+      +'<div class="jk-actions" style="margin-top:10px"><button class="jk-btn ghost" style="flex:1" onclick="jkCopy()">Skopírovať dopyt</button></div>';
+  }
+  $('jk-step').innerHTML=html;
+  var body=$('jk-view-config'); if(body) body.scrollTop=0;
+}
+
+function summary(){
+  var addons=Object.keys(S.addons).filter(function(k){return S.addons[k];}).map(function(k){return DATA.addons[k].title;});
+  function r(k,v){return '<div class="jk-srow"><span class="k">'+k+'</span><span class="v">'+esc(v)+'</span></div>';}
+  return '<div class="jk-summary">'
+    +r('Tvar', DATA.shapes[S.shape].title)
+    +r('Veľkosť', DATA.sizes[S.size].title+' · '+DATA.sizes[S.size].sub)
+    +r('Kameň', DATA.stones[S.stone].title)
+    +r('Nápis', (S.inscription||'—')+(S.dates?(' · '+S.dates):''))
+    +r('Písmo', DATA.letters[S.letter].title+' · '+DATA.fonts[S.font].title)
+    +(S.epitaph?r('Epitaf', S.epitaph):'')
+    +r('Doplnky', addons.length?addons.join(', '):'—')
+    +r('Miesto', ([S.city,S.cemetery].filter(Boolean).join(', ')+(S.region?(' ('+S.region+')'):'')) || '—')
+    +'</div>';
+}
+
+/* ========================= AKCIE ========================= */
+window.jkPick=function(kind,key){
+  syncInscription();
+  if(kind==='shape')S.shape=key; else if(kind==='size')S.size=key; else if(kind==='stone')S.stone=key;
+  else if(kind==='letter')S.letter=key; else if(kind==='font')S.font=key;
+  renderStep();
+};
+window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(); };
+window.jkNext=function(){ syncInscription(); jkSyncPlace(); jkSyncContact(); if(S.step<STEPS.length-1){S.step++;renderStep();} };
+window.jkBack=function(){ syncInscription(); if(S.step>0){S.step--;renderStep();} };
+window.jkLive=function(){ syncInscription(); var ov=$('jk-stage').querySelector('.jk-photo'); if(ov){ ov.innerHTML = ov.querySelector('img').outerHTML + inscOverlay() + capChip(); } };
+function syncInscription(){ var i=$('f-insc'),d=$('f-dates'),e=$('f-epi'); if(i)S.inscription=i.value; if(d)S.dates=d.value; if(e)S.epitaph=e.value; }
+window.jkSyncPlace=function(){ var c=$('f-city'),cm=$('f-cem'),r=$('f-region'); if(c)S.city=c.value; if(cm)S.cemetery=cm.value; if(r)S.region=r.value; };
+window.jkSyncContact=function(){ var n=$('f-name'),p=$('f-phone'),m=$('f-mail'),msg=$('f-msg'),g=$('f-gdpr');
+  if(n)S.name=n.value; if(p)S.phone=p.value; if(m)S.mail=m.value; if(msg)S.message=msg.value; if(g)S.gdpr=g.checked; };
+
+window.jkReset=function(){
+  S.step=0;S.shape='rect';S.size='single';S.stone='black';
+  S.inscription='Rodina Nováková';S.dates='1948 – 2024';S.epitaph='';
+  S.letter='gold';S.font='classic';S.addons={};
+  S.city='';S.cemetery='';S.region='';
+  S.name='';S.phone='';S.mail='';S.message='';S.gdpr=false;
+  if(S.mode!=='config')jkSetMode('config'); else renderStep();
+};
+
+/* ========================= DOPYT ========================= */
+function briefText(){
+  var addons=Object.keys(S.addons).filter(function(k){return S.addons[k];}).map(function(k){return DATA.addons[k].title;});
+  return [
+    'DOPYT — '+CONFIG.brand,'',
+    'Tvar: '+DATA.shapes[S.shape].title,
+    'Veľkosť: '+DATA.sizes[S.size].title+' ('+DATA.sizes[S.size].sub+')',
+    'Kameň: '+DATA.stones[S.stone].title,
+    'Nápis: '+(S.inscription||'—')+(S.dates?(' · '+S.dates):''),
+    'Písmo: '+DATA.letters[S.letter].title+', '+DATA.fonts[S.font].title,
+    'Epitaf: '+(S.epitaph||'—'),
+    'Doplnky: '+(addons.length?addons.join(', '):'—'),
+    'Miesto: '+([S.city,S.cemetery].filter(Boolean).join(', ')||'—')+(S.region?(' / '+S.region+' kraj'):''),'',
+    'Meno: '+(S.name||'—'),'Telefón: '+(S.phone||'—'),'E-mail: '+(S.mail||'—'),'Poznámka: '+(S.message||'—')
+  ].join('\n');
+}
+function waLink(){ return 'https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent(briefText()); }
+function mailLink(){ return 'mailto:'+CONFIG.email+'?subject='+encodeURIComponent('Dopyt na pomník — '+CONFIG.brand)+'&body='+encodeURIComponent(briefText()); }
+
+window.jkCopy=function(){
+  var t=briefText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){toast('Dopyt skopírovaný');}).catch(function(){toast('Dopyt pripravený');}); }
+  else { toast('Dopyt pripravený'); }
+};
+window.jkSubmit=function(){
+  jkSyncContact();
+  var st=$('jk-status');
+  if(!S.name||!(S.phone||S.mail)){ st.className='jk-status err'; st.textContent='Doplňte meno a telefón alebo e-mail.'; return; }
+  if(!S.gdpr){ st.className='jk-status err'; st.textContent='Potvrďte súhlas so spracovaním údajov.'; return; }
+  var btn=$('jk-submit'); btn.disabled=true; btn.textContent='Odosielam…';
+  var done=function(ok){ btn.disabled=false; btn.textContent='Odoslať dopyt';
+    if(ok){ st.className='jk-status ok'; st.textContent='Ďakujeme, dopyt sme prijali. Čoskoro sa ozveme.'; }
+    else { st.className='jk-status err'; st.textContent='Odoslanie cez formulár nevyšlo — otvorili sme e-mail.'; window.location.href=mailLink(); } };
+  var ej=CONFIG.emailjs;
+  if(ej.publicKey&&ej.serviceId&&ej.templateId&&window.emailjs){
+    try{ emailjs.init({publicKey:ej.publicKey});
+      emailjs.send(ej.serviceId,ej.templateId,{from_name:S.name,phone:S.phone,email:S.mail,message:briefText(),brand:CONFIG.brand})
+        .then(function(){done(true);}).catch(function(){done(false);});
+    }catch(e){done(false);}
+  } else { window.location.href=mailLink(); setTimeout(function(){done(true);},400); }
+};
+
+/* ========================= AI ASISTENT ========================= */
+var FALLBACK_INTRO='Dobrý deň. Som AI asistent Kamenárstva Jantár. Poradím s výberom kameňa, veľkosti, nápisu či údržby — alebo otvorte konfigurátor a navrhnite pomník priamo tu.';
+var QUICK=[
+  {label:'Otvoriť konfigurátor', cfg:true, action:function(){jkSetMode('config');}},
+  {label:'Aký kameň zvoliť?', q:'Aký kameň je najvhodnejší na pomník?'},
+  {label:'Veľkosť hrobu', q:'Ako vybrať veľkosť pomníka?'},
+  {label:'Nápis a písmo', q:'Aký nápis a písmo odporúčate?'},
+  {label:'Údržba', q:'Ako sa stará o žulový pomník?'}
+];
+function renderChat(){
+  var box=$('jk-msgs');
+  box.innerHTML = S.chat.map(function(m){
+    if(m.typing) return '<div class="jk-row bot"><span class="ava">'+markSvg('#fdf6ea')+'</span><div class="jk-bub jk-typing"><i></i><i></i><i></i></div></div>';
+    return '<div class="jk-row '+(m.role==='me'?'me':'bot')+'">'+(m.role==='me'?'':'<span class="ava">'+markSvg('#fdf6ea')+'</span>')+'<div class="jk-bub">'+m.html+'</div></div>';
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+  $('jk-quick').innerHTML = QUICK.map(function(q,i){ return '<button class="'+(q.cfg?'cfg':'')+'" onclick="jkQuick('+i+')">'+q.label+'</button>'; }).join('');
+  $('jk-cbar').innerHTML =
+    '<a href="tel:'+CONFIG.phone+'"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg>'+CONFIG.phoneTxt+'</a>'
+    +'<a href="mailto:'+CONFIG.email+'"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5Z"/></svg>E-mail</a>'
+    +'<a href="'+waLink()+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Z"/></svg>WhatsApp</a>';
+}
+window.jkQuick=function(i){ var q=QUICK[i]; if(q.action){q.action();return;} pushMe(q.q); reply(q.q); };
+window.jkSend=function(){ var inp=$('jk-input'); var v=(inp.value||'').trim(); if(!v||S.chatBusy)return; inp.value=''; pushMe(v); reply(v); };
+function pushMe(t){ S.chat.push({role:'me',html:esc(t)}); renderChat(); }
+function pushBot(html){ S.chat.push({role:'bot',html:html}); renderChat(); }
+function reply(q){
+  S.chatBusy=true; S.chat.push({typing:true}); renderChat();
+  var finish=function(text){ S.chat=S.chat.filter(function(m){return !m.typing;}); pushBot(formatReply(text)); S.chatBusy=false; };
+  if(CONFIG.chatApiUrl){
+    fetch(CONFIG.chatApiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,context:contextSummary()})})
+      .then(function(r){return r.json();}).then(function(d){ finish(d.reply||d.message||localAnswer(q)); }).catch(function(){ finish(localAnswer(q)); });
+  } else { setTimeout(function(){ finish(localAnswer(q)); }, 520+Math.random()*420); }
+}
+function formatReply(t){ return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'); }
+function contextSummary(){ return 'Aktuálny návrh: '+DATA.shapes[S.shape].title+', '+DATA.sizes[S.size].title+', '+DATA.stones[S.stone].title+', písmo '+DATA.letters[S.letter].title+'/'+DATA.fonts[S.font].title+'.'; }
+function localAnswer(q){
+  var l=String(q||'').toLowerCase();
+  if(/kame|žul|zul|granit|materi/.test(l))
+    return 'Na pomníky sa používa najmä žula — tvrdá a odolná. **Čierna** dáva najsilnejší kontrast nápisu, **sivá** je pokojná a praktická a **červenohnedá** pôsobí teplejšie. Teraz máte vybranú '+DATA.stones[S.stone].title+'. Pokojne si to prepnite v konfigurátore.';
+  if(/veľko|velko|hrob|rozmer/.test(l))
+    return 'Vyberáte medzi **jednohrobom** a **dvojhrobom**. Presné rozmery vždy potvrdíme zameraním priamo na cintoríne, aby pomník sadol na hrobové miesto.';
+  if(/nápis|napis|písm|pism|font|text/.test(l))
+    return 'Nápis je lepšie držať krátky a čitateľný. Pre tmavý kameň sa hodí **zlatá** alebo **strieborná**, na svetlejší kameň aj **biela**. Farbu aj štýl písma vidíte naživo v kroku „Nápis".';
+  if(/údrž|udrz|čisti|cisti|starostl/.test(l))
+    return 'Žula je nenáročná — stačí ju umyť vodou a jemnou handrou, prípadne neutrálnym prípravkom na kameň. Vyhnite sa kyselinám a drôtenke. Zlátenie písma vieme po rokoch obnoviť.';
+  if(/cen|stoj|rozpo|koľko|kolko|euro/.test(l))
+    return 'Konkrétnu cenu pripravíme ako nezáväznú ponuku — závisí od veľkosti, kameňa, doplnkov, demontáže starého pomníka a miesta. Dokončite návrh v konfigurátore a pošlite dopyt, alebo zavolajte na '+CONFIG.phoneTxt+'.';
+  if(/termín|termin|kedy|dlho|čaka|caka/.test(l))
+    return 'Termín závisí od ročného obdobia a typu prác. Po zameraní vám dáme konkrétny odhad — radi to upresníme telefonicky na '+CONFIG.phoneTxt+'.';
+  if(/demont|stary|starý|obnov|reno/.test(l))
+    return 'Áno, vieme demontovať a zlikvidovať starý pomník, obnoviť písmo aj vyrovnať osadenie. Uveďte to prosím v poznámke dopytu alebo v kroku „Miesto realizácie".';
+  if(/ahoj|dobr|zdrav|čau|cau/.test(l)) return FALLBACK_INTRO;
+  return 'Rád poradím s kameňom, veľkosťou, nápisom, doplnkami či miestom realizácie. Najjednoduchšie je otvoriť **konfigurátor** a navrhnúť pomník krok po kroku — alebo mi napíšte konkrétnu otázku.';
+}
+
+/* ========================= REŽIM / OTVÁRANIE ========================= */
+window.jkSetMode=function(mode){
+  S.mode=mode;
+  $('jk-tab-cfg').classList.toggle('active',mode==='config');
+  $('jk-tab-chat').classList.toggle('active',mode==='chat');
+  $('jk-view-config').classList.toggle('active',mode==='config');
+  $('jk-view-chat').classList.toggle('active',mode==='chat');
+  if(mode==='config') renderStep();
+  else { if(!S.chat.length){ S.chat.push({role:'bot',html:formatReply(FALLBACK_INTRO)}); } renderChat(); setTimeout(function(){var i=$('jk-input');if(i)i.focus();},120); }
+};
+window.jkToggle=function(){
+  S.open=!S.open;
+  $('jk-panel').classList.toggle('open',S.open);
+  $('jk-launcher').classList.toggle('open',S.open);
+  $('jk-dot').classList.remove('show');
+  if(S.open){ jkCloseTeaser(); if(S.mode==='config')renderStep(); else renderChat(); }
+};
+window.jkCloseTeaser=function(e){ if(e)e.stopPropagation(); $('jk-teaser').classList.remove('show'); };
+
+function toast(text){
+  var el=$('jk-toast');
+  if(!el){ el=document.createElement('div'); el.id='jk-toast';
+    el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);opacity:0;background:#2A211B;color:#fdf6ea;border-radius:99px;padding:11px 18px;font:700 13px Inter,sans-serif;box-shadow:0 16px 38px rgba(42,33,27,.3);z-index:2147483600;transition:all .22s;pointer-events:none';
+    document.body.appendChild(el); }
+  el.textContent=text; el.style.opacity='1'; el.style.transform='translate(-50%,0)';
+  setTimeout(function(){el.style.opacity='0';el.style.transform='translate(-50%,12px)';},1700);
+}
+
+/* ========================= INIT ========================= */
+function init(){
+  $('jk-launch-mark').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.10)');
+  $('jk-head-av').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.12)');
+  renderStep();
+  setTimeout(function(){ if(!S.open){ $('jk-teaser').classList.add('show'); $('jk-dot').classList.add('show'); } },2600);
+  if(location.search.indexOf('preview')>=0){ setTimeout(jkToggle,300); }
+  try{ if(window.parent!==window){ window.parent.postMessage({jantar:'ready'},'*'); } }catch(e){}
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+else init();
+})();
 </script>
 </body>
 </html>
