@@ -1,4 +1,4 @@
-// hard override v4: cache-safe photo framing, scrollable type step, centered inscription.
+// hard override v5: cache-safe photo framing, scrollable type step, centered inscription.
 (function(){
   const main = document.getElementById('mainImg');
   const text = document.getElementById('insc');
@@ -6,7 +6,7 @@
   if(!main || !text || !cfg || typeof st === 'undefined') return;
 
   function esc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]});}
-  function graveSrc(){return `assets/images/graves/${st.size}-${st.shape}-${st.stone}.webp?v=assets4`;}
+  function graveSrc(){return `assets/images/graves/${st.size}-${st.shape}-${st.stone}.webp?v=assets5`;}
   function splitName(name){
     name = (name || 'Rodina Nováková').replace(/\s+/g,' ').trim();
     const words = name.split(' ');
@@ -108,7 +108,7 @@
       ['rect','arch','book'].forEach(function(shape){
         ['black','gray','red'].forEach(function(stone){
           const i = new Image();
-          i.src = `assets/images/graves/${size}-${shape}-${stone}.webp?v=assets4`;
+          i.src = `assets/images/graves/${size}-${shape}-${stone}.webp?v=assets5`;
         });
       });
     });
