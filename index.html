@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Kamenarstvo Jantar - konfigurator pomnika</title>
-<link rel="stylesheet" href="style.css?v=base6">
-<link rel="stylesheet" href="fixes.css?v=hard6">
-<style>.photo img{display:none!important}.photo .graveRender{display:block!important}.step{overflow-y:auto!important;min-height:0!important;-webkit-overflow-scrolling:touch!important}.msgs{justify-content:flex-start!important}</style>
+<title>Kamenárstvo Jantár — konfigurátor pomníka</title>
+<link rel="stylesheet" href="style.css?v=base5">
+<link rel="stylesheet" href="fixes.css?v=hard5">
+<style>.photo img{object-fit:contain!important;object-position:center center!important;transform:none!important}.step{overflow-y:auto!important;min-height:0!important;-webkit-overflow-scrolling:touch!important}.msgs{justify-content:flex-start!important}</style>
 </head>
 <body>
-<div class="demo"><section class="demo-card"><span class="eyebrow">Ukazka pre stranku kamenarskej firmy</span><h1>Konfigurator pomnika priamo na webe.</h1><p>Zakaznik si vyberie typ hrobu, tvar pomnika, farbu kamena, pismo, lokalitu cintorina a doplnky. Potom odosle dopyt priamo kamenarstvu.</p><div class="pills"><span>Vyber pomnika</span><span>Napis na kameni</span><span>Lokalita cintorina</span><span>AI asistent</span></div></section></div>
-<div id="teaser" onclick="openPanel()"><button class="tx" onclick="closeTeaser(event)">x</button><b>Navrhnite pomnik online</b><span>Pomnik, napis a dopyt za par krokov.</span></div>
-<button id="launcher" onclick="openPanel()" aria-label="Otvorit asistenta"><span class="chatLogo"></span></button>
-<section id="panel"><header class="head"><div class="headIcon"><span class="chatLogo"></span></div><div class="headText"><b>Kamenarstvo Jantar</b><span><i class="live"></i>Konfigurator & AI asistent</span></div><button class="hbtn" onclick="showChat()" title="AI asistent">Chat</button><button class="hbtn" onclick="resetAll()" title="Zacat odznova">↺</button><button class="hbtn" onclick="closePanel()" title="Zavriet">x</button></header>
-<div id="chatView" class="view chat active"><div class="msgs" id="msgs"></div><div class="quick"><button class="cfg" onclick="showConfig()">Spustit konfigurator</button><button onclick="quick('Aky kamen odporucate?')">Vyber kamena</button><button onclick="quick('Ako prebieha osadenie?')">Osadenie</button></div><div class="inbar"><input id="chatInput" placeholder="Opytajte sa na kamen, napis, montaz..." onkeydown="if(event.key==='Enter')sendMsg()"><button class="send" onclick="sendMsg()">→</button></div><div class="contacts"><a href="#">Zavolat</a><a href="#">E-mail</a><a href="#">WhatsApp</a></div></div>
-<div id="configView" class="view config"><div class="stage"><div class="photo"><img id="mainImg" src="assets/images/graves/single-rect-black.webp?v=assets6" alt="Nahlad pomnika"><div class="insc" id="insc"><span>Rodina Novakova</span><small>1948 - 2024</small></div></div></div><div class="stepMeta"><span id="label">Typ hrobu</span><span id="count">1 / 7</span></div><div class="bar"><i id="bar"></i></div><div class="step" id="step"></div><div class="actions"><button class="btn back" id="back" onclick="prevStep()">Spat</button><button class="btn next" id="next" onclick="nextStep()">Pokracovat</button></div></div></section>
-<script src="app.js?v=base6"></script>
-<script src="fixes.js?v=hard6"></script>
+<div class="demo"><section class="demo-card"><span class="eyebrow">Ukážka pre stránku kamenárstva</span><h1>Konfigurátor pomníka priamo na webe.</h1><p>Zákazník si vyberie typ hrobu, tvar pomníka, farbu kameňa, písmo, lokalitu cintorína a doplnky. Potom odošle dopyt priamo kamenárstvu.</p><div class="pills"><span>Výber pomníka</span><span>Nápis na kameni</span><span>Lokalita cintorína</span><span>AI asistent</span></div></section></div>
+<div id="teaser" onclick="openPanel()"><button class="tx" onclick="closeTeaser(event)">×</button><b>Navrhnite pomník online</b><span>Pomník, nápis a dopyt za pár krokov.</span></div>
+<button id="launcher" onclick="openPanel()" aria-label="Otvoriť asistenta"><span class="chatLogo"></span></button>
+<section id="panel"><header class="head"><div class="headIcon"><span class="chatLogo"></span></div><div class="headText"><b>Kamenárstvo Jantár</b><span><i class="live"></i>Konfigurátor & AI asistent</span></div><button class="hbtn" onclick="showChat()" title="AI asistent">💬</button><button class="hbtn" onclick="resetAll()" title="Začať odznova">↺</button><button class="hbtn" onclick="closePanel()" title="Zavrieť">×</button></header>
+<div id="chatView" class="view chat active"><div class="msgs" id="msgs"></div><div class="quick"><button class="cfg" onclick="showConfig()">Spustiť konfigurátor</button><button onclick="quick('Aký kameň odporúčate?')">Výber kameňa</button><button onclick="quick('Ako prebieha osadenie?')">Osadenie</button></div><div class="inbar"><input id="chatInput" placeholder="Opýtajte sa na kameň, nápis, montáž…" onkeydown="if(event.key==='Enter')sendMsg()"><button class="send" onclick="sendMsg()">➜</button></div><div class="contacts"><a href="tel:+421900000000">Zavolať</a><a href="mailto:info@kamenarstvojantar.sk">E-mail</a><a href="https://wa.me/421900000000">WhatsApp</a></div></div>
+<div id="configView" class="view config"><div class="stage"><div class="photo"><img id="mainImg" src="assets/images/graves/single-rect-black.webp?v=assets5" alt="Náhľad pomníka"><div class="insc" id="insc"><span>Rodina Nováková</span><small>† 1948 – 2024</small></div></div></div><div class="stepMeta"><span id="label">Typ hrobu</span><span id="count">1 / 7</span></div><div class="bar"><i id="bar"></i></div><div class="step" id="step"></div><div class="actions"><button class="btn back" id="back" onclick="prevStep()">Späť</button><button class="btn next" id="next" onclick="nextStep()">Pokračovať</button></div></div></section>
+<script src="app.js?v=base5"></script>
+<script src="fixes.js?v=hard5"></script>
 </body>
 </html>
