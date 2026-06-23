@@ -1,17 +1,17 @@
-// Final UX fixes: fast photo switching, centered inscription, letter step as live text preview.
+// Final UX fixes: fast photo switching, centered inscription, chat switch.
 (function(){
   const main = document.getElementById('mainImg');
   const text = document.getElementById('insc');
   const cfg = document.getElementById('configView');
+  const chat = document.getElementById('chatView');
   if(!main || !text || !cfg || typeof st === 'undefined') return;
 
   function esc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]});}
   function graveSrc(){return `assets/images/graves/${st.size}-${st.shape}-${st.stone}.webp`;}
   function splitName(name){
     name = (name || 'Rodina Nováková').replace(/\s+/g,' ').trim();
-    if(name.length <= 15) return esc(name);
     const words = name.split(' ');
-    if(words.length === 1) return esc(name);
+    if(name.length <= 12 || words.length < 2) return esc(name);
     let best = 1, bestDiff = 999;
     for(let i=1;i<words.length;i++){
       const a = words.slice(0,i).join(' ').length;
@@ -23,32 +23,37 @@
   }
   function calcFont(name){
     const l = (name || '').length;
-    const base = st.size === 'double' ? 18 : 16;
-    const penalty = Math.max(0, l - 14) * .42;
-    const fontBoost = st.font === 'script' ? 1.2 : 0;
-    return Math.max(8.5, Math.min(19, base - penalty + fontBoost));
+    const base = st.size === 'double' ? 15.5 : 13.8;
+    const penalty = Math.max(0, l - 15) * .32;
+    const fontBoost = st.font === 'script' ? .8 : 0;
+    return Math.max(8.2, Math.min(16, base - penalty + fontBoost));
   }
   function pos(){
+    const key = `${st.size}-${st.shape}`;
     const map = {
-      single:{rect:[50,42,25,120],arch:[50,44,24,115],book:[50,48,31,130]},
-      double:{rect:[50,43,31,145],arch:[50,45,30,140],book:[50,49,38,155]}
+      'single-rect':[50,22,23,104],
+      'single-arch':[50,24,25,112],
+      'single-book':[50,21,28,122],
+      'double-rect':[50,21,34,150],
+      'double-arch':[50,22,34,152],
+      'double-book':[50,21,36,158]
     };
-    return (map[st.size] && map[st.size][st.shape]) || [50,43,28,130];
+    return map[key] || [50,22,28,128];
   }
-  const oldUpdate = updatePhoto;
+  function applyPhotoFast(next){
+    if(main.getAttribute('src') === next) return;
+    main.classList.add('is-changing');
+    const img = new Image();
+    img.onload = function(){
+      main.src = next;
+      requestAnimationFrame(function(){ main.classList.remove('is-changing'); });
+    };
+    img.onerror = function(){ main.src = next; main.classList.remove('is-changing'); };
+    img.src = next;
+  }
   updatePhoto = window.updatePhoto = function(){
     cfg.dataset.step = String(st.step);
-    const next = graveSrc();
-    if(main.getAttribute('src') !== next){
-      main.classList.add('is-changing');
-      const img = new Image();
-      img.onload = function(){
-        main.src = next;
-        requestAnimationFrame(function(){ main.classList.remove('is-changing'); });
-      };
-      img.onerror = function(){ main.src = next; main.classList.remove('is-changing'); };
-      img.src = next;
-    }
+    applyPhotoFast(graveSrc());
     const p = pos();
     const name = (st.name || 'Rodina Nováková').trim();
     text.style.left = p[0] + '%';
@@ -62,23 +67,32 @@
     text.innerHTML = '<span>' + splitName(name) + '</span><small>' + esc(st.dates || '† 1948 – 2024') + '</small>';
   };
 
-  const oldSet = setVal;
   setVal = window.setVal = function(group,value){
     if(st[group] === value) return;
     st[group] = value;
     render();
   };
 
-  const oldRender = render;
+  const baseRender = render;
   render = window.render = function(){
-    oldRender();
+    baseRender();
     cfg.dataset.step = String(st.step);
     updatePhoto();
     if(st.step === 3){
       const h2 = document.querySelector('#step h2');
       if(h2) h2.textContent = 'Vyberte písmo na pomník';
       const p = document.querySelector('#step p');
-      if(p) p.textContent = 'Hore je živý náhľad mena priamo na pomníku. Farbu a štýl písma vidíte hneď pri prekliku.';
+      if(p) p.textContent = 'Hore je živý náhľad mena priamo na kameni. Farba aj štýl sa menia okamžite.';
+    }
+  };
+
+  const baseShowChat = window.showChat || showChat;
+  showChat = window.showChat = function(){
+    chatView.classList.add('active');
+    configView.classList.remove('active');
+    if(window.msgs && !msgs.children.length){
+      bot('Dobrý deň, pomôžem vám vyskladať pomník a pripraviť dopyt.');
+      bot('Môžete spustiť konfigurátor alebo sa opýtať na kameň, písmo či montáž.');
     }
   };
 
