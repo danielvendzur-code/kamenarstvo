@@ -1,4 +1,4 @@
-name: Unpack configurator site
+name: Validate configurator site
 
 on:
   push:
@@ -6,42 +6,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  unpack:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Unpack uploaded ZIP into repository root
+      - name: Check required files
         run: |
           set -e
-          if [ ! -f "kamenarstvo_konfigurator.zip" ]; then
-            echo "kamenarstvo_konfigurator.zip not found"
-            exit 1
-          fi
-          rm -rf /tmp/kamenarstvo_unpacked
-          mkdir -p /tmp/kamenarstvo_unpacked
-          unzip -o "kamenarstvo_konfigurator.zip" -d /tmp/kamenarstvo_unpacked
-          rm -rf assets
-          rm -f index.html "index (2).html" "index(2).html" README.md
-          cp -R /tmp/kamenarstvo_unpacked/kamenarstvo_site/. .
-          rm -f kamenarstvo_konfigurator.zip
-          rm -rf /tmp/kamenarstvo_unpacked
+          test -f index.html
+          grep -q "Konfigurátor pomníka" index.html
+          echo "index.html exists and configurator markup is present."
 
-      - name: Commit unpacked site
+      - name: Static site note
         run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Unpack configurator site"
-            git push
-          fi
+          echo "No build step is required. This repository is a static HTML configurator."
