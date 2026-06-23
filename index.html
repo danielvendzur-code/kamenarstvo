@@ -337,6 +337,26 @@
 .jk-insc .nm{line-height:.98!important}
 .jk-insc .dt{line-height:1.03!important;margin-top:.08em!important}
 
+
+
+/* ---- Mobile hard fix: robust fullscreen, no auto-preview dependency ---- */
+#jk-panel{height:calc(100vh - 36px);height:calc(100svh - 36px);height:calc(100dvh - 36px);min-height:0}
+#jk-root button,#jk-root a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media(max-width:520px){
+  html,body{min-height:100%;overflow-x:hidden}
+  #jk-panel{
+    top:0!important;right:0!important;bottom:auto!important;left:0!important;
+    width:100vw!important;height:100vh!important;height:100svh!important;height:100dvh!important;
+    max-height:none!important;border-radius:0!important;transform-origin:bottom center!important;
+  }
+  #jk-panel:not(.open){transform:translateY(100%)!important;opacity:1!important;pointer-events:none!important}
+  #jk-panel.open{transform:translateY(0)!important;opacity:1!important;pointer-events:auto!important}
+  .jk-head{padding-top:calc(13px + env(safe-area-inset-top))!important}
+  .jk-cbar{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
+  .jk-inbar{padding-bottom:calc(9px + env(safe-area-inset-bottom))!important}
+  .jk-body,.jk-chat,.jk-msgs{min-height:0!important}
+}
+
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -864,8 +884,14 @@ function init(){
   $('jk-launch-mark').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.10)');
   $('jk-head-av').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.12)');
   renderStep();
+  // Mobile Safari / embedded iframe: explicit touch handlers so opening works reliably.
+  var launcher=$('jk-launcher');
+  if(launcher && !launcher.dataset.touchReady){
+    launcher.dataset.touchReady='1';
+    launcher.addEventListener('touchend',function(e){e.preventDefault();jkToggle();},{passive:false});
+  }
   setTimeout(function(){ if(!S.open){ $('jk-teaser').classList.add('show'); $('jk-dot').classList.add('show'); } },2600);
-  if(location.search.indexOf('preview')>=0){ setTimeout(jkToggle,300); }
+  // Auto-open preview disabled: file opens closed on desktop aj mobile.
   try{ if(window.parent!==window){ window.parent.postMessage({jantar:'ready'},'*'); } }catch(e){}
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
