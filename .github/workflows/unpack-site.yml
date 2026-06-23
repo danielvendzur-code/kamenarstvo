@@ -1,4 +1,4 @@
-name: Validate configurator site
+name: Unpack configurator assets
 
 on:
   push:
@@ -6,22 +6,39 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  validate:
+  unpack-assets:
+    if: ${{ !contains(github.event.head_commit.message, 'Unpack configurator assets') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check required files
+      - name: Unpack only image assets
         run: |
           set -e
-          test -f index.html
-          grep -q "Konfigurátor pomníka" index.html
-          echo "index.html exists and configurator markup is present."
+          if [ ! -f "kamenarstvo_konfigurator.zip" ]; then
+            echo "ZIP not found, skipping asset unpack."
+            exit 0
+          fi
+          rm -rf /tmp/kamenarstvo_unpacked
+          mkdir -p /tmp/kamenarstvo_unpacked
+          unzip -o "kamenarstvo_konfigurator.zip" -d /tmp/kamenarstvo_unpacked
+          mkdir -p assets
+          cp -R /tmp/kamenarstvo_unpacked/kamenarstvo_site/assets/. assets/
+          rm -rf /tmp/kamenarstvo_unpacked
 
-      - name: Static site note
+      - name: Commit assets
         run: |
-          echo "No build step is required. This repository is a static HTML configurator."
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          if git diff --cached --quiet; then
+            echo "No asset changes to commit"
+          else
+            git commit -m "Unpack configurator assets"
+            git push
+          fi
