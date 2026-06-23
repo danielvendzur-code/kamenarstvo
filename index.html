@@ -132,6 +132,7 @@
   box-shadow:0 12px 28px rgba(42,33,27,.15);container-type:inline-size;animation:jkRise .5s cubic-bezier(.22,1,.36,1)}
 @keyframes jkRise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
 .jk-photo>img{width:100%;height:clamp(280px,40vh,350px);object-fit:contain;object-position:center center;background:linear-gradient(180deg,#f7f2e9,#eee4d4)}
+#jk-view-config[data-step="3"] .jk-photo>img{height:clamp(184px,26vh,220px)}
 .jk-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(120% 80% at 50% 0,transparent 60%,rgba(42,33,27,.14))}
 .jk-insc{position:absolute;transform:translate(-50%,-50%);text-align:center;line-height:1.04;pointer-events:none;
@@ -146,6 +147,8 @@
 /* ---- Krok ---- */
 .jk-step{padding:8px 16px 16px;background:linear-gradient(180deg,rgba(251,247,240,.96),var(--jk-cream));border-top:1px solid rgba(231,220,201,.7);margin-top:8px}
 .jk-step-title{font:600 19px/1.05 var(--jk-serif);color:var(--jk-ink);margin:6px 0 10px}
+#jk-view-config[data-step="3"] .jk-step{padding-top:6px}
+#jk-view-config[data-step="3"] .jk-step-title{font-size:18px;margin:3px 0 8px}
 
 /* textové výberové karty */
 .jk-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
@@ -173,6 +176,9 @@
   padding:13px 14px;font:500 15px var(--jk-ui);color:var(--jk-ink);transition:border-color .2s,box-shadow .2s}
 .jk-input:focus,.jk-textarea:focus,.jk-select:focus{outline:none;border-color:var(--jk-stone);box-shadow:0 0 0 3px rgba(110,81,53,.13)}
 .jk-textarea{min-height:74px;resize:vertical;line-height:1.5}
+#jk-view-config[data-step="3"] .jk-label{margin:7px 0 5px;font-size:10.8px}
+#jk-view-config[data-step="3"] .jk-input{padding:10px 12px;font-size:14px}
+#jk-view-config[data-step="3"] .jk-textarea{min-height:40px;max-height:40px;resize:none;padding:9px 12px;font-size:13.5px}
 
 .jk-letter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .jk-letter{position:relative;border:1.5px solid var(--jk-line);background:linear-gradient(180deg,#fff,#fffaf4);border-radius:15px;overflow:hidden;cursor:pointer;
@@ -182,6 +188,8 @@
 .jk-letter .sw{width:28px;height:28px;border-radius:50%;flex:0 0 auto;border:2px solid rgba(255,255,255,.92);box-shadow:0 0 0 1px #d9c5a6,0 5px 12px rgba(42,33,27,.14)}
 .jk-letter span{display:block;text-align:left;font:800 12.8px var(--jk-ui);color:var(--jk-ink);padding:0}
 .jk-letter.sel span{color:var(--jk-stone-dk)}
+#jk-view-config[data-step="3"] .jk-letter{min-height:50px;padding:8px}
+#jk-view-config[data-step="3"] .jk-letter .sw{width:24px;height:24px}
 
 .jk-chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .jk-pick{border:1.5px solid var(--jk-line);background:linear-gradient(180deg,#fff,#fffaf4);border-radius:16px;padding:11px 13px;cursor:pointer;
@@ -194,6 +202,13 @@
 .jk-pick .demo-script{font:700 22px 'Dancing Script',cursive}
 .jk-pick small{font-size:11.5px;color:var(--jk-muted);font-weight:700}
 .jk-pick.sel small{color:#ead9bf}
+#jk-view-config[data-step="3"] .jk-chips{grid-template-columns:repeat(4,1fr);gap:8px}
+#jk-view-config[data-step="3"] .jk-pick{min-height:54px;padding:7px 6px;border-radius:13px;flex-direction:column;justify-content:center;gap:2px;text-align:center}
+#jk-view-config[data-step="3"] .jk-pick .demo-classic{font-size:16px}
+#jk-view-config[data-step="3"] .jk-pick .demo-roman{font-size:17px}
+#jk-view-config[data-step="3"] .jk-pick .demo-modern{font-size:15px}
+#jk-view-config[data-step="3"] .jk-pick .demo-script{font-size:19px}
+#jk-view-config[data-step="3"] .jk-pick small{font-size:10.5px;line-height:1.05}
 
 /* doplnky (multi) */
 .jk-addon{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:12px 13px;cursor:pointer;
@@ -209,7 +224,8 @@
 .jk-addon-tx small{display:block;font-size:12px;color:var(--jk-muted);margin-top:2px;line-height:1.4}
 
 /* tlačidlá */
-.jk-actions{display:flex;gap:10px;margin-top:14px}
+.jk-actions{position:sticky;bottom:0;z-index:8;display:flex;gap:10px;margin:12px -16px -16px;padding:10px 16px 14px;
+  background:linear-gradient(180deg,rgba(251,247,240,0),var(--jk-cream) 28%,var(--jk-cream));border-top:1px solid rgba(231,220,201,.75)}
 .jk-btn{flex:1;border:none;border-radius:13px;padding:14px;font:700 14.5px var(--jk-ui);cursor:pointer;transition:all .2s;
   background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;box-shadow:0 10px 22px rgba(78,57,36,.22)}
 .jk-btn:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 14px 28px rgba(78,57,36,.3)}
@@ -426,18 +442,24 @@ var DATA = {
 // pozícia živého nápisu na fotke (center x%, center y%, font cqw, max-šírka cqw)
 // Jedna poloha platí pre tvar + veľkosť, aby farba kameňa neposúvala nápis mimo stredu.
 var POS = {
-  'single-rect':{x:50,y:27,fs:5.0,w:32},
-  'single-arch':{x:50,y:28,fs:4.9,w:31},
-  'single-book':{x:50,y:27,fs:4.1,w:24},
-  'double-rect':{x:50,y:26.5,fs:4.3,w:28},
-  'double-arch':{x:50,y:26.5,fs:4.2,w:27},
-  'double-book':{x:50,y:26.5,fs:3.9,w:24},
-  'single-book-black':{x:50,y:16.5,fs:3.9,w:23},
-  'single-book-gray':{x:50,y:21.5,fs:3.9,w:23},
-  'single-book-red':{x:50,y:22.5,fs:4.0,w:24},
-  'double-book-black':{x:50,y:23.5,fs:3.8,w:23},
-  'double-book-gray':{x:50,y:27,fs:3.8,w:23},
-  'double-book-red':{x:50,y:23.5,fs:3.8,w:23}
+  'single-rect-black':{x:50,y:27.2,fs:4.6,w:29},
+  'single-rect-gray':{x:50,y:27.4,fs:4.5,w:28},
+  'single-rect-red':{x:50,y:27.1,fs:4.5,w:28},
+  'single-arch-black':{x:50,y:28.4,fs:4.45,w:28},
+  'single-arch-gray':{x:50,y:28.4,fs:4.35,w:28},
+  'single-arch-red':{x:50,y:28.4,fs:4.35,w:28},
+  'single-book-black':{x:49.5,y:20.2,fs:3.45,w:21},
+  'single-book-gray':{x:50,y:22.0,fs:3.45,w:21},
+  'single-book-red':{x:50.5,y:23.0,fs:3.45,w:21},
+  'double-rect-black':{x:50,y:27.1,fs:3.85,w:25},
+  'double-rect-gray':{x:50,y:27.2,fs:3.75,w:24},
+  'double-rect-red':{x:50,y:27.0,fs:3.75,w:24},
+  'double-arch-black':{x:50,y:27.5,fs:3.75,w:24},
+  'double-arch-gray':{x:50,y:27.5,fs:3.65,w:23},
+  'double-arch-red':{x:50,y:27.5,fs:3.65,w:23},
+  'double-book-black':{x:50,y:25.0,fs:3.45,w:21},
+  'double-book-gray':{x:50,y:27.0,fs:3.35,w:21},
+  'double-book-red':{x:50,y:25.2,fs:3.35,w:21}
 };
 
 var STEPS = ['Tvar','Veľkosť','Kameň','Nápis','Doplnky','Miesto','Dopyt'];
@@ -475,9 +497,14 @@ function inscOverlay(){
   var nm = (S.inscription||'').trim(); if(f.up) nm = nm.toUpperCase();
   var dt = (S.dates||'').trim();
   if(!nm && !dt) return '';
+  var scale = nm.length>30 ? .68 : nm.length>24 ? .76 : nm.length>18 ? .86 : 1;
+  if(S.shape==='book') scale *= .92;
+  if(S.size==='double') scale *= .95;
+  if(S.font==='script') scale *= .9;
+  var fs = Math.max(2.45, p.fs*scale);
   return '<div class="jk-insc" style="left:'+p.x+'%;top:'+p.y+'%;max-width:'+p.w+'cqw;font-family:'+f.css+';color:'+col+'">'
-    +(nm?'<span class="nm" style="font-size:'+p.fs+'cqw">'+esc(nm)+'</span>':'')
-    +(dt?'<span class="dt" style="font-size:'+(p.fs*0.62)+'cqw">'+esc(dt)+'</span>':'')
+    +(nm?'<span class="nm" style="font-size:'+fs+'cqw">'+esc(nm)+'</span>':'')
+    +(dt?'<span class="dt" style="font-size:'+(fs*0.62)+'cqw">'+esc(dt)+'</span>':'')
     +'</div>';
 }
 function capChip(){ return '<div class="jk-cap-chip">'+esc(DATA.shapes[S.shape].title+' · '+DATA.sizes[S.size].title+' · '+DATA.stones[S.stone].title)+'</div>'; }
@@ -531,6 +558,7 @@ function acts(back){
 }
 function renderStep(){
   renderProgress();
+  $('jk-view-config').setAttribute('data-step', String(S.step));
   renderStage();
   var html='';
 
@@ -558,8 +586,6 @@ function renderStep(){
       +'<div class="jk-label">Štýl písma</div>'
       +'<div class="jk-chips">'+Object.keys(DATA.fonts).map(function(k){var it=DATA.fonts[k];
           return '<button class="jk-pick'+(S.font===k?' sel':'')+'" onclick="jkPick(\'font\',\''+k+'\')"><span class="demo-'+k+'">Aa</span><small>'+it.title+'</small></button>';}).join('')+'</div>'
-      +'<div class="jk-label">Epitaf / venovanie (nepovinné)</div>'
-      +'<textarea class="jk-textarea" id="f-epi" placeholder="napr. S láskou spomíname…" oninput="jkLive()">'+esc(S.epitaph)+'</textarea>'
       +acts(true);
   }
   else if(S.step===4){
@@ -630,8 +656,9 @@ window.jkPick=function(kind,key){
   renderStep();
 };
 window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(); };
-window.jkNext=function(){ syncInscription(); jkSyncPlace(); jkSyncContact(); if(S.step<STEPS.length-1){S.step++;renderStep();} };
-window.jkBack=function(){ syncInscription(); if(S.step>0){S.step--;renderStep();} };
+function resetStepScroll(){ var st=$('jk-step'); if(st) st.scrollTop=0; }
+window.jkNext=function(){ syncInscription(); jkSyncPlace(); jkSyncContact(); if(S.step<STEPS.length-1){S.step++;renderStep();resetStepScroll();} };
+window.jkBack=function(){ syncInscription(); if(S.step>0){S.step--;renderStep();resetStepScroll();} };
 window.jkLive=function(){ syncInscription(); var ov=$('jk-stage').querySelector('.jk-photo'); if(ov){ ov.innerHTML = ov.querySelector('img').outerHTML + inscOverlay(); } };
 function syncInscription(){ var i=$('f-insc'),d=$('f-dates'),e=$('f-epi'); if(i)S.inscription=i.value; if(d)S.dates=d.value; if(e)S.epitaph=e.value; }
 window.jkSyncPlace=function(){ var c=$('f-city'),cm=$('f-cem'),r=$('f-region'); if(c)S.city=c.value; if(cm)S.cemetery=cm.value; if(r)S.region=r.value; };
