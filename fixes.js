@@ -1,13 +1,12 @@
-// Final UX fixes: fast photo switching, centered inscription, chat switch.
+// hard override v4: cache-safe photo framing, scrollable type step, centered inscription.
 (function(){
   const main = document.getElementById('mainImg');
   const text = document.getElementById('insc');
   const cfg = document.getElementById('configView');
-  const chat = document.getElementById('chatView');
   if(!main || !text || !cfg || typeof st === 'undefined') return;
 
   function esc(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]});}
-  function graveSrc(){return `assets/images/graves/${st.size}-${st.shape}-${st.stone}.webp`;}
+  function graveSrc(){return `assets/images/graves/${st.size}-${st.shape}-${st.stone}.webp?v=assets4`;}
   function splitName(name){
     name = (name || 'Rodina Nováková').replace(/\s+/g,' ').trim();
     const words = name.split(' ');
@@ -23,10 +22,9 @@
   }
   function calcFont(name){
     const l = (name || '').length;
-    const base = st.size === 'double' ? 15.5 : 13.8;
+    const base = st.size === 'double' ? 15.4 : 13.6;
     const penalty = Math.max(0, l - 15) * .32;
-    const fontBoost = st.font === 'script' ? .8 : 0;
-    return Math.max(8.2, Math.min(16, base - penalty + fontBoost));
+    return Math.max(8.2, Math.min(15.8, base - penalty));
   }
   function pos(){
     const key = `${st.size}-${st.shape}`;
@@ -40,15 +38,23 @@
     };
     return map[key] || [50,22,28,128];
   }
+  function forceImageCss(){
+    main.style.objectFit = 'contain';
+    main.style.objectPosition = 'center center';
+    main.style.transform = 'none';
+    main.style.background = 'linear-gradient(180deg,#f5eee4,#eadfce)';
+  }
   function applyPhotoFast(next){
+    forceImageCss();
     if(main.getAttribute('src') === next) return;
     main.classList.add('is-changing');
     const img = new Image();
     img.onload = function(){
       main.src = next;
+      forceImageCss();
       requestAnimationFrame(function(){ main.classList.remove('is-changing'); });
     };
-    img.onerror = function(){ main.src = next; main.classList.remove('is-changing'); };
+    img.onerror = function(){ main.src = next; forceImageCss(); main.classList.remove('is-changing'); };
     img.src = next;
   }
   updatePhoto = window.updatePhoto = function(){
@@ -62,7 +68,7 @@
     text.style.maxWidth = p[3] + 'px';
     text.style.fontSize = calcFont(name) + 'px';
     text.style.color = ({gold:'#e4c15f',silver:'#f0f2f4',white:'#fff8ee'}[st.letter] || '#e4c15f');
-    text.style.fontFamily = st.font === 'modern' ? 'Inter, system-ui, sans-serif' : (st.font === 'script' ? 'Georgia, serif' : 'Georgia, serif');
+    text.style.fontFamily = st.font === 'modern' ? 'Inter, system-ui, sans-serif' : 'Georgia, serif';
     text.style.letterSpacing = st.font === 'modern' ? '.005em' : '.025em';
     text.innerHTML = '<span>' + splitName(name) + '</span><small>' + esc(st.dates || '† 1948 – 2024') + '</small>';
   };
@@ -78,6 +84,8 @@
     baseRender();
     cfg.dataset.step = String(st.step);
     updatePhoto();
+    const stepEl = document.getElementById('step');
+    if(stepEl){ stepEl.style.overflowY = 'auto'; stepEl.style.minHeight = '0'; }
     if(st.step === 3){
       const h2 = document.querySelector('#step h2');
       if(h2) h2.textContent = 'Vyberte písmo na pomník';
@@ -86,7 +94,6 @@
     }
   };
 
-  const baseShowChat = window.showChat || showChat;
   showChat = window.showChat = function(){
     chatView.classList.add('active');
     configView.classList.remove('active');
@@ -101,7 +108,7 @@
       ['rect','arch','book'].forEach(function(shape){
         ['black','gray','red'].forEach(function(stone){
           const i = new Image();
-          i.src = `assets/images/graves/${size}-${shape}-${stone}.webp`;
+          i.src = `assets/images/graves/${size}-${shape}-${stone}.webp?v=assets4`;
         });
       });
     });
