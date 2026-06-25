@@ -144,7 +144,10 @@ button,input,textarea{font:inherit}
 }
 .panel-head small{display:block;color:rgba(253,246,234,.72);font-weight:700;font-size:12px;margin-top:3px}
 .panel-head h2{margin:0;font:700 22px var(--engrave);letter-spacing:.03em}
-.mobile-stepbar{display:none}
+.mobile-stepbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(255,253,248,.76)}
+.mobile-stepbar span{flex:1;text-align:center;font-weight:900;color:var(--stone-dk);font-size:13px}
+.mobile-stepbar button{border:1px solid var(--line);background:#fffdf8;color:var(--stone-dk);border-radius:12px;padding:9px 11px;font-weight:900;cursor:pointer}
+.mobile-stepbar button:disabled{opacity:.45;cursor:default}
 .panel-body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px}
 .panel-body::-webkit-scrollbar{width:7px}.panel-body::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
 .section{
@@ -153,7 +156,9 @@ button,input,textarea{font:inherit}
   border-radius:18px;
   padding:14px;
   margin-bottom:12px;
+  display:none;
 }
+.section.active{display:block}
 .section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
 .section-title b{font-size:14px;color:var(--ink)}
 .section-title span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
@@ -210,12 +215,21 @@ button,input,textarea{font:inherit}
 }
 .dot.sel{box-shadow:0 0 0 3px rgba(110,81,53,.28)}
 .addons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.addon{justify-content:flex-start;min-height:58px}
+.addon{justify-content:flex-start;min-height:68px;background:linear-gradient(180deg,#fffdf8,#fbf3e8)}
+.addon i{background:#efe0ca}
 .summary{
   background:#fffdf8;border:1px solid var(--line);border-radius:18px;padding:13px;
   font-size:13px;line-height:1.75;color:#5f5145;
 }
 .summary strong{color:var(--ink)}
+.summary-grid{display:grid;gap:8px}
+.summary-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.summary-row:last-child{border-bottom:0}
+.summary-row span{color:var(--muted);font-weight:700}
+.summary-row strong{text-align:right}
+.send-status{display:none;margin-top:10px;padding:11px 12px;border-radius:13px;font-size:13px;font-weight:800;text-align:center}
+.send-status.ok{display:block;background:#eaf4ec;color:#3E7C4F;border:1px solid #cde5d2}
+.send-status.err{display:block;background:#fff0e6;color:#9b4228;border:1px solid #efd3c2}
 .panel-foot{
   flex:0 0 auto;padding:14px 16px 16px;border-top:1px solid var(--line);
   background:linear-gradient(180deg,rgba(251,247,240,.86),var(--cream));
@@ -261,6 +275,7 @@ button,input,textarea{font:inherit}
 .assistant-input{flex:0 0 auto;display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
 .assistant-input input{flex:1;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);padding:12px;outline:none}
 .assistant-input button{border:0;border-radius:13px;background:var(--stone);color:#fff;font-weight:900;padding:0 15px;cursor:pointer}
+.config-launcher{display:none}
 @media(max-width:980px){
   body{overflow:hidden}
   .page{height:100dvh;min-height:100dvh;overflow:hidden}
@@ -271,21 +286,25 @@ button,input,textarea{font:inherit}
   .shell{position:relative;display:block;padding:8px;height:calc(100dvh - 68px);overflow:hidden}
   .viewer-card{height:100%;min-height:0;border-radius:22px}
   .panel{
-    position:absolute;left:8px;right:8px;bottom:8px;z-index:14;height:min(47dvh,390px);
+    position:absolute;left:8px;right:8px;bottom:8px;z-index:14;height:min(52dvh,420px);
     border-radius:24px;box-shadow:0 20px 60px rgba(42,33,27,.28);
   }
   .panel-head{padding:13px 15px 12px}.panel-head h2{font-size:20px}.panel-head small{font-size:11px}
-  .mobile-stepbar{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);background:rgba(255,253,248,.76)}
-  .mobile-stepbar span{flex:1;text-align:center;font-weight:900;color:var(--stone-dk);font-size:13px}
-  .mobile-stepbar button{border:1px solid var(--line);background:#fffdf8;color:var(--stone-dk);border-radius:12px;padding:9px 11px;font-weight:900}
   .panel-body{padding:12px;overflow:auto}
-  .panel-body .section{display:none;margin-bottom:0;padding:12px;border-radius:16px}
-  .panel-body .section.mobile-active{display:block}
+  .panel-body .section{margin-bottom:0;padding:12px;border-radius:16px}
+  .panel.collapsed{display:none}
+  .config-launcher{
+    position:absolute;left:18px;right:18px;bottom:18px;z-index:16;border:0;border-radius:17px;
+    padding:15px 16px;background:linear-gradient(135deg,var(--stone),var(--stone-dk));
+    color:#fdf6ea;font-weight:900;box-shadow:0 16px 40px rgba(42,33,27,.3);cursor:pointer;
+    align-items:center;justify-content:center;gap:8px;
+  }
+  .config-launcher.show{display:flex}
   .panel-foot{padding:10px 12px 12px}
   .note{display:none}
-  .choice{min-height:58px;padding:10px;border-radius:14px}
-  .choice i{width:31px;height:31px}
-  .choice b{font-size:12.8px}.choice small{font-size:10.6px}
+  .choice{min-height:45px;padding:7px 8px;border-radius:13px;gap:7px}
+  .choice i{width:26px;height:26px;border-radius:10px}
+  .choice b{font-size:12.2px}.choice small{font-size:9.8px;line-height:1.1;margin-top:1px}
   .swatches{grid-template-columns:1fr 1fr;gap:8px}.swatch{min-height:70px}
   .addons{grid-template-columns:1fr 1fr}
   .field input,.field textarea{padding:10px 11px;font-size:13px}.field textarea{min-height:56px}
@@ -297,7 +316,7 @@ button,input,textarea{font:inherit}
   .viewer-head{left:12px;top:12px}
   .viewer-title{padding:10px 11px;border-radius:15px}
   .viewer-title h1{font-size:21px}
-  .viewer-tools{right:12px;top:auto;bottom:calc(min(47dvh,390px) + 22px)}
+  .viewer-tools{right:12px;top:auto;bottom:calc(min(52dvh,420px) + 22px)}
   .hint{display:none}
   .scene-strip{display:none}
   .grid.three,.swatches{grid-template-columns:1fr 1fr}
@@ -388,6 +407,15 @@ button,input,textarea{font:inherit}
           <div class="section-title"><b>Aktualny vyber</b><span>sumar</span></div>
           <div class="summary" id="summary"></div>
         </section>
+
+        <section class="section">
+          <div class="section-title"><b>Kontakt</b><span>povinne</span></div>
+          <div class="field"><label>Meno a priezvisko</label><input id="clientName" placeholder="Meno a priezvisko" autocomplete="name"></div>
+          <div class="field"><label>Telefon</label><input id="clientPhone" placeholder="+421 ..." autocomplete="tel"></div>
+          <div class="field"><label>E-mail</label><input id="clientEmail" placeholder="email@example.sk" autocomplete="email"></div>
+          <div class="field"><label>Mesto / cintorin</label><input id="clientPlace" placeholder="napr. Nitra, mestsky cintorin"></div>
+          <div class="send-status" id="sendStatus"></div>
+        </section>
       </div>
       <div class="panel-foot">
         <button class="cta" type="button" id="sendInquiry">Odoslat nezavazny dopyt</button>
@@ -396,6 +424,7 @@ button,input,textarea{font:inherit}
     </aside>
   </main>
 
+  <button class="config-launcher" type="button" id="configLauncher">Upravit 3D navrh</button>
   <button class="assistant-launcher" type="button" id="assistantLauncher"><i></i> AI asistent</button>
   <section class="assistant-panel" id="assistantPanel" aria-label="AI asistent">
     <div class="assistant-head">
@@ -406,6 +435,7 @@ button,input,textarea{font:inherit}
       <div class="msg bot">Dobry den. Pomozem vybrat tvar, kamen, napis alebo doplnky. Mozete sa pytat priamo podla aktualneho 3D navrhu.</div>
     </div>
     <div class="assistant-quick">
+      <button type="button" data-action="config">Otvorit konfigurator</button>
       <button type="button" data-q="aky material odporucas">Aky material?</button>
       <button type="button" data-q="ako upravit napis">Ako napis?</button>
       <button type="button" data-q="co zvolit na dvojhrob">Dvojhrob</button>
@@ -461,16 +491,16 @@ button,input,textarea{font:inherit}
   };
   const ADDONS = {
     cross:{title:"Kriz",sub:"na celnej doske",icon:"+"},
-    vase:{title:"Vaza",sub:"kamenny doplnok",icon:"V"},
+    vase:{title:"Kamena vaza",sub:"na pravej strane",icon:"V"},
     lamp:{title:"Kahanec",sub:"svietnik pri doske",icon:"L"},
     photo:{title:"Fotokeramika",sub:"ovalna fotografia",icon:"F"},
-    flowers:{title:"Kvety",sub:"jemna dekoracia",icon:"K"},
-    bench:{title:"Lavicka",sub:"jednoduchy doplnok",icon:"B"}
+    bench:{title:"Lavicka",sub:"jednoduchy doplnok",icon:"B"},
+    edge:{title:"Bronzova linka",sub:"jemny ozdobny detail",icon:"D"}
   };
   const state = {
     shape:"arch", size:"single", base:"full", material:"gray",
     letter:"gold", font:"classic", name:"Rodina Novakova", dates:"1948 - 2024", epitaph:"S laskou spominame",
-    addons:{cross:true,flowers:true}
+    addons:{cross:true}
   };
   const $ = id => document.getElementById(id);
   const viewport = $("viewport");
@@ -480,6 +510,8 @@ button,input,textarea{font:inherit}
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   viewport.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -489,13 +521,18 @@ button,input,textarea{font:inherit}
   const env = makeEnvironment();
   scene.environment = env;
   scene.add(new THREE.HemisphereLight(0xfffbf0,0x1a1714,.7));
-  const key = new THREE.DirectionalLight(0xffffff,1.75); key.position.set(4,7,5); scene.add(key);
+  const key = new THREE.DirectionalLight(0xffffff,1.75); key.position.set(4,7,5); key.castShadow = true; key.shadow.mapSize.set(2048,2048); scene.add(key);
   const fill = new THREE.DirectionalLight(0xffe0b0,.62); fill.position.set(-4,3,1); scene.add(fill);
   const rim = new THREE.DirectionalLight(0xdce7ff,.95); rim.position.set(0,4,-6); scene.add(rim);
 
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(44,44), new THREE.MeshStandardMaterial({color:0x17130f,roughness:.92}));
   floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
   scene.add(floor);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(44,9), new THREE.MeshStandardMaterial({color:0x211a14,roughness:.9}));
+  wall.position.set(0,4.1,-2.05);
+  wall.receiveShadow = true;
+  scene.add(wall);
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.4,5.2), new THREE.MeshBasicMaterial({map:shadowTexture(),transparent:true,depthWrite:false}));
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.set(0,.004,.45);
@@ -506,8 +543,6 @@ button,input,textarea{font:inherit}
   let stoneMat = makeStoneMaterial(state.material);
   const darkMat = new THREE.MeshStandardMaterial({color:0x0e0b08,roughness:.38,metalness:.18,envMap:env,envMapIntensity:.7});
   const bronzeMat = new THREE.MeshStandardMaterial({color:0x8b632d,roughness:.3,metalness:.55,envMap:env,envMapIntensity:1});
-  const leafMat = new THREE.MeshStandardMaterial({color:0x405b32,roughness:.8});
-  const flowerMat = new THREE.MeshStandardMaterial({color:0xf4eee3,roughness:.75});
   const gravelMat = new THREE.MeshStandardMaterial({map:gravelTexture(),roughness:.95});
 
   const textCanvas = document.createElement("canvas");
@@ -687,6 +722,7 @@ button,input,textarea{font:inherit}
 
     buildHead(size.head, state.shape, pedZ);
     buildAccessories(W,L,centerZ,pedZ);
+    monument.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
     drawInscription();
     updateCameraPose(false);
   }
@@ -795,19 +831,6 @@ button,input,textarea{font:inherit}
       lamp.position.set(-W*.32,.34,centerZ+.82);
       monument.add(lamp);
     }
-    if(state.addons.flowers){
-      const flowers = new THREE.Group();
-      for(let i=0;i<18;i++){
-        const stem = new THREE.Mesh(new THREE.CylinderGeometry(.006,.009,.18,8),leafMat);
-        stem.rotation.x = Math.random()*.9-.45;
-        stem.rotation.z = Math.random()*.7-.35;
-        stem.position.set((Math.random()-.5)*.34,.39,(Math.random()-.5)*.18+centerZ+.22);
-        const bloom = new THREE.Mesh(new THREE.SphereGeometry(.028,12,8),flowerMat);
-        bloom.position.set(stem.position.x,stem.position.y+.09,stem.position.z);
-        flowers.add(stem,bloom);
-      }
-      monument.add(flowers);
-    }
     if(state.addons.bench){
       const bench = new THREE.Group();
       const seat = roundedBox(.46,.045,.18,stoneMat);
@@ -817,6 +840,17 @@ button,input,textarea{font:inherit}
       bench.add(seat,l1,l2);
       bench.position.set(0,.02,centerZ+L/2+.28);
       monument.add(bench);
+    }
+    if(state.addons.edge){
+      const line = new THREE.Group();
+      const top = roundedBox(W*.72,.018,.022,bronzeMat);
+      const left = roundedBox(.018,.22,.022,bronzeMat);
+      const right = roundedBox(.018,.22,.022,bronzeMat);
+      top.position.set(0,headBaseY+.62,pedZ+.132);
+      left.position.set(-W*.22,headBaseY+.51,pedZ+.132);
+      right.position.set(W*.22,headBaseY+.51,pedZ+.132);
+      line.add(top,left,right);
+      monument.add(line);
     }
   }
   function drawInscription(){
@@ -902,16 +936,19 @@ button,input,textarea{font:inherit}
       camDist = p.dist; yaw = p.yaw; pitch = p.pitch; target.copy(p.target);
     }
   }
+  let wizardStepIndex = 0;
   function renderSummary(){
     const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title);
     $("summary").innerHTML =
-      `Tvar: <strong>${SHAPES[state.shape].title}</strong><br>`+
-      `Velkost: <strong>${SIZES[state.size].title}</strong><br>`+
-      `Doska: <strong>${BASES[state.base].title}</strong><br>`+
-      `Material: <strong>${MATERIALS[state.material].title}</strong><br>`+
-      `Napis: <strong>${state.name || "-"}</strong> / ${state.dates || "-"}<br>`+
-      `Pismo: <strong>${FONTS[state.font].title}</strong>, farba <strong>${LETTERS[state.letter].title}</strong><br>`+
-      `Doplnky: <strong>${addonNames.length ? addonNames.join(", ") : "-"}</strong>`;
+      `<div class="summary-grid">`+
+      `<div class="summary-row"><span>Tvar</span><strong>${SHAPES[state.shape].title}</strong></div>`+
+      `<div class="summary-row"><span>Velkost</span><strong>${SIZES[state.size].title}</strong></div>`+
+      `<div class="summary-row"><span>Doska</span><strong>${BASES[state.base].title}</strong></div>`+
+      `<div class="summary-row"><span>Material</span><strong>${MATERIALS[state.material].title}</strong></div>`+
+      `<div class="summary-row"><span>Napis</span><strong>${state.name || "-"} / ${state.dates || "-"}</strong></div>`+
+      `<div class="summary-row"><span>Pismo</span><strong>${FONTS[state.font].title}, ${LETTERS[state.letter].title}</strong></div>`+
+      `<div class="summary-row"><span>Doplnky</span><strong>${addonNames.length ? addonNames.join(", ") : "-"}</strong></div>`+
+      `</div>`;
   }
   function optionButton(group,key,item,active,handler){
     const b = document.createElement("button");
@@ -986,30 +1023,45 @@ button,input,textarea{font:inherit}
       addonEl.appendChild(b);
     });
   }
-  let mobileStepIndex = 0;
-  function initMobileSteps(){
+  function initWizardSteps(){
     const sections = Array.from(document.querySelectorAll(".panel-body .section"));
     const prev = $("mobilePrev");
     const next = $("mobileNext");
     const title = $("mobileStepTitle");
     if(!sections.length || !prev || !next || !title) return;
     function setStep(index){
-      mobileStepIndex = Math.max(0, Math.min(sections.length - 1, index));
-      sections.forEach((section,i) => section.classList.toggle("mobile-active", i === mobileStepIndex));
-      const label = sections[mobileStepIndex].querySelector(".section-title b");
-      title.textContent = label ? label.textContent : "Konfigurator";
-      prev.disabled = mobileStepIndex === 0;
-      next.textContent = mobileStepIndex === sections.length - 1 ? "Hotovo" : "Dalej";
+      wizardStepIndex = Math.max(0, Math.min(sections.length - 1, index));
+      sections.forEach((section,i) => section.classList.toggle("active", i === wizardStepIndex));
+      const label = sections[wizardStepIndex].querySelector(".section-title b");
+      title.textContent = (wizardStepIndex + 1) + " / " + sections.length + " - " + (label ? label.textContent : "Konfigurator");
+      prev.disabled = wizardStepIndex === 0;
+      next.textContent = wizardStepIndex === sections.length - 1 ? "Nahlad" : "Dalej";
+      $("sendInquiry").textContent = wizardStepIndex === sections.length - 1 ? "Odoslat nezavazny dopyt" : "Pokracovat";
       const body = document.querySelector(".panel-body");
       if(body) body.scrollTop = 0;
-      if(mobileStepIndex === 4) goPose("text");
+      if(wizardStepIndex === 4) goPose("text");
       else goPose("overview");
     }
-    prev.addEventListener("click", () => setStep(mobileStepIndex - 1));
+    window.openConfiguratorStep = function(index){
+      const panel = document.querySelector(".panel");
+      const launcher = $("configLauncher");
+      if(panel) panel.classList.remove("collapsed");
+      if(launcher) launcher.classList.remove("show");
+      setStep(typeof index === "number" ? index : wizardStepIndex);
+    };
+    window.collapseConfigurator = function(){
+      const panel = document.querySelector(".panel");
+      const launcher = $("configLauncher");
+      if(panel) panel.classList.add("collapsed");
+      if(launcher) launcher.classList.add("show");
+      goPose("overview");
+    };
+    prev.addEventListener("click", () => setStep(wizardStepIndex - 1));
     next.addEventListener("click", () => {
-      if(mobileStepIndex < sections.length - 1) setStep(mobileStepIndex + 1);
-      else goPose("overview");
+      if(wizardStepIndex < sections.length - 1) setStep(wizardStepIndex + 1);
+      else window.collapseConfigurator();
     });
+    $("configLauncher").addEventListener("click", () => window.openConfiguratorStep(wizardStepIndex));
     setStep(0);
   }
   function initAssistant(){
@@ -1036,6 +1088,9 @@ button,input,textarea{font:inherit}
     }
     function answer(q){
       const text = q.toLowerCase();
+      if(text.includes("konfigurator") || text.includes("konfigurat")){
+        return "Konfigurator som otvoril. Postupujte po krokoch: tvar, velkost, doska, material, napis, doplnky, sumar a kontakt.";
+      }
       if(text.includes("material") || text.includes("kamen") || text.includes("zula")){
         return `Aktualne je vybrany material ${MATERIALS[state.material].title}. Na silny kontrast napisu je dobra cierna alebo Blue pearl, pokojnejsie posobi siva, teplejsie cervenohneda a bronzovy kamen.`;
       }
@@ -1062,7 +1117,16 @@ button,input,textarea{font:inherit}
     send.addEventListener("click", () => sendQuestion(input.value));
     input.addEventListener("keydown", e => { if(e.key === "Enter") sendQuestion(input.value); });
     document.querySelectorAll(".assistant-quick button").forEach(btn => {
-      btn.addEventListener("click", () => sendQuestion(btn.dataset.q || btn.textContent));
+      btn.addEventListener("click", () => {
+        if(btn.dataset.action === "config"){
+          addMsg("me", "Otvorit konfigurator");
+          addMsg("bot", "Otvaram 3D konfigurator. Vyberajte postupne po krokoch a potom vyplnte kontakt.");
+          if(window.openConfiguratorStep) window.openConfiguratorStep(0);
+          toggle(false);
+          return;
+        }
+        sendQuestion(btn.dataset.q || btn.textContent);
+      });
     });
   }
   function swatchDataUrl(item){
@@ -1086,20 +1150,39 @@ button,input,textarea{font:inherit}
     $("focusText").addEventListener("click",()=>goPose("text"));
     $("resetView").addEventListener("click",()=>goPose("overview"));
     $("sendInquiry").addEventListener("click",() => {
+      const sections = Array.from(document.querySelectorAll(".panel-body .section"));
+      if(wizardStepIndex < sections.length - 1){
+        $("mobileNext").click();
+        return;
+      }
+      const status = $("sendStatus");
+      const name = $("clientName").value.trim();
+      const phone = $("clientPhone").value.trim();
+      const email = $("clientEmail").value.trim();
+      const place = $("clientPlace").value.trim();
+      if(!name || !phone || !email || !place){
+        status.className = "send-status err";
+        status.textContent = "Vyplnte prosim meno, telefon, e-mail aj miesto realizacie.";
+        return;
+      }
       const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "-";
-      const body = [
-        "Dobry den, posielam dopyt z 3D konfiguratora.",
-        "",
-        "Tvar: " + SHAPES[state.shape].title,
-        "Velkost: " + SIZES[state.size].title,
-        "Doska: " + BASES[state.base].title,
-        "Material: " + MATERIALS[state.material].title,
-        "Napis: " + state.name + " / " + state.dates,
-        "Venovanie: " + state.epitaph,
-        "Pismo: " + FONTS[state.font].title + ", " + LETTERS[state.letter].title,
-        "Doplnky: " + addonNames
-      ].join("\n");
-      window.location.href = "mailto:info@kamenarstvo-jantar.sk?subject=" + encodeURIComponent("3D navrh pomnika") + "&body=" + encodeURIComponent(body);
+      status.className = "send-status ok";
+      status.textContent = "Dopyt bol pripravene odoslany. Kamenarstvo Jantar by klienta kontaktovalo telefonicky.";
+      console.info("Fake 3D inquiry", {
+        client:{name,phone,email,place},
+        design:{
+          shape:SHAPES[state.shape].title,
+          size:SIZES[state.size].title,
+          base:BASES[state.base].title,
+          material:MATERIALS[state.material].title,
+          inscription:state.name,
+          dates:state.dates,
+          epitaph:state.epitaph,
+          font:FONTS[state.font].title,
+          letter:LETTERS[state.letter].title,
+          addons:addonNames
+        }
+      });
     });
   }
   function attachViewportControls(){
@@ -1134,7 +1217,7 @@ button,input,textarea{font:inherit}
   }
   window.addEventListener("resize",resize);
   renderControls();
-  initMobileSteps();
+  initWizardSteps();
   initAssistant();
   bindInputs();
   attachViewportControls();
