@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Kamenárstvo Jantár — konfigurátor pomníka a AI asistent</title>
+<title>Kamenárstvo Jantár — konfigurátor pomníka a poradca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -103,7 +103,9 @@
 .jk-mode{flex:1;border:none;background:transparent;color:rgba(253,246,234,.72);cursor:pointer;font:700 13px var(--jk-ui);
   padding:9px 8px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .25s}
 .jk-mode svg{width:16px;height:16px;fill:currentColor}
-.jk-mode.active{background:var(--jk-cream);color:var(--jk-stone-dk);box-shadow:0 4px 12px rgba(0,0,0,.22)}
+.jk-mode:not(.active):hover{background:rgba(255,247,232,.12);color:rgba(253,246,234,.95)}
+.jk-mode.active{background:var(--jk-cream);color:var(--jk-stone-dk);box-shadow:0 4px 12px rgba(0,0,0,.22);transform:translateY(-.5px)}
+.jk-mode.active svg{fill:var(--jk-bronze)}
 
 /* ===================== TELO ===================== */
 .jk-body{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative}
@@ -158,10 +160,10 @@
 .jk-pcard.sel{border-color:var(--jk-stone);box-shadow:0 0 0 2px rgba(110,81,53,.16),0 12px 24px rgba(110,81,53,.14)}
 .jk-pcard.sel::after{content:"✓";position:absolute;top:7px;right:8px;width:21px;height:21px;border-radius:50%;
   background:var(--jk-stone);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.jk-pcard .ph{width:100%;aspect-ratio:1/1;object-fit:cover;background:#e9e2d4}
-.jk-pcard .lbl{padding:8px 9px}
-.jk-pcard .lbl b{display:block;font:700 13px var(--jk-ui);color:var(--jk-ink);line-height:1.15}
-.jk-pcard .lbl small{display:block;font-size:11px;color:var(--jk-muted);margin-top:1px;line-height:1.3}
+.jk-pcard .ph{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center;background:#0c0c0d;filter:brightness(1.08) contrast(1.02)}
+.jk-pcard .lbl{padding:8px 8px 9px;text-align:center}
+.jk-pcard .lbl b{display:block;font:700 12.5px var(--jk-ui);color:var(--jk-ink);line-height:1.15}
+.jk-pcard .lbl small{display:block;font-size:10.5px;color:var(--jk-muted);margin-top:2px;line-height:1.3}
 
 /* nápis a štýl */
 .jk-label{font:700 12px var(--jk-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--jk-stone);margin:13px 0 7px}
@@ -339,7 +341,7 @@
   <div class="jk-demo-card">
     <div class="eyebrow">Kamenárstvo Jantár</div>
     <h1>Dôstojný pomník<br>na pár klikov</h1>
-    <p>Online konfigurátor pomníka s AI asistentom. Zákazník si v pokoji navrhne tvar, kameň, nápis a miesto realizácie — a požiada o nezáväznú ponuku.</p>
+    <p>Online konfigurátor pomníka s digitálnym poradcom. Zákazník si v pokoji navrhne tvar, kameň, nápis a miesto realizácie — a požiada o nezáväznú ponuku.</p>
     <div class="hint">Vpravo dole kliknite na <b>bronzové tlačidlo</b> a otvorí sa konfigurátor.</div>
   </div>
 </div>
@@ -349,7 +351,7 @@
   <div id="jk-teaser">
     <button class="tx" aria-label="Zavrieť" onclick="jkCloseTeaser(event)">✕</button>
     <b>Navrhnite pomník online</b>
-    <span>Tvar, kameň, nápis a AI asistent — nezáväzne.</span>
+    <span>Tvar, kameň, nápis a poradca — nezáväzne.</span>
   </div>
 
   <button id="jk-launcher" aria-label="Otvoriť konfigurátor pomníka" onclick="jkToggle()">
@@ -363,7 +365,7 @@
         <div class="jk-av" id="jk-head-av"></div>
         <div class="jk-head-txt">
           <b>Kamenárstvo Jantár</b>
-          <span><i class="jk-live"></i> Konfigurátor &amp; AI asistent</span>
+          <span><i class="jk-live"></i> Konfigurátor &amp; poradca</span>
         </div>
         <div class="jk-hbtns">
           <button class="jk-hbtn" aria-label="Začať odznova" onclick="jkReset()" title="Začať odznova">
@@ -379,7 +381,7 @@
           <svg viewBox="0 0 24 24"><path d="M6 20h12v-3H6v3Zm2-5h8V8.6a4 4 0 0 0-8 0V15Z"/></svg> Konfigurátor
         </button>
         <button class="jk-mode" id="jk-tab-chat" onclick="jkSetMode('chat')">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V5a1 1 0 0 1 1-1Zm3 6h10V8H7v2Zm0 4h7v-2H7v2Z"/></svg> AI asistent
+          <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V5a1 1 0 0 1 1-1Zm3 6h10V8H7v2Zm0 4h7v-2H7v2Z"/></svg> Poradca
         </button>
       </div>
     </header>
@@ -505,8 +507,9 @@ function letterUrl(stone,letter){ return CONFIG.assetBase+'lettering/'+stone+'-'
 function markSvg(stroke,fill){
   stroke=stroke||'#fdf6ea';
   return '<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">'
-    +'<path d="M9 13C9 9.7 11.7 7 15 7h18c3.3 0 6 2.7 6 6v13c0 3.3-2.7 6-6 6H22l-8 6v-6.3A6 6 0 0 1 9 26V13Z" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.4" stroke-linejoin="round"/>'
-    +'<circle cx="18" cy="20" r="2.1" fill="'+stroke+'"/><circle cx="24" cy="20" r="2.1" fill="'+stroke+'"/><circle cx="30" cy="20" r="2.1" fill="'+stroke+'"/>'
+    +'<rect x="9" y="38" width="30" height="6" rx="2.2" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.2"/>'
+    +'<path d="M15 39V21a9 9 0 0 1 18 0v18Z" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.4" stroke-linejoin="round"/>'
+    +'<path d="M24 24.5v8M20.5 28h7" stroke="'+stroke+'" stroke-width="2" stroke-linecap="round"/>'
     +'</svg>';
 }
 
@@ -539,20 +542,14 @@ function refreshOverlay(){
 }
 
 /* ========================= KARTY ========================= */
-function miniIcon(kind,key){
-  if(kind==='shape') return ({rect:'▮',arch:'⌒',book:'⌁'}[key]||'');
-  if(kind==='size') return ({single:'1',double:'2'}[key]||'');
-  if(kind==='stone') return '<i class="jk-stone-dot '+key+'"></i>';
-  return '';
+function modelCard(kind,key,item,selected,imgUrl){
+  return '<button class="jk-pcard'+(selected?' sel':'')+'" onclick="jkPick(\''+kind+'\',\''+key+'\')">'
+    +'<img class="ph" src="'+imgUrl+'" alt="'+esc(item.title)+'" loading="eager" decoding="async">'
+    +'<span class="lbl"><b>'+esc(item.title)+'</b><small>'+esc(item.sub)+'</small></span></button>';
 }
-function miniCard(kind,key,item,selected){
-  return '<button class="jk-mini'+(selected?' sel':'')+'" onclick="jkPick(\''+kind+'\',\''+key+'\')">'
-    +'<span class="jk-mini-ico">'+miniIcon(kind,key)+'</span>'
-    +'<span class="jk-mini-tx"><b>'+item.title+'</b><small>'+item.sub+'</small></span></button>';
-}
-function shapeCard(key,item){ return miniCard('shape',key,item,S.shape===key); }
-function sizeCard(key,item){ return miniCard('size',key,item,S.size===key); }
-function stoneCard(key,item){ return miniCard('stone',key,item,S.stone===key); }
+function shapeCard(key,item){ return modelCard('shape',key,item,S.shape===key,graveUrl(S.size,key,S.stone)); }
+function sizeCard(key,item){ return modelCard('size',key,item,S.size===key,graveUrl(key,S.shape,S.stone)); }
+function stoneCard(key,item){ return modelCard('stone',key,item,S.stone===key,graveUrl(S.size,S.shape,key)); }
 function letterCard(key,item){
   return '<button class="jk-letter'+(S.letter===key?' sel':'')+'" onclick="jkPick(\'letter\',\''+key+'\')">'
     +'<img class="ph" src="'+letterUrl(S.stone,key)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async">'
@@ -583,17 +580,17 @@ function renderStep(keepScroll){
 
   if(S.step===0){
     html=head('Tvar pomníka','Vyberte základný tvar hlavy pomníka.')
-      +'<div class="jk-mini-grid">'+Object.keys(DATA.shapes).map(function(k){return shapeCard(k,DATA.shapes[k]);}).join('')+'</div>'
+      +'<div class="jk-grid">'+Object.keys(DATA.shapes).map(function(k){return shapeCard(k,DATA.shapes[k]);}).join('')+'</div>'
       +acts(false);
   }
   else if(S.step===1){
     html=head('Veľkosť miesta','Jednohrob alebo dvojhrob podľa hrobového miesta.')
-      +'<div class="jk-mini-grid two">'+Object.keys(DATA.sizes).map(function(k){return sizeCard(k,DATA.sizes[k]);}).join('')+'</div>'
+      +'<div class="jk-grid two">'+Object.keys(DATA.sizes).map(function(k){return sizeCard(k,DATA.sizes[k]);}).join('')+'</div>'
       +acts(true);
   }
   else if(S.step===2){
     html=head('Kameň','Druh a farba žuly určujú kontrast nápisu.')
-      +'<div class="jk-mini-grid">'+Object.keys(DATA.stones).map(function(k){return stoneCard(k,DATA.stones[k]);}).join('')+'</div>'
+      +'<div class="jk-grid">'+Object.keys(DATA.stones).map(function(k){return stoneCard(k,DATA.stones[k]);}).join('')+'</div>'
       +acts(true);
   }
   else if(S.step===3){
@@ -740,7 +737,7 @@ window.jkSubmit=function(){
 };
 
 /* ========================= AI ASISTENT ========================= */
-var FALLBACK_INTRO='Dobrý deň. Som AI asistent Kamenárstva Jantár. Poradím s výberom kameňa, veľkosti, nápisu či údržby — alebo otvorte konfigurátor a navrhnite pomník priamo tu.';
+var FALLBACK_INTRO='Dobrý deň. Som digitálny poradca Kamenárstva Jantár. **Zatiaľ vo mne nebeží AI** — odpovedám podľa pripravených tém (kameň, veľkosť, nápis, údržba, cena, termín). Na konkrétnu ponuku otvorte konfigurátor alebo nám zavolajte.';
 var QUICK=[
   {label:'Otvoriť konfigurátor', cfg:true, action:function(){jkSetMode('config');}},
   {label:'Aký kameň zvoliť?', q:'Aký kameň je najvhodnejší na pomník?'},
@@ -792,7 +789,7 @@ function localAnswer(q){
   if(/demont|stary|starý|obnov|reno/.test(l))
     return 'Áno, vieme demontovať a zlikvidovať starý pomník, obnoviť písmo aj vyrovnať osadenie. Uveďte to prosím v poznámke dopytu alebo v kroku „Miesto realizácie".';
   if(/ahoj|dobr|zdrav|čau|cau/.test(l)) return FALLBACK_INTRO;
-  return 'Rád poradím s kameňom, veľkosťou, nápisom, doplnkami či miestom realizácie. Najjednoduchšie je otvoriť **konfigurátor** a navrhnúť pomník krok po kroku — alebo mi napíšte konkrétnu otázku.';
+  return 'Poznám témy ako kameň, veľkosť, nápis, údržba, cena či termín — **plnohodnotná AI tu zatiaľ nie je**. Najlepšie je otvoriť **konfigurátor** a navrhnúť pomník krok po kroku, prípadne nám zavolať cez tlačidlo dole.';
 }
 
 /* ========================= REŽIM / OTVÁRANIE ========================= */
