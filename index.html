@@ -133,12 +133,13 @@
 .jk-photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--jk-line);background:#e9e2d4;
   box-shadow:0 12px 28px rgba(42,33,27,.15);container-type:inline-size;animation:jkRise .5s cubic-bezier(.22,1,.36,1)}
 @keyframes jkRise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-.jk-photo>img{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center;background:#0c0c0d}
+.jk-photo>img{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center;background:#0c0c0d;
+  filter:brightness(1.06) contrast(1.07) saturate(1.04)}
 .jk-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(120% 80% at 50% 0,transparent 60%,rgba(42,33,27,.14))}
 .jk-insc{position:absolute;transform:translate(-50%,-50%);text-align:center;line-height:1.04;pointer-events:none;
-  white-space:normal;max-width:34cqw;text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4);z-index:2}
-.jk-insc .nm{display:block;font-weight:600;letter-spacing:.04em}
+  white-space:normal;max-width:34cqw;text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 7px rgba(0,0,0,.55),0 0 2px rgba(0,0,0,.7);z-index:2}
+.jk-insc .nm{display:block;font-weight:700;letter-spacing:.045em}
 .jk-insc .dt{display:block;margin-top:.18em;opacity:.94}
 .jk-cap-chip{position:absolute;left:8px;bottom:8px;z-index:3;background:rgba(34,27,21,.6);color:#fdf6ea;
   font:600 11px var(--jk-ui);padding:5px 10px;border-radius:9px;backdrop-filter:blur(4px);letter-spacing:.01em;
@@ -160,7 +161,7 @@
 .jk-pcard.sel{border-color:var(--jk-stone);box-shadow:0 0 0 2px rgba(110,81,53,.16),0 12px 24px rgba(110,81,53,.14)}
 .jk-pcard.sel::after{content:"✓";position:absolute;top:7px;right:8px;width:21px;height:21px;border-radius:50%;
   background:var(--jk-stone);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.jk-pcard .ph{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center;background:#0c0c0d;filter:brightness(1.08) contrast(1.02)}
+.jk-pcard .ph{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center;background:#0c0c0d;filter:brightness(1.14) contrast(1.1) saturate(1.05)}
 .jk-pcard .lbl{padding:8px 8px 9px;text-align:center}
 .jk-pcard .lbl b{display:block;font:700 12.5px var(--jk-ui);color:var(--jk-ink);line-height:1.15}
 .jk-pcard .lbl small{display:block;font-size:10.5px;color:var(--jk-muted);margin-top:2px;line-height:1.3}
@@ -476,12 +477,12 @@ var DATA = {
 // pozícia živého nápisu na fotke per konkrétny záber (center x%, center y%, font cqw, max-šírka cqw)
 var POS = {
   // centrované na hlavu pomníka pri 3:2 fotkách; y je nižšie, aby text nesedel pri hornom okraji
-  'single-rect-black':{x:63,y:20,fs:3.4,w:30}, 'single-rect-gray':{x:63,y:20,fs:3.4,w:30}, 'single-rect-red':{x:63,y:20,fs:3.4,w:30},
-  'single-arch-black':{x:63,y:22,fs:3.4,w:30}, 'single-arch-gray':{x:63,y:22,fs:3.4,w:30}, 'single-arch-red':{x:63,y:22,fs:3.4,w:30},
-  'single-book-black':{x:62,y:18,fs:3.3,w:32}, 'single-book-gray':{x:62,y:18,fs:3.3,w:32}, 'single-book-red':{x:62,y:18,fs:3.3,w:32},
-  'double-rect-black':{x:62,y:19,fs:3.2,w:34}, 'double-rect-gray':{x:62,y:19,fs:3.2,w:34}, 'double-rect-red':{x:62,y:19,fs:3.2,w:34},
-  'double-arch-black':{x:62,y:21,fs:3.2,w:34}, 'double-arch-gray':{x:62,y:21,fs:3.2,w:34}, 'double-arch-red':{x:62,y:21,fs:3.2,w:34},
-  'double-book-black':{x:62,y:18,fs:3.1,w:36}, 'double-book-gray':{x:62,y:18,fs:3.1,w:36}, 'double-book-red':{x:62,y:18,fs:3.1,w:36}
+  'single-rect-black':{x:63,y:20,fs:3.9,w:32}, 'single-rect-gray':{x:63,y:20,fs:3.9,w:32}, 'single-rect-red':{x:63,y:20,fs:3.9,w:32},
+  'single-arch-black':{x:63,y:22,fs:3.9,w:32}, 'single-arch-gray':{x:63,y:22,fs:3.9,w:32}, 'single-arch-red':{x:63,y:22,fs:3.9,w:32},
+  'single-book-black':{x:62,y:18,fs:3.7,w:34}, 'single-book-gray':{x:62,y:18,fs:3.7,w:34}, 'single-book-red':{x:62,y:18,fs:3.7,w:34},
+  'double-rect-black':{x:62,y:19,fs:3.6,w:36}, 'double-rect-gray':{x:62,y:19,fs:3.6,w:36}, 'double-rect-red':{x:62,y:19,fs:3.6,w:36},
+  'double-arch-black':{x:62,y:21,fs:3.6,w:36}, 'double-arch-gray':{x:62,y:21,fs:3.6,w:36}, 'double-arch-red':{x:62,y:21,fs:3.6,w:36},
+  'double-book-black':{x:62,y:18,fs:3.5,w:38}, 'double-book-gray':{x:62,y:18,fs:3.5,w:38}, 'double-book-red':{x:62,y:18,fs:3.5,w:38}
 };
 
 var STEPS = ['Tvar','Veľkosť','Kameň','Nápis','Doplnky','Miesto','Dopyt'];
@@ -504,12 +505,12 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){retu
 function graveUrl(size,shape,stone){ return CONFIG.assetBase+'graves/'+size+'-'+shape+'-'+stone+'.webp'; }
 function letterUrl(stone,letter){ return CONFIG.assetBase+'lettering/'+stone+'-'+letter+'.webp'; }
 
-function markSvg(stroke,fill){
-  stroke=stroke||'#fdf6ea';
+function markSvg(col,accent){
+  col=col||'#fdf6ea'; accent=accent||'#4E3924';
   return '<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">'
-    +'<rect x="9" y="38" width="30" height="6" rx="2.2" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.2"/>'
-    +'<path d="M15 39V21a9 9 0 0 1 18 0v18Z" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.4" stroke-linejoin="round"/>'
-    +'<path d="M24 24.5v8M20.5 28h7" stroke="'+stroke+'" stroke-width="2" stroke-linecap="round"/>'
+    +'<rect x="8" y="38" width="32" height="6.5" rx="2.4" fill="'+col+'"/>'
+    +'<path d="M14 40V20a10 10 0 0 1 20 0v20Z" fill="'+col+'"/>'
+    +'<path d="M24 24v10M19 28h10" stroke="'+accent+'" stroke-width="2.8" stroke-linecap="round"/>'
     +'</svg>';
 }
 
@@ -739,7 +740,6 @@ window.jkSubmit=function(){
 /* ========================= AI ASISTENT ========================= */
 var FALLBACK_INTRO='Dobrý deň. Som digitálny poradca Kamenárstva Jantár. **Zatiaľ vo mne nebeží AI** — odpovedám podľa pripravených tém (kameň, veľkosť, nápis, údržba, cena, termín). Na konkrétnu ponuku otvorte konfigurátor alebo nám zavolajte.';
 var QUICK=[
-  {label:'Otvoriť konfigurátor', cfg:true, action:function(){jkSetMode('config');}},
   {label:'Aký kameň zvoliť?', q:'Aký kameň je najvhodnejší na pomník?'},
   {label:'Veľkosť hrobu', q:'Ako vybrať veľkosť pomníka?'},
   {label:'Nápis a písmo', q:'Aký nápis a písmo odporúčate?'},
@@ -822,8 +822,8 @@ function toast(text){
 
 /* ========================= INIT ========================= */
 function init(){
-  $('jk-launch-mark').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.10)');
-  $('jk-head-av').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.12)');
+  $('jk-launch-mark').innerHTML=markSvg('#fdf6ea','#5A4430');
+  $('jk-head-av').innerHTML=markSvg('#fdf6ea','#5A4430');
   renderStep();
   setTimeout(function(){ if(!S.open){ $('jk-teaser').classList.add('show'); $('jk-dot').classList.add('show'); } },2600);
   if(location.search.indexOf('preview')>=0){ setTimeout(jkToggle,300); }
