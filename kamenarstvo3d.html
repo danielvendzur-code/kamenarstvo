@@ -2,14 +2,78 @@
 <html lang="sk">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kamenárstvo Jantár — 3D konfigurátor pomníka</title>
-<meta http-equiv="refresh" content="0; url=3d.html">
-<link rel="canonical" href="3d.html">
-<style>html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#efe4d3;color:#2A211B;display:grid;place-items:center}a{color:#4E3924;font-weight:800}</style>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#efe4d3;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#2A211B}
+#appFrame{position:fixed;inset:0;width:100%;height:100%;border:0;background:#efe4d3}
+.fallback{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;background:linear-gradient(155deg,#f9efe1,#e5d7c3)}
+.fallback a{display:inline-flex;margin-top:12px;padding:12px 16px;border-radius:999px;background:#4E3924;color:#fff;text-decoration:none;font-weight:800}
+</style>
 </head>
 <body>
-<p>Otvára sa 3D konfigurátor. <a href="3d.html">Pokračovať</a></p>
-<script>window.location.replace('3d.html');</script>
+<div class="fallback" id="fallback">
+  <div>
+    <strong>Načítava sa 3D konfigurátor.</strong><br>
+    <a href="3d.html?v=old-models-polished">Otvoriť konfigurátor</a>
+  </div>
+</div>
+<iframe id="appFrame" src="3d.html?v=old-models-polished" title="3D konfigurátor pomníka"></iframe>
+<script>
+(function(){
+  const frame=document.getElementById('appFrame');
+  const fallback=document.getElementById('fallback');
+  let tries=0;
+  const iconMap={
+    'Rovný':'▭','Oblúk':'◠','Dvojitý oblúk':'◠◠','Kniha':'◫','Vlna':'≈','Srdcový':'♡',
+    'Jednohrob':'▯','Dvojhrob':'▭',
+    'Plná doska':'▰','Otvorený rám':'▢','Zdvihnutá doska':'▂','Doska s otvorom':'▣',
+    'Klasické':'✦','Elegantné':'✧','Moderné':'◆',
+    'Kríž':'✝','Fotka':'◉','Váza':'⚱','Lampáš':'◇','Lavička':'▬','Rámovanie':'⌜'
+  };
+  function polish(){
+    tries++;
+    let d;
+    try{d=frame.contentDocument||frame.contentWindow.document}catch(e){return}
+    if(!d||!d.body)return;
+    fallback.style.display='none';
+    if(!d.getElementById('safe-polish-css')){
+      const s=d.createElement('style');
+      s.id='safe-polish-css';
+      s.textContent=`
+        .brand-mark{display:grid!important;place-items:center!important;width:42px!important;height:42px!important;border-radius:14px!important;background:linear-gradient(145deg,#7A5B3B 0%,#3A2C20 60%,#211812 100%)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 10px 22px rgba(42,33,27,.18)!important;position:relative!important;color:#FFF6EA!important;font:800 22px/1 Cinzel,Georgia,serif!important;letter-spacing:.03em!important}
+        .brand-mark:before,.brand-mark:after,.brand-mark .mark-dot{display:none!important;content:none!important}
+        .brand-mark .monogram{display:block!important;transform:translateY(1px)}
+        .nav a.alt-link,.viewer-alt,.note,.assistant-quick [data-action="classic"]{display:none!important}
+        .topbar{background:rgba(255,253,248,.9)!important}
+        .panel-head{background:linear-gradient(135deg,#33251B 0%,#5C432C 58%,#7A5B3B 100%)!important}
+        .panel-head:after{height:3px!important;background:linear-gradient(90deg,transparent,#B07D33,#D7B468,#B07D33,transparent)!important}
+        .choice{background:linear-gradient(180deg,#fffdf8,#fbf3e8)!important;border-color:#E3D5BE!important}
+        .choice:hover{border-color:#CBAE7D!important;box-shadow:0 10px 22px rgba(110,81,53,.10)!important}
+        .choice.sel{border-color:#6E5135!important;background:#fbefdD!important;box-shadow:0 0 0 2px rgba(110,81,53,.16)!important}
+        .choice i{width:36px!important;height:36px!important;border-radius:13px!important;background:linear-gradient(145deg,#F7EDDD,#E7D3B6)!important;border:1px solid #D9C2A0!important;color:#4E3924!important;font-size:17px!important;font-weight:900!important;letter-spacing:-.04em!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)!important}
+        .choice.sel i{background:linear-gradient(145deg,#6E5135,#3E2C1E)!important;color:#FFF6EA!important;border-color:rgba(255,255,255,.28)!important}
+        .section{background:rgba(255,255,255,.74)!important;border-color:#E5D8C2!important}
+        .section-title b{font-weight:900!important}
+        .cta{background:linear-gradient(135deg,#6E5135,#33251B)!important}
+      `;
+      d.head.appendChild(s);
+    }
+    const brand=d.querySelector('.brand-mark');
+    if(brand && !brand.querySelector('.monogram')) brand.innerHTML='<span class="monogram">J</span>';
+    const brandSub=d.querySelector('.brand > span > span');
+    if(brandSub) brandSub.textContent='3D návrh pomníka a nezáväzný dopyt';
+    d.querySelectorAll('.choice').forEach(btn=>{
+      const title=(btn.querySelector('b')?.textContent||'').trim();
+      const icon=btn.querySelector('i');
+      if(icon && iconMap[title]) icon.textContent=iconMap[title];
+    });
+    d.querySelectorAll('.assistant-quick [data-action="classic"]').forEach(x=>x.remove());
+    if(tries<40) setTimeout(polish,250);
+  }
+  frame.addEventListener('load',()=>{setTimeout(polish,80);setTimeout(polish,500);setTimeout(polish,1200)});
+  setTimeout(polish,700);
+})();
+</script>
 </body>
 </html>
