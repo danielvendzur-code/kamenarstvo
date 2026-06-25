@@ -15,10 +15,10 @@ html,body{margin:0;height:100%;overflow:hidden;background:#efe4d3;font-family:sy
 <div class="fallback" id="fallback">
   <div>
     <strong>Načítava sa 3D konfigurátor.</strong><br>
-    <a href="3d.html?v=old-models-polished">Otvoriť konfigurátor</a>
+    <a href="3d.html?v=old-models-polished-4">Otvoriť konfigurátor</a>
   </div>
 </div>
-<iframe id="appFrame" src="3d.html?v=old-models-polished" title="3D konfigurátor pomníka"></iframe>
+<iframe id="appFrame" src="3d.html?v=old-models-polished-4" title="3D konfigurátor pomníka"></iframe>
 <script>
 (function(){
   const frame=document.getElementById('appFrame');
@@ -53,6 +53,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#efe4d3;font-family:sy
         .choice.sel{border-color:#6E5135!important;background:#fbefdD!important;box-shadow:0 0 0 2px rgba(110,81,53,.16)!important}
         .choice i{width:36px!important;height:36px!important;border-radius:13px!important;background:linear-gradient(145deg,#F7EDDD,#E7D3B6)!important;border:1px solid #D9C2A0!important;color:#4E3924!important;font-size:17px!important;font-weight:900!important;letter-spacing:-.04em!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)!important}
         .choice.sel i{background:linear-gradient(145deg,#6E5135,#3E2C1E)!important;color:#FFF6EA!important;border-color:rgba(255,255,255,.28)!important}
+        .assistant-input button#assistantSend{min-width:48px!important;width:48px!important;padding:0!important;font-size:0!important;border-radius:15px!important}
         .section{background:rgba(255,255,255,.74)!important;border-color:#E5D8C2!important}
         .section-title b{font-weight:900!important}
         .cta{background:linear-gradient(135deg,#6E5135,#33251B)!important}
@@ -68,6 +69,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#efe4d3;font-family:sy
       const icon=btn.querySelector('i');
       if(icon && iconMap[title]) icon.textContent=iconMap[title];
     });
+    const send=d.getElementById('assistantSend');
+    if(send){send.textContent='➤';send.setAttribute('aria-label','Odoslať správu')}
     d.querySelectorAll('.assistant-quick [data-action="classic"]').forEach(x=>x.remove());
     if(tries<40) setTimeout(polish,250);
   }
