@@ -55,17 +55,20 @@ button,input,textarea{font:inherit}
 .brand-mark{
   width:40px;height:40px;border-radius:14px;
   background:linear-gradient(145deg,#7A5B3B 0%,#4E3924 54%,#2A211B 100%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 8px 18px rgba(42,33,27,.16);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 8px 18px rgba(42,33,27,.16);
   position:relative;flex:0 0 auto;
 }
 .brand-mark:before{
-  content:"";position:absolute;left:10px;top:7px;width:20px;height:23px;
-  border:2px solid #fbf7f0;border-bottom:0;border-radius:12px 12px 4px 4px;
+  content:"";position:absolute;left:9px;top:10px;width:22px;height:15px;
+  border:2px solid #fbf7f0;border-radius:10px;background:transparent;
 }
 .brand-mark:after{
-  content:"";position:absolute;left:7px;right:7px;bottom:8px;height:5px;
-  background:#fbf7f0;border-radius:6px;
-  box-shadow:0 -8px 0 -3px rgba(251,247,240,.95);
+  content:"";position:absolute;left:15px;top:23px;width:8px;height:7px;
+  border-left:2px solid #fbf7f0;border-bottom:2px solid #fbf7f0;border-bottom-left-radius:6px;
+}
+.brand-mark .mark-dot{
+  position:absolute;left:15px;top:17px;width:3px;height:3px;border-radius:50%;background:#fbf7f0;
+  box-shadow:5px 0 0 #fbf7f0,10px 0 0 #fbf7f0;
 }
 .brand b{display:block;font:700 17px var(--ui);letter-spacing:.01em}
 .brand span{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:600}
@@ -304,8 +307,9 @@ button,input,textarea{font:inherit}
   .topbar{height:60px;margin:8px 8px 0;align-items:center;padding:9px 12px;border-radius:17px}
   .nav{display:none}
   .brand-mark{width:34px;height:34px;border-radius:12px}
-  .brand-mark:before{left:9px;top:7px;width:16px;height:19px;border-radius:10px 10px 4px 4px}
-  .brand-mark:after{left:7px;right:7px;bottom:7px;height:4px}
+  .brand-mark:before{left:7px;top:8px;width:20px;height:14px;border-radius:9px}
+  .brand-mark:after{left:13px;top:20px;width:8px;height:7px}
+  .brand-mark .mark-dot{left:12px;top:14px}
   .brand b{font-size:14px}.brand span{font-size:11px}
   .shell{position:relative;display:block;padding:8px;height:calc(100dvh - 68px);overflow:hidden}
   .viewer-card{height:100%;min-height:0;border-radius:22px}
@@ -351,7 +355,7 @@ button,input,textarea{font:inherit}
 <div class="page">
   <header class="topbar">
     <a class="brand" href="index.html" aria-label="Späť na hlavnú stránku">
-      <span class="brand-mark"></span>
+      <span class="brand-mark"><span class="mark-dot"></span></span>
       <span><b>Kamenárstvo Jantár</b><span>3D návrh pomníka a kamenársky konfigurátor</span></span>
     </a>
     <nav class="nav" aria-label="Navigácia">
@@ -449,7 +453,7 @@ button,input,textarea{font:inherit}
     </aside>
   </main>
 
-  <button class="config-launcher" type="button" id="configLauncher">Upravit 3D navrh</button>
+  <button class="config-launcher" type="button" id="configLauncher">Upraviť 3D návrh</button>
   <button class="assistant-launcher" type="button" id="assistantLauncher"><i></i> AI asistent</button>
   <section class="assistant-panel" id="assistantPanel" aria-label="AI asistent">
     <div class="assistant-head">
@@ -970,9 +974,9 @@ button,input,textarea{font:inherit}
       `<div class="summary-row"><span>Tvar</span><strong>${SHAPES[state.shape].title}</strong></div>`+
       `<div class="summary-row"><span>Veľkosť</span><strong>${SIZES[state.size].title}</strong></div>`+
       `<div class="summary-row"><span>Doska</span><strong>${BASES[state.base].title}</strong></div>`+
-      `<div class="summary-row"><span>Material</span><strong>${MATERIALS[state.material].title}</strong></div>`+
+      `<div class="summary-row"><span>Materiál</span><strong>${MATERIALS[state.material].title}</strong></div>`+
       `<div class="summary-row"><span>Nápis</span><strong>${state.name || "-"} / ${state.dates || "-"}</strong></div>`+
-      `<div class="summary-row"><span>Pismo</span><strong>${FONTS[state.font].title}, ${LETTERS[state.letter].title}</strong></div>`+
+      `<div class="summary-row"><span>Písmo</span><strong>${FONTS[state.font].title}, ${LETTERS[state.letter].title}</strong></div>`+
       `<div class="summary-row"><span>Doplnky</span><strong>${addonNames.length ? addonNames.join(", ") : "-"}</strong></div>`+
       `</div>`;
   }
@@ -1059,7 +1063,7 @@ button,input,textarea{font:inherit}
       wizardStepIndex = Math.max(0, Math.min(sections.length - 1, index));
       sections.forEach((section,i) => section.classList.toggle("active", i === wizardStepIndex));
       const label = sections[wizardStepIndex].querySelector(".section-title b");
-      title.textContent = (wizardStepIndex + 1) + " / " + sections.length + " - " + (label ? label.textContent : "Konfigurator");
+      title.textContent = (wizardStepIndex + 1) + " / " + sections.length + " - " + (label ? label.textContent : "Konfigurátor");
       prev.disabled = wizardStepIndex === 0;
       next.textContent = wizardStepIndex === sections.length - 1 ? "Náhľad" : "Ďalej";
       $("sendInquiry").textContent = wizardStepIndex === sections.length - 1 ? "Odoslať nezáväzný dopyt" : "Pokračovať";
@@ -1127,7 +1131,7 @@ button,input,textarea{font:inherit}
         return `Pre dvojhrob vyzerá najlepšie širší tvar, hlavne Dvojitý oblúk, Kniha alebo Rovný. Viete to prepnúť v sekcii Veľkosť a Tvar kameňa.`;
       }
       if(text.includes("dopln") || text.includes("vaza") || text.includes("kahanec")){
-        return `Doplnky nechajte skor striedme. Bezpecny profesionalny vyber je kriz, vaza alebo kahanec. Aktualny navrh: ${currentContext()}.`;
+        return `Doplnky nechajte skôr striedme. Bezpečný profesionálny výber je kríž, váza alebo kahanec. Aktuálny návrh: ${currentContext()}.`;
       }
       return `Podľa aktuálneho 3D návrhu máte ${currentContext()}. Ak chcete konzervatívny predajný návrh, odporúčam Oblúk alebo Rovný tvar, sivú/čiernu žulu, zlatý alebo strieborný nápis a najviac 2-3 doplnky.`;
     }
@@ -1199,7 +1203,7 @@ button,input,textarea{font:inherit}
       }
       const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "-";
       status.className = "send-status ok";
-      status.textContent = "Dopyt bol pripravene odoslaný. Kamenárstvo Jantár by klienta kontaktovalo telefonicky.";
+      status.textContent = "Dopyt bol pripravený na odoslanie. Kamenárstvo Jantár by klienta kontaktovalo telefonicky.";
       console.info("Fake 3D inquiry", {
         client:{name,phone,email,place},
         design:{
