@@ -1,947 +1,1263 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Kamenárstvo Jantár — konfigurátor pomníka a AI asistent</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kamenárstvo Jantár — 3D konfigurátor pomníka</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- Voliteľné: EmailJS na odosielanie dopytov (ID doplniť v CONFIG nižšie) -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* =========================================================================
-   UX PATCH: väčšie okno, kompaktnejšie kroky, centrovaný nápis, kontakty dole
-   KAMENÁRSTVO JANTÁR — widget (konfigurátor pomníka + AI asistent)
-   Fotorealistický náhľad z fotiek v assets/images/. Bez cenovej kalkulačky.
-   Vložiť cez iframe (max ~ 470 × 760 px, vpravo dole).
-   ========================================================================= */
 :root{
-  --jk-ink:#2A211B; --jk-stone:#6E5135; --jk-stone-dk:#4E3924;
-  --jk-bronze:#B07D33; --jk-bronze-lt:#C9A35B; --jk-cream:#FBF7F0; --jk-paper:#FFFFFF;
-  --jk-line:#E7DCC9; --jk-line-soft:#F0E8DA; --jk-muted:#8A7A68;
-  --jk-ok:#3E7C4F; --jk-err:#C0492F; --jk-r:20px;
-  --jk-ui:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --jk-serif:'Cormorant Garamond',Georgia,serif; --jk-eng:'Cinzel',Georgia,serif;
-  --jk-shadow:0 22px 60px rgba(42,33,27,.26);
+  --ink:#2A211B;
+  --stone:#6E5135;
+  --stone-dk:#4E3924;
+  --bronze:#B07D33;
+  --cream:#FBF7F0;
+  --paper:#fffdf8;
+  --line:#E7DCC9;
+  --muted:#817262;
+  --soft:#F2E8DA;
+  --shadow:0 24px 70px rgba(42,33,27,.18);
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --engrave:"Cinzel",Georgia,serif;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-#jk-root,#jk-root *{font-family:var(--jk-ui)}
-#jk-root img{max-width:100%;display:block}
-
-/* ---- Pozadie stránky ---- */
-.jk-demo{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 22px 160px;
-  background:radial-gradient(circle at 16% 14%,#fffdf8,transparent 42%),linear-gradient(160deg,#f7efe3,#e8dccb)}
-.jk-demo-card{max-width:560px;width:100%;background:var(--jk-paper);border:1px solid var(--jk-line);border-radius:26px;
-  padding:40px 34px;box-shadow:0 26px 64px rgba(42,33,27,.12);text-align:center}
-.jk-demo-card .eyebrow{font:700 12px var(--jk-ui);letter-spacing:.22em;text-transform:uppercase;color:var(--jk-bronze)}
-.jk-demo-card h1{font:600 clamp(30px,5vw,46px)/1.05 var(--jk-eng);color:var(--jk-ink);margin:14px 0 12px}
-.jk-demo-card p{color:#6c5e50;font-size:17px;line-height:1.6;max-width:440px;margin:0 auto}
-.jk-demo-card .hint{margin-top:22px;font-size:14px;color:var(--jk-muted)}
-.jk-demo-card .hint b{color:var(--jk-stone-dk)}
-
-/* ===================== LAUNCHER ===================== */
-#jk-launcher{position:fixed;bottom:20px;right:20px;width:66px;height:66px;border-radius:50%;cursor:pointer;z-index:2147483000;
-  background:linear-gradient(150deg,#5C4630,#3A2C20);border:2px solid #fdf8ef;
-  box-shadow:0 12px 30px rgba(42,33,27,.4),0 0 0 0 rgba(176,125,51,.45);
-  display:flex;align-items:center;justify-content:center;transition:transform .35s cubic-bezier(.34,1.5,.64,1),box-shadow .35s;
-  animation:jkPulse 3.6s ease-in-out infinite}
-@keyframes jkPulse{0%,100%{box-shadow:0 12px 30px rgba(42,33,27,.4),0 0 0 0 rgba(176,125,51,.42)}
-  50%{box-shadow:0 12px 30px rgba(42,33,27,.4),0 0 0 9px rgba(176,125,51,0)}}
-#jk-launcher:hover{transform:scale(1.07);animation:none}
-#jk-launcher .jk-mark{width:34px;height:34px}
-#jk-launcher.open{opacity:0;pointer-events:none;transform:scale(.6)}
-#jk-launcher .jk-dot{position:absolute;top:5px;right:6px;width:15px;height:15px;background:var(--jk-bronze-lt);border:2.5px solid #fdf8ef;border-radius:50%;
-  opacity:0;transform:scale(.5);transition:opacity .35s,transform .35s}
-#jk-launcher .jk-dot.show{opacity:1;transform:scale(1);animation:jkDot 2.2s ease-in-out infinite}
-@keyframes jkDot{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-
-#jk-teaser{position:fixed;right:96px;bottom:34px;z-index:2147482999;max-width:230px;background:var(--jk-paper);color:var(--jk-ink);
-  border:1px solid var(--jk-line);border-radius:16px;border-bottom-right-radius:5px;padding:12px 34px 12px 15px;
-  box-shadow:0 16px 40px rgba(42,33,27,.2);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .4s,transform .4s}
-#jk-teaser.show{opacity:1;transform:translateY(0);pointer-events:auto;cursor:pointer}
-#jk-teaser b{display:block;font:700 14px var(--jk-ui);margin-bottom:2px}
-#jk-teaser span{font-size:12.5px;color:var(--jk-muted);line-height:1.45}
-#jk-teaser .tx{position:absolute;top:5px;right:6px;width:20px;height:20px;border:none;background:var(--jk-line-soft);border-radius:50%;
-  cursor:pointer;color:var(--jk-muted);font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center}
-@media(max-width:520px){#jk-teaser{display:none}}
-
-/* ===================== PANEL ===================== */
-#jk-panel{position:fixed;bottom:18px;right:20px;width:min(468px,calc(100vw - 40px));height:calc(100dvh - 36px);max-height:860px;background:var(--jk-cream);
-  border-radius:var(--jk-r);box-shadow:var(--jk-shadow);z-index:2147483000;display:flex;flex-direction:column;overflow:hidden;
-  transform:scale(.9) translateY(18px);opacity:0;pointer-events:none;transform-origin:bottom right;
-  transition:transform .42s cubic-bezier(.34,1.5,.64,1),opacity .3s}
-#jk-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
-@media(max-width:520px){
-  #jk-panel{right:0;bottom:0;width:100vw;height:100dvh;max-height:none;border-radius:0}
-  #jk-launcher{bottom:16px;right:16px}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:var(--ui);color:var(--ink);background:#efe4d3}
+body{overflow:hidden}
+button,input,textarea{font:inherit}
+.page{
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at 15% 8%,#fffdf8 0,rgba(255,253,248,0) 34%),
+    radial-gradient(circle at 88% 8%,rgba(176,125,51,.15),rgba(176,125,51,0) 30%),
+    linear-gradient(155deg,#f9efe1 0%,#e5d7c3 100%);
 }
-
-/* ---- Hlavička ---- */
-.jk-head{position:relative;padding:15px 14px 14px 16px;color:#fdf6ea;overflow:hidden;flex:0 0 auto;
-  background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%)}
-.jk-head::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--jk-bronze) 22%,var(--jk-bronze-lt) 50%,var(--jk-bronze) 78%,transparent);
-  background-size:220% 100%;animation:jkLine 5s ease-in-out infinite}
-@keyframes jkLine{0%{background-position:0 0}100%{background-position:200% 0}}
-.jk-head-top{display:flex;align-items:center;gap:12px}
-.jk-av{flex:0 0 auto;width:46px;height:46px;border-radius:13px;background:linear-gradient(150deg,#8a6a45,#4E3924);
-  display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px rgba(255,247,232,.28),0 6px 16px rgba(0,0,0,.3)}
-.jk-av svg{width:26px;height:26px}
-.jk-head-txt{flex:1 1 auto;min-width:0}
-.jk-head-txt b{display:block;font:600 19px/1.1 var(--jk-eng);letter-spacing:.04em}
-.jk-head-txt span{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(253,246,234,.78);margin-top:2px}
-.jk-live{width:7px;height:7px;border-radius:50%;background:#8fd29f;box-shadow:0 0 0 0 rgba(143,210,159,.7);animation:jkLive 2.4s infinite}
-@keyframes jkLive{0%,100%{box-shadow:0 0 0 0 rgba(143,210,159,.6)}50%{box-shadow:0 0 0 5px rgba(143,210,159,0)}}
-.jk-hbtns{display:flex;gap:7px}
-.jk-hbtn{width:34px;height:34px;border:none;border-radius:11px;background:rgba(255,247,232,.14);color:#fdf6ea;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:background .2s,transform .2s}
-.jk-hbtn:hover{background:rgba(255,247,232,.26);transform:translateY(-1px)}
-.jk-hbtn svg{width:18px;height:18px;fill:currentColor}
-
-.jk-modes{display:flex;gap:6px;margin-top:13px;padding:4px;background:rgba(0,0,0,.2);border-radius:13px;position:relative;z-index:1}
-.jk-mode{flex:1;border:none;background:transparent;color:rgba(253,246,234,.72);cursor:pointer;font:700 13px var(--jk-ui);
-  padding:9px 8px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .25s}
-.jk-mode svg{width:16px;height:16px;fill:currentColor}
-.jk-mode.active{background:var(--jk-cream);color:var(--jk-stone-dk);box-shadow:0 4px 12px rgba(0,0,0,.22)}
-
-/* ===================== TELO ===================== */
-.jk-body{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative}
-.jk-body::-webkit-scrollbar{width:7px}.jk-body::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
-.jk-view{display:none}
-.jk-view.active{display:block;animation:jkFade .32s ease}
-@keyframes jkFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-.jk-prog{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,var(--jk-cream),rgba(251,247,240,.92));
-  backdrop-filter:blur(6px);padding:10px 16px 9px;border-bottom:1px solid var(--jk-line)}
-.jk-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.jk-prog-label{font:700 12px var(--jk-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--jk-stone)}
-.jk-prog-count{font:700 12px var(--jk-ui);color:var(--jk-muted)}
-.jk-steps{display:flex;gap:5px}
-.jk-seg{flex:1;height:7px;border-radius:99px;background:#ece1ce;position:relative;overflow:hidden;
-  transition:background .35s ease}
-.jk-seg::after{content:"";position:absolute;inset:0;border-radius:inherit;transform:scaleX(0);transform-origin:left;
-  background:linear-gradient(90deg,var(--jk-stone),var(--jk-bronze));transition:transform .45s cubic-bezier(.34,1.2,.64,1)}
-.jk-seg.done::after{transform:scaleX(1)}
-.jk-seg.active::after{transform:scaleX(1)}
-.jk-seg.active{box-shadow:0 0 0 2px rgba(176,125,51,.18)}
-
-/* ---- Fotonáhľad pomníka ---- */
-.jk-stage{padding:10px 16px 0}
-.jk-photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--jk-line);background:#e9e2d4;
-  box-shadow:0 12px 28px rgba(42,33,27,.15);container-type:inline-size;animation:jkRise .5s cubic-bezier(.22,1,.36,1)}
-@keyframes jkRise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-.jk-photo>img{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center;background:#0c0c0d}
-.jk-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(120% 80% at 50% 0,transparent 60%,rgba(42,33,27,.14))}
-.jk-insc{position:absolute;transform:translate(-50%,-50%);text-align:center;line-height:1.04;pointer-events:none;
-  white-space:normal;max-width:34cqw;text-shadow:0 1px 2px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4);z-index:2}
-.jk-insc .nm{display:block;font-weight:600;letter-spacing:.04em}
-.jk-insc .dt{display:block;margin-top:.18em;opacity:.94}
-.jk-cap-chip{position:absolute;left:8px;bottom:8px;z-index:3;background:rgba(34,27,21,.6);color:#fdf6ea;
-  font:600 11px var(--jk-ui);padding:5px 10px;border-radius:9px;backdrop-filter:blur(4px);letter-spacing:.01em;
-  box-shadow:0 4px 12px rgba(0,0,0,.25)}
-
-/* ---- Krok ---- */
-.jk-step{padding:8px 16px 16px}
-@keyframes jkStepIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
-.jk-step.in{animation:jkStepIn .3s cubic-bezier(.22,1,.36,1)}
-.jk-step-title{font:600 19px/1.05 var(--jk-serif);color:var(--jk-ink);margin:8px 0 2px}
-.jk-step-sub{font:500 13px var(--jk-ui);color:var(--jk-muted);line-height:1.45;margin:0 0 12px}
-
-/* karty s fotkou */
-.jk-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.jk-grid.two{grid-template-columns:1fr 1fr}
-.jk-pcard{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;overflow:hidden;
-  cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s;text-align:left}
-.jk-pcard:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(110,81,53,.12)}
-.jk-pcard.sel{border-color:var(--jk-stone);box-shadow:0 0 0 2px rgba(110,81,53,.16),0 12px 24px rgba(110,81,53,.14)}
-.jk-pcard.sel::after{content:"✓";position:absolute;top:7px;right:8px;width:21px;height:21px;border-radius:50%;
-  background:var(--jk-stone);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.jk-pcard .ph{width:100%;aspect-ratio:1/1;object-fit:cover;background:#e9e2d4}
-.jk-pcard .lbl{padding:8px 9px}
-.jk-pcard .lbl b{display:block;font:700 13px var(--jk-ui);color:var(--jk-ink);line-height:1.15}
-.jk-pcard .lbl small{display:block;font-size:11px;color:var(--jk-muted);margin-top:1px;line-height:1.3}
-
-/* nápis a štýl */
-.jk-label{font:700 12px var(--jk-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--jk-stone);margin:13px 0 7px}
-.jk-input,.jk-textarea,.jk-select{width:100%;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:12px;
-  padding:13px 14px;font:500 15px var(--jk-ui);color:var(--jk-ink);transition:border-color .2s,box-shadow .2s}
-.jk-input:focus,.jk-textarea:focus,.jk-select:focus{outline:none;border-color:var(--jk-stone);box-shadow:0 0 0 3px rgba(110,81,53,.13)}
-.jk-textarea{min-height:74px;resize:vertical;line-height:1.5}
-
-.jk-letter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.jk-letter{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:12px;overflow:hidden;cursor:pointer;
-  transition:all .2s}
-.jk-letter:hover{transform:translateY(-2px)}
-.jk-letter.sel{border-color:var(--jk-stone);box-shadow:0 0 0 2px rgba(110,81,53,.16)}
-.jk-letter .ph{width:100%;aspect-ratio:16/10;object-fit:cover;background:#1c1c1c}
-.jk-letter span{display:block;text-align:center;font:700 12px var(--jk-ui);color:var(--jk-ink);padding:6px 4px}
-.jk-letter.sel span{color:var(--jk-stone-dk)}
-
-.jk-chips{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.jk-pick{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;
-  padding:12px 10px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  color:var(--jk-ink);transition:border-color .2s,box-shadow .2s,transform .2s,background .2s}
-.jk-pick:hover{border-color:#d8c3a0;transform:translateY(-2px);box-shadow:0 8px 18px rgba(110,81,53,.1)}
-.jk-pick.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.16),0 8px 18px rgba(110,81,53,.12)}
-.jk-pick.sel::after{content:"✓";position:absolute;top:6px;right:7px;width:18px;height:18px;border-radius:50%;
-  background:var(--jk-stone);color:#fff;font:800 10px var(--jk-ui);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
-.jk-pick [class^="demo-"]{line-height:1;color:var(--jk-stone-dk)}
-.jk-pick .demo-classic{font:600 26px var(--jk-eng);letter-spacing:.02em}
-.jk-pick .demo-roman{font:600 28px var(--jk-serif)}
-.jk-pick .demo-modern{font:800 24px var(--jk-ui)}
-.jk-pick .demo-script{font:700 30px 'Dancing Script',cursive}
-.jk-pick small{font:700 11.5px var(--jk-ui);color:var(--jk-muted);letter-spacing:.02em}
-.jk-pick.sel small{color:var(--jk-stone-dk)}
-
-/* doplnky (multi) */
-.jk-addon{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:12px 13px;cursor:pointer;
-  display:flex;gap:11px;align-items:flex-start;transition:all .2s;margin-bottom:9px}
-.jk-addon:hover{border-color:#d8c3a0}
-.jk-addon.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.13)}
-.jk-addon-box{flex:0 0 auto;width:22px;height:22px;border-radius:7px;border:2px solid var(--jk-line);margin-top:1px;
-  display:flex;align-items:center;justify-content:center;transition:all .2s}
-.jk-addon.sel .jk-addon-box{background:var(--jk-stone);border-color:var(--jk-stone)}
-.jk-addon-box svg{width:13px;height:13px;fill:#fff;opacity:0;transition:opacity .2s}
-.jk-addon.sel .jk-addon-box svg{opacity:1}
-.jk-addon-tx b{display:block;font:700 14px var(--jk-ui);color:var(--jk-ink)}
-.jk-addon-tx small{display:block;font-size:12px;color:var(--jk-muted);margin-top:2px;line-height:1.4}
-
-/* tlačidlá */
-.jk-actions{display:flex;gap:10px;margin-top:14px}
-.jk-actions.nav{position:sticky;bottom:0;z-index:6;margin-top:16px;padding:12px 0 10px;
-  background:linear-gradient(180deg,rgba(251,247,240,0),var(--jk-cream) 38%)}
-.jk-btn{flex:1;border:none;border-radius:13px;padding:14px;font:700 14.5px var(--jk-ui);cursor:pointer;transition:all .2s;
-  background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;box-shadow:0 10px 22px rgba(78,57,36,.22)}
-.jk-btn:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 14px 28px rgba(78,57,36,.3)}
-.jk-btn.ghost{background:var(--jk-paper);color:var(--jk-stone-dk);border:1.5px solid var(--jk-line);box-shadow:none;flex:0 0 auto;padding:14px 18px}
-.jk-btn.ghost:hover{border-color:#d8c3a0;background:#fdf8f0}
-.jk-btn:disabled{opacity:.45;cursor:default;transform:none;filter:none}
-
-/* zhrnutie + formulár */
-.jk-summary{background:var(--jk-paper);border:1px solid var(--jk-line);border-radius:16px;padding:6px 16px;margin:4px 0 14px}
-.jk-srow{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--jk-line-soft)}
-.jk-srow:last-child{border-bottom:none}
-.jk-srow .k{font-size:13px;color:var(--jk-muted)}
-.jk-srow .v{font:700 13.5px var(--jk-ui);color:var(--jk-ink);text-align:right}
-.jk-note{background:#fdf6ea;border:1px solid var(--jk-line);border-left:3px solid var(--jk-bronze);border-radius:11px;
-  padding:12px 14px;font-size:12.5px;line-height:1.55;color:#6c5e50;margin-bottom:14px}
-.jk-form-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.jk-gdpr{display:flex;gap:10px;align-items:flex-start;margin:12px 0 4px;cursor:pointer}
-.jk-gdpr input{margin-top:2px;width:18px;height:18px;accent-color:var(--jk-stone);flex:0 0 auto}
-.jk-gdpr span{font-size:12px;color:var(--jk-muted);line-height:1.5}
-.jk-gdpr a{color:var(--jk-stone)}
-.jk-status{display:none;margin-top:10px;padding:11px 13px;border-radius:11px;font:600 13px var(--jk-ui);text-align:center}
-.jk-status.ok{display:block;background:#eaf5ec;color:var(--jk-ok);border:1px solid #cfe7d4}
-.jk-status.err{display:block;background:#fbeae5;color:var(--jk-err);border:1px solid #f1d2c8}
-.jk-alt{display:flex;gap:9px;margin-top:10px}
-.jk-alt a{flex:1;text-decoration:none;text-align:center;border-radius:12px;padding:12px;font:700 13px var(--jk-ui);
-  border:1.5px solid var(--jk-line);color:var(--jk-stone-dk);background:var(--jk-paper);display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
-.jk-alt a:hover{border-color:#d8c3a0;background:#fdf8f0}
-.jk-alt a.wa{background:#25d366;border-color:#25d366;color:#fff}
-.jk-alt a svg{width:16px;height:16px;fill:currentColor}
-
-/* ===================== CHAT ===================== */
-.jk-chat{display:flex;flex-direction:column;height:100%}
-.jk-msgs{flex:1 1 auto;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:13px;
-  background:radial-gradient(circle at 12% 0,rgba(176,125,51,.06),transparent 40%),var(--jk-cream)}
-.jk-msgs::-webkit-scrollbar{width:7px}.jk-msgs::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
-.jk-row{display:flex;gap:9px;align-items:flex-end;max-width:88%}
-.jk-row.me{align-self:flex-end;flex-direction:row-reverse}
-.jk-row .ava{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:linear-gradient(150deg,#8a6a45,#4E3924);
-  display:flex;align-items:center;justify-content:center}
-.jk-row .ava svg{width:17px;height:17px}
-.jk-bub{padding:11px 14px;border-radius:15px;font-size:14px;line-height:1.5;box-shadow:0 4px 14px rgba(42,33,27,.07)}
-.jk-row.bot .jk-bub{background:var(--jk-paper);border:1px solid var(--jk-line);border-bottom-left-radius:5px;color:var(--jk-ink)}
-.jk-row.me .jk-bub{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;border-bottom-right-radius:5px}
-.jk-bub b{font-weight:700}
-.jk-typing{display:flex;gap:4px;padding:13px 15px}
-.jk-typing i{width:7px;height:7px;border-radius:50%;background:var(--jk-bronze);animation:jkType 1.3s infinite}
-.jk-typing i:nth-child(2){animation-delay:.18s}.jk-typing i:nth-child(3){animation-delay:.36s}
-@keyframes jkType{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
-.jk-quick{display:flex;flex-wrap:wrap;gap:8px;padding:6px 16px 10px;background:var(--jk-cream)}
-.jk-quick button{border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:99px;padding:8px 14px;cursor:pointer;
-  font:600 12.5px var(--jk-ui);color:var(--jk-stone-dk);transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
-.jk-quick button:hover{border-color:var(--jk-stone);background:#fdf6ea;transform:translateY(-2px);box-shadow:0 6px 14px rgba(110,81,53,.14)}
-.jk-quick button.cfg{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fdf6ea;border-color:transparent;
-  font-weight:700;box-shadow:0 6px 16px rgba(78,57,36,.26)}
-.jk-quick button.cfg::before{content:"✦";margin-right:6px;opacity:.85}
-.jk-quick button.cfg:hover{filter:brightness(1.06);box-shadow:0 10px 22px rgba(78,57,36,.32)}
-.jk-inbar{display:flex;gap:9px;padding:11px 14px;background:var(--jk-cream);border-top:1px solid var(--jk-line)}
-.jk-inbar input{flex:1;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:13px;padding:13px 15px;
-  font:500 14.5px var(--jk-ui);color:var(--jk-ink)}
-.jk-inbar input:focus{outline:none;border-color:var(--jk-stone);box-shadow:0 0 0 3px rgba(110,81,53,.12)}
-.jk-send{flex:0 0 auto;width:48px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));
-  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.jk-send:hover{filter:brightness(1.08)}.jk-send svg{width:20px;height:20px;fill:#fdf6ea}
-.jk-cbar{display:flex;gap:8px;padding:10px 14px;background:var(--jk-cream);border-top:1px solid var(--jk-line-soft)}
-.jk-cbar a{flex:1;text-decoration:none;border:1px solid var(--jk-line);border-radius:11px;padding:9px;display:flex;flex-direction:column;
-  align-items:center;gap:3px;font:700 11px var(--jk-ui);color:var(--jk-stone-dk);background:var(--jk-paper);transition:all .2s}
-.jk-cbar a:hover{border-color:var(--jk-stone);background:#fdf6ea}
-.jk-cbar a svg{width:17px;height:17px;fill:var(--jk-stone)}
-
-
-/* ---- Compact tuning: bigger panel, less scroll, centered texts ---- */
-.jk-body{min-height:0}
-.jk-stage{padding:8px 14px 0}
-.jk-step{padding:6px 14px 12px;text-align:center}
-.jk-step-title{text-align:center;margin-top:6px;font-size:18px}
-.jk-step-sub{text-align:center;font-size:12.2px;margin-bottom:9px;line-height:1.35}
-.jk-actions{margin-top:10px}
-.jk-btn{padding:12px 13px;border-radius:12px}
-.jk-btn.ghost{padding:12px 15px}
-.jk-quick{gap:6px;padding:5px 14px 8px}
-.jk-quick button{padding:6px 10px;font-size:11.8px;border-radius:999px}
-.jk-msgs{padding:14px 14px 6px;gap:9px}
-.jk-bub{font-size:13.4px;line-height:1.44;padding:9px 12px}
-.jk-inbar{padding:9px 12px}.jk-inbar input{padding:11px 13px;font-size:13.5px}.jk-send{width:44px}
-.jk-cbar{margin-top:auto;padding:8px 12px}.jk-cbar a{padding:8px 6px;font-size:10.8px;gap:2px}
-.jk-label{text-align:left;margin:10px 0 6px;font-size:11px}
-.jk-input,.jk-textarea,.jk-select{padding:10px 12px;font-size:13.5px;border-radius:11px}
-.jk-textarea{min-height:54px;max-height:74px}
-.jk-letter-grid{gap:6px}.jk-letter .ph{aspect-ratio:16/8}.jk-letter span{padding:5px 3px;font-size:11px}
-.jk-chips{gap:6px}.jk-pick{padding:8px 8px 7px;border-radius:11px;gap:3px}.jk-pick .demo-classic{font-size:22px}.jk-pick .demo-roman{font-size:23px}.jk-pick .demo-modern{font-size:20px}.jk-pick .demo-script{font-size:24px}.jk-pick small{font-size:10.5px}
-.jk-addon{padding:9px 11px;margin-bottom:6px;text-align:left}.jk-addon-tx b{font-size:13px}.jk-addon-tx small{font-size:11px;line-height:1.3}.jk-addon-box{width:20px;height:20px}
-.jk-form-2{gap:8px;margin-bottom:8px}.jk-summary{margin-bottom:10px}.jk-srow{padding:8px 0}.jk-note{padding:9px 11px;font-size:11.5px;margin-bottom:10px}
-.jk-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:2px}
-.jk-mini-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.jk-mini{position:relative;border:1.5px solid var(--jk-line);background:var(--jk-paper);border-radius:12px;padding:9px 8px;min-height:58px;cursor:pointer;display:flex;align-items:center;gap:8px;text-align:left;transition:border-color .2s,background .2s,box-shadow .2s,transform .2s;color:var(--jk-ink)}
-.jk-mini:hover{border-color:#d8c3a0;background:#fffaf3;transform:translateY(-1px);box-shadow:0 6px 14px rgba(110,81,53,.09)}
-.jk-mini.sel{border-color:var(--jk-stone);background:#fdf6ea;box-shadow:0 0 0 2px rgba(110,81,53,.14)}
-.jk-mini.sel::after{content:"✓";position:absolute;top:5px;right:6px;width:17px;height:17px;border-radius:50%;background:var(--jk-stone);color:#fff;font:800 10px var(--jk-ui);display:flex;align-items:center;justify-content:center}
-.jk-mini-ico{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:#f3eadb;border:1px solid #e4d5bf;display:flex;align-items:center;justify-content:center;color:var(--jk-stone-dk);font:800 15px var(--jk-ui)}
-.jk-mini-tx{min-width:0}.jk-mini-tx b{display:block;font:800 12.5px/1.08 var(--jk-ui);color:var(--jk-ink)}.jk-mini-tx small{display:block;margin-top:2px;font:600 10.5px/1.15 var(--jk-ui);color:var(--jk-muted)}
-.jk-stone-dot{width:100%;height:100%;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
-.jk-stone-dot.black{background:linear-gradient(135deg,#070707,#3a3a3a 55%,#111)}
-.jk-stone-dot.gray{background:linear-gradient(135deg,#d9d7d1,#8f8d87 55%,#ecebe6)}
-.jk-stone-dot.red{background:linear-gradient(135deg,#4c1711,#8b3c2d 55%,#c18469)}
-.jk-insc{width:30cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-@media(max-width:520px){.jk-step{padding:6px 12px 12px}.jk-mini-grid{gap:6px}.jk-mini{min-height:54px;padding:8px 7px}.jk-mini-ico{width:28px;height:28px}.jk-mini-tx small{display:none}.jk-letter .ph{display:none}.jk-letter span{padding:8px 3px}.jk-chips{grid-template-columns:repeat(2,1fr)}}
-
-
-/* ---- Final verification fixes: full-height chat, bottom contacts, safer preview text alignment ---- */
-#jk-view-chat.active{display:flex;flex:1 1 auto;min-height:0;overflow:hidden}
-#jk-view-config.active{flex:1 1 auto;min-height:0}
-.jk-chat{flex:1 1 auto;min-height:0}
-.jk-msgs{min-height:0}
-.jk-cbar{flex:0 0 auto}
-.jk-insc .nm,.jk-insc .dt{width:100%;text-align:center;overflow-wrap:break-word}
-@media(min-width:521px){#jk-panel{top:18px;bottom:18px;height:auto}}
-
-
-/* ---- V4 final alignment patch: náhľad bez orezu + stabilný nápis ---- */
-.jk-photo>img{object-fit:contain!important;object-position:center center!important;background:#050505!important}
-.jk-insc{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:normal!important;overflow:hidden!important;padding:0 2px!important}
-.jk-insc .nm,.jk-insc .dt{display:block!important;width:100%!important;text-align:center!important;overflow-wrap:normal!important;word-break:keep-all!important;hyphens:none!important}
-.jk-insc .nm{line-height:.98!important}
-.jk-insc .dt{line-height:1.03!important;margin-top:.08em!important}
-
-/* ---- V5 polish: menej scrollu, vacsie volby, stabilny nahlad ---- */
-#jk-view-config.active{display:flex!important;flex-direction:column!important;overflow:hidden!important}
-.jk-prog{display:none!important}
-.jk-stage{flex:0 0 auto!important;padding:10px 16px 0!important}
-.jk-photo{border-radius:16px!important;box-shadow:0 14px 34px rgba(42,33,27,.18)!important}
-.jk-photo>img{height:clamp(210px,31dvh,300px)!important;aspect-ratio:auto!important}
-#jk-view-config[data-step="3"] .jk-photo>img{height:clamp(185px,26dvh,250px)!important}
-.jk-step{flex:1 1 auto!important;min-height:0!important;overflow:auto!important;padding:10px 16px 0!important;text-align:left!important}
-.jk-step::-webkit-scrollbar{width:6px}.jk-step::-webkit-scrollbar-thumb{background:#d8c3a0;border-radius:999px}
-.jk-step-title{margin:0 0 4px!important;font-size:20px!important;text-align:left!important}
-.jk-step-sub{margin:0 0 12px!important;font-size:13px!important;text-align:left!important}
-.jk-actions.nav{position:sticky!important;bottom:0!important;margin:10px -16px 0!important;padding:12px 16px 14px!important;background:linear-gradient(180deg,rgba(251,247,240,0),var(--jk-cream) 34%,var(--jk-cream))!important}
-.jk-btn{min-height:48px!important;font-size:15px!important;border-radius:14px!important}
-.jk-mini-grid{gap:10px!important}
-.jk-mini{min-height:72px!important;padding:13px 12px!important;border-radius:15px!important;background:#fffdf8!important}
-.jk-mini-ico{width:38px!important;height:38px!important;border-radius:12px!important}
-.jk-mini-tx b{font-size:14.5px!important;line-height:1.12!important}
-.jk-mini-tx small{font-size:12px!important;line-height:1.25!important}
-.jk-mini.sel{background:#fbf0df!important;box-shadow:0 0 0 2px rgba(110,81,53,.18),0 10px 20px rgba(110,81,53,.11)!important}
-.jk-letter-grid{gap:9px!important}.jk-letter span{font-size:12.5px!important;padding:7px 4px!important}
-.jk-chips{gap:9px!important}.jk-pick{min-height:68px!important;padding:12px 10px!important;border-radius:14px!important}
-.jk-addon{padding:12px 13px!important;margin-bottom:8px!important;border-radius:14px!important;background:#fffdf8!important}
-@media(max-width:520px){
-  .jk-stage{padding:8px 12px 0!important}
-  .jk-photo>img{height:clamp(176px,29dvh,230px)!important}
-  #jk-view-config[data-step="3"] .jk-photo>img{height:clamp(150px,23dvh,190px)!important}
-  .jk-step{padding:9px 12px 0!important}
-  .jk-actions.nav{margin:9px -12px 0!important;padding:10px 12px 12px!important}
-  .jk-mini-grid{grid-template-columns:1fr!important}
-  .jk-mini-grid.two{grid-template-columns:1fr 1fr!important}
-  .jk-mini{min-height:60px!important;padding:10px 11px!important}
-  .jk-mini-tx small{display:block!important}
+.topbar{
+  height:76px;
+  margin:18px 22px 0;
+  padding:0 18px;
+  border:1px solid rgba(231,220,201,.95);
+  border-radius:22px;
+  background:rgba(255,253,248,.82);
+  box-shadow:0 16px 40px rgba(42,33,27,.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  backdrop-filter:blur(10px);
+  flex:0 0 auto;
 }
-
-
-
-
-
-/* ---- Polished landing page behind widget ---- */
-.jk-demo{align-items:stretch;justify-content:center;padding:30px 22px 150px;background:radial-gradient(circle at 12% 10%,#fffaf1 0,transparent 34%),radial-gradient(circle at 90% 12%,rgba(176,125,51,.16),transparent 30%),linear-gradient(160deg,#f8efe2 0%,#e7dac8 100%)}
-.jk-site{width:min(1120px,100%);display:flex;flex-direction:column;gap:28px}
-.jk-site-nav{height:68px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,253,248,.78);border:1px solid rgba(231,220,201,.9);border-radius:22px;padding:0 20px;box-shadow:0 14px 34px rgba(42,33,27,.08);backdrop-filter:blur(8px)}
-.jk-site-brand{display:flex;align-items:center;gap:11px;color:var(--jk-ink)}.jk-site-brand span{width:34px;height:34px;border-radius:12px;background:linear-gradient(145deg,#6E5135,#2A211B);box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}.jk-site-brand b{font:800 16px var(--jk-ui)}
-.jk-site-links{display:flex;gap:10px}.jk-site-links a{text-decoration:none;color:#6c5e50;font:800 13px var(--jk-ui);padding:9px 12px;border-radius:999px}.jk-site-links a:hover{background:#fff;color:var(--jk-stone-dk)}
-.jk-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);gap:28px;align-items:center;background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(251,247,240,.92));border:1px solid rgba(231,220,201,.95);border-radius:34px;padding:42px;box-shadow:0 28px 80px rgba(42,33,27,.12);overflow:hidden;position:relative}.jk-hero:before{content:"";position:absolute;right:-120px;top:-120px;width:320px;height:320px;border-radius:50%;background:rgba(176,125,51,.13)}
-.jk-hero-copy{position:relative;z-index:1}.jk-hero-copy .eyebrow{display:inline-flex;background:#fdf6ea;border:1px solid var(--jk-line);border-radius:999px;padding:8px 12px}.jk-hero-copy h1{font:700 clamp(38px,6vw,72px)/.96 var(--jk-eng);letter-spacing:.01em;color:var(--jk-ink);margin:17px 0 14px}.jk-hero-copy p{font:500 17px/1.65 var(--jk-ui);color:#6c5e50;max-width:560px}.jk-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.jk-hero-actions button,.jk-hero-actions a{border:0;border-radius:14px;padding:14px 18px;text-decoration:none;font:800 14px var(--jk-ui);cursor:pointer}.jk-hero-actions button{background:linear-gradient(135deg,var(--jk-stone),var(--jk-stone-dk));color:#fff;box-shadow:0 10px 24px rgba(78,57,36,.23)}.jk-hero-actions a{background:#fff;border:1px solid var(--jk-line);color:var(--jk-stone-dk)}
-.jk-hero-visual{min-height:360px;position:relative;display:grid;place-items:center}.jk-hero-visual:before{content:"";position:absolute;width:92%;height:70%;bottom:3%;border-radius:50%;background:radial-gradient(circle,rgba(0,0,0,.28),transparent 65%);filter:blur(6px)}.jk-stone-card{width:min(420px,90%);height:300px;position:relative;transform:perspective(900px) rotateX(55deg) rotateZ(-18deg);transform-style:preserve-3d}.jk-stone-base{position:absolute;left:8%;right:4%;bottom:18%;height:140px;border-radius:18px;background:linear-gradient(135deg,#131313,#484848 48%,#111);box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 24px 44px rgba(0,0,0,.34)}.jk-stone-head{position:absolute;left:39%;top:1%;width:160px;height:138px;border-radius:10px;background:linear-gradient(145deg,#151515,#565656 48%,#191919);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 16px 28px rgba(0,0,0,.32);transform:rotateX(-55deg) translateZ(74px)}.jk-stone-flower{position:absolute;left:45%;bottom:43%;width:64px;height:24px;border-radius:50%;background:radial-gradient(circle at 25% 45%,#fff 0 10%,transparent 11%),radial-gradient(circle at 52% 42%,#f7f2e8 0 13%,transparent 14%),radial-gradient(circle at 75% 52%,#fff 0 9%,transparent 10%),#48643e;box-shadow:0 5px 10px rgba(0,0,0,.25)}
-.jk-service-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.jk-service-row article{background:rgba(255,253,248,.86);border:1px solid var(--jk-line);border-radius:18px;padding:18px;box-shadow:0 12px 28px rgba(42,33,27,.07)}.jk-service-row b{display:block;color:var(--jk-ink);font:800 15px var(--jk-ui);margin-bottom:4px}.jk-service-row span{font:600 12.5px/1.4 var(--jk-ui);color:var(--jk-muted)}
-@media(max-width:760px){.jk-demo{padding:18px 14px 120px}.jk-site-nav{height:auto;padding:14px}.jk-site-links{display:none}.jk-hero{grid-template-columns:1fr;padding:28px 22px;border-radius:26px}.jk-hero-visual{min-height:230px;order:-1}.jk-stone-card{width:320px;height:220px}.jk-stone-head{width:120px;height:106px}.jk-service-row{grid-template-columns:1fr}.jk-hero-copy h1{font-size:38px}.jk-hero-copy p{font-size:15px}}
-
-/* ---- Mobile hard fix: robust fullscreen, no auto-preview dependency ---- */
-#jk-panel{height:calc(100vh - 36px);height:calc(100svh - 36px);height:calc(100dvh - 36px);min-height:0}
-#jk-root button,#jk-root a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-@media(max-width:520px){
-  html,body{min-height:100%;overflow-x:hidden}
-  #jk-panel{
-    top:0!important;right:0!important;bottom:auto!important;left:0!important;
-    width:100vw!important;height:100vh!important;height:100svh!important;height:100dvh!important;
-    max-height:none!important;border-radius:0!important;transform-origin:bottom center!important;
+.brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:inherit}
+.brand-mark{
+  width:40px;height:40px;border-radius:14px;
+  background:linear-gradient(145deg,#7A5B3B 0%,#4E3924 54%,#2A211B 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 8px 18px rgba(42,33,27,.16);
+  position:relative;flex:0 0 auto;
+}
+.brand-mark:before{
+  content:"";position:absolute;left:10px;top:7px;width:20px;height:23px;
+  border:2px solid #fbf7f0;border-bottom:0;border-radius:12px 12px 4px 4px;
+}
+.brand-mark:after{
+  content:"";position:absolute;left:7px;right:7px;bottom:8px;height:5px;
+  background:#fbf7f0;border-radius:6px;
+  box-shadow:0 -8px 0 -3px rgba(251,247,240,.95);
+}
+.brand b{display:block;font:700 17px var(--ui);letter-spacing:.01em}
+.brand span{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:600}
+.nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.nav a{
+  color:#6c5e50;text-decoration:none;font-weight:800;font-size:13px;
+  padding:10px 13px;border-radius:999px;border:1px solid transparent;
+}
+.nav a:hover,.nav a.active{background:#fff;border-color:var(--line);color:var(--stone-dk)}
+.nav a.alt-link{background:#f7ead7;border-color:#e4cfad;color:#5f4025}
+.shell{
+  flex:1 1 auto;
+  min-height:0;
+  height:calc(100dvh - 94px);
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(360px,430px);
+  gap:22px;
+  padding:22px;
+}
+.viewer-card,.panel{
+  border:1px solid rgba(231,220,201,.95);
+  background:rgba(255,253,248,.82);
+  box-shadow:var(--shadow);
+  border-radius:28px;
+  overflow:hidden;
+}
+.viewer-card{position:relative;min-height:0;display:flex;flex-direction:column}
+.viewer-head{
+  position:absolute;left:20px;top:18px;z-index:4;
+  display:flex;gap:10px;align-items:flex-start;max-width:min(320px,calc(100% - 40px));
+}
+.viewer-title{
+  background:rgba(255,253,248,.88);
+  border:1px solid rgba(231,220,201,.95);
+  border-radius:16px;
+  padding:10px 12px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 14px 30px rgba(42,33,27,.12);
+}
+.viewer-title small{
+  display:block;color:var(--bronze);font-weight:800;font-size:11px;
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;
+}
+.viewer-title h1{margin:0;font:700 clamp(22px,2vw,30px)/1 var(--engrave);letter-spacing:.01em}
+.viewer-alt{
+  display:inline-flex;margin-top:9px;align-items:center;gap:6px;
+  color:var(--stone-dk);text-decoration:none;background:#fff7ea;border:1px solid #e7d4b7;
+  border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;
+}
+.viewer-alt:hover{background:#fff}
+.viewer-tools{display:flex;gap:8px;position:absolute;right:18px;top:18px;z-index:5}
+.toolbtn{
+  border:1px solid rgba(231,220,201,.95);background:rgba(255,253,248,.9);
+  color:var(--stone-dk);border-radius:14px;padding:11px 13px;
+  font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(42,33,27,.12);
+}
+.toolbtn:hover{background:#fff}
+#viewport{position:relative;flex:1 1 auto;min-height:0;background:#100f0d;cursor:grab}
+#viewport:active{cursor:grabbing}
+#viewport canvas{display:block;width:100%;height:100%}
+#loading{
+  position:absolute;inset:0;display:grid;place-items:center;z-index:6;
+  color:#fbf7f0;background:linear-gradient(135deg,#2a211b,#0f0e0d);
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;
+}
+.hint{
+  position:absolute;left:18px;bottom:16px;z-index:4;
+  color:#fdf6ea;background:rgba(42,33,27,.58);
+  border:1px solid rgba(255,255,255,.13);border-radius:14px;
+  padding:9px 12px;font-size:12px;font-weight:700;backdrop-filter:blur(6px);
+}
+.scene-strip{
+  position:absolute;right:18px;bottom:16px;z-index:4;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;
+}
+.scene-strip span{
+  color:#fdf6ea;background:rgba(42,33,27,.58);border:1px solid rgba(255,255,255,.13);
+  border-radius:999px;padding:8px 10px;font-size:11px;font-weight:800;backdrop-filter:blur(6px);
+}
+.panel{display:flex;flex-direction:column;min-height:0;background:var(--cream)}
+.panel-head{
+  padding:18px 18px 16px;
+  background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%);
+  color:#fdf6ea;position:relative;overflow:hidden;flex:0 0 auto;
+}
+.panel-head:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--bronze),#d2b16b,var(--bronze),transparent);
+}
+.panel-head small{display:block;color:rgba(253,246,234,.72);font-weight:700;font-size:12px;margin-top:3px}
+.panel-head h2{margin:0;font:700 22px var(--engrave);letter-spacing:.03em}
+.mobile-stepbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(255,253,248,.76)}
+.mobile-stepbar span{flex:1;text-align:center;font-weight:900;color:var(--stone-dk);font-size:13px}
+.mobile-stepbar button{border:1px solid var(--line);background:#fffdf8;color:var(--stone-dk);border-radius:12px;padding:9px 11px;font-weight:900;cursor:pointer}
+.mobile-stepbar button:disabled{opacity:.45;cursor:default}
+.panel-body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px}
+.panel-body::-webkit-scrollbar{width:7px}.panel-body::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
+.section{
+  background:rgba(255,255,255,.68);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+  display:none;
+}
+.section.active{display:block}
+.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
+.section-title b{font-size:14px;color:var(--ink)}
+.section-title span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.grid{display:grid;gap:9px}
+.grid.two{grid-template-columns:1fr 1fr}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+.choice{
+  border:1.5px solid var(--line);
+  background:#fffdf8;
+  color:var(--ink);
+  border-radius:15px;
+  padding:12px;
+  min-height:67px;
+  text-align:left;
+  cursor:pointer;
+  transition:.18s ease;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.choice:hover{transform:translateY(-1px);border-color:#d8c3a0;box-shadow:0 8px 18px rgba(110,81,53,.08)}
+.choice.sel{border-color:var(--stone);background:#fbf0df;box-shadow:0 0 0 2px rgba(110,81,53,.15)}
+.choice i{
+  width:34px;height:34px;border-radius:12px;background:#f3eadb;border:1px solid #e3d2bc;
+  display:grid;place-items:center;font-style:normal;font-weight:900;color:var(--stone-dk);flex:0 0 auto;
+}
+.choice b{display:block;font-size:13.5px;line-height:1.12}
+.choice small{display:block;margin-top:3px;color:var(--muted);font-size:11.5px;font-weight:600;line-height:1.2}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.swatch{
+  min-height:84px;border:1.5px solid var(--line);border-radius:15px;overflow:hidden;
+  background:#ddd;cursor:pointer;position:relative;transition:.18s ease;
+}
+.swatch:hover{transform:translateY(-1px)}
+.swatch.sel{border-color:var(--stone);box-shadow:0 0 0 2px rgba(110,81,53,.16)}
+.swatch span{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:18px 6px 7px;text-align:center;color:#fff;font-size:10.5px;font-weight:900;
+  background:linear-gradient(transparent,rgba(0,0,0,.72));
+  text-shadow:0 1px 2px rgba(0,0,0,.45);
+}
+.field{margin-bottom:10px}
+.field label{display:block;margin:0 0 6px;color:var(--muted);font-size:12px;font-weight:800}
+.field input,.field textarea{
+  width:100%;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);
+  padding:12px 13px;outline:none;font-size:14px;
+}
+.field textarea{resize:vertical;min-height:68px}
+.field input:focus,.field textarea:focus{border-color:var(--stone);box-shadow:0 0 0 3px rgba(110,81,53,.12)}
+.dots{display:flex;gap:9px;flex-wrap:wrap}
+.dot{
+  width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);
+  cursor:pointer;position:relative;
+}
+.dot.sel{box-shadow:0 0 0 3px rgba(110,81,53,.28)}
+.addons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.addon{justify-content:flex-start;min-height:68px;background:linear-gradient(180deg,#fffdf8,#fbf3e8)}
+.addon i{background:#efe0ca}
+.summary{
+  background:#fffdf8;border:1px solid var(--line);border-radius:18px;padding:13px;
+  font-size:13px;line-height:1.75;color:#5f5145;
+}
+.summary strong{color:var(--ink)}
+.summary-grid{display:grid;gap:8px}
+.summary-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.summary-row:last-child{border-bottom:0}
+.summary-row span{color:var(--muted);font-weight:700}
+.summary-row strong{text-align:right}
+.send-status{display:none;margin-top:10px;padding:11px 12px;border-radius:13px;font-size:13px;font-weight:800;text-align:center}
+.send-status.ok{display:block;background:#eaf4ec;color:#3E7C4F;border:1px solid #cde5d2}
+.send-status.err{display:block;background:#fff0e6;color:#9b4228;border:1px solid #efd3c2}
+.panel-foot{
+  flex:0 0 auto;padding:14px 16px 16px;border-top:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(251,247,240,.86),var(--cream));
+}
+.cta{
+  width:100%;border:0;border-radius:15px;
+  padding:14px 16px;background:linear-gradient(135deg,var(--stone),var(--stone-dk));
+  color:#fdf6ea;font-weight:900;cursor:pointer;box-shadow:0 12px 24px rgba(78,57,36,.24);
+}
+.cta:hover{filter:brightness(1.05)}
+.note{margin-top:9px;color:var(--muted);font-size:11.5px;line-height:1.45;text-align:center}
+.assistant-launcher{
+  position:fixed;left:42px;bottom:96px;z-index:40;border:1px solid rgba(253,246,234,.28);border-radius:999px;
+  padding:12px 18px 12px 15px;background:linear-gradient(135deg,#6E5135,#3A2C20);
+  color:#fdf6ea;font-weight:900;box-shadow:0 14px 34px rgba(42,33,27,.28);cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+}
+.assistant-launcher i{
+  width:30px;height:26px;display:block;position:relative;flex:0 0 auto;
+}
+.assistant-launcher i:before{
+  content:"";position:absolute;left:1px;top:1px;width:24px;height:17px;
+  border:2px solid currentColor;border-radius:10px;
+  background:
+    radial-gradient(circle at 7px 8px,currentColor 0 1.5px,transparent 1.7px),
+    radial-gradient(circle at 12px 8px,currentColor 0 1.5px,transparent 1.7px),
+    radial-gradient(circle at 17px 8px,currentColor 0 1.5px,transparent 1.7px);
+}
+.assistant-launcher i:after{
+  content:"";position:absolute;left:7px;bottom:2px;width:9px;height:7px;
+  border-left:2px solid currentColor;border-bottom:2px solid currentColor;border-bottom-left-radius:6px;
+}
+.assistant-panel{
+  position:fixed;left:22px;bottom:82px;width:min(390px,calc(100vw - 44px));height:min(560px,calc(100dvh - 112px));
+  z-index:41;display:none;flex-direction:column;overflow:hidden;border-radius:24px;border:1px solid var(--line);
+  background:var(--cream);box-shadow:0 24px 70px rgba(42,33,27,.28);
+}
+.assistant-panel.open{display:flex}
+.assistant-head{
+  flex:0 0 auto;padding:15px 16px;background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%);
+  color:#fdf6ea;display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.assistant-head b{display:block;font:700 18px var(--engrave);letter-spacing:.03em}
+.assistant-head span{display:block;font-size:12px;color:rgba(253,246,234,.72);margin-top:2px}
+.assistant-close{border:0;background:rgba(255,247,232,.14);color:#fff;border-radius:12px;width:36px;height:36px;font-weight:900;cursor:pointer}
+.assistant-msgs{flex:1 1 auto;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:11px 13px;border-radius:15px;font-size:13.5px;line-height:1.45}
+.msg.bot{background:#fffdf8;border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--stone),var(--stone-dk));color:#fdf6ea;border-bottom-right-radius:5px}
+.assistant-quick{flex:0 0 auto;display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 10px}
+.assistant-quick button{border:1px solid var(--line);border-radius:999px;background:#fffdf8;color:var(--stone-dk);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer}
+.assistant-input{flex:0 0 auto;display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.assistant-input input{flex:1;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);padding:12px;outline:none}
+.assistant-input button{border:0;border-radius:13px;background:var(--stone);color:#fff;font-weight:900;padding:0 15px;cursor:pointer}
+.config-launcher{display:none}
+@media(max-width:980px){
+  body{overflow:hidden}
+  .page{height:100dvh;min-height:100dvh;overflow:hidden}
+  .topbar{height:60px;margin:8px 8px 0;align-items:center;padding:9px 12px;border-radius:17px}
+  .nav{display:none}
+  .brand-mark{width:34px;height:34px;border-radius:12px}
+  .brand-mark:before{left:9px;top:7px;width:16px;height:19px;border-radius:10px 10px 4px 4px}
+  .brand-mark:after{left:7px;right:7px;bottom:7px;height:4px}
+  .brand b{font-size:14px}.brand span{font-size:11px}
+  .shell{position:relative;display:block;padding:8px;height:calc(100dvh - 68px);overflow:hidden}
+  .viewer-card{height:100%;min-height:0;border-radius:22px}
+  .panel{
+    position:absolute;left:8px;right:8px;bottom:8px;z-index:14;height:min(52dvh,420px);
+    border-radius:24px;box-shadow:0 20px 60px rgba(42,33,27,.28);
   }
-  #jk-panel:not(.open){transform:translateY(100%)!important;opacity:1!important;pointer-events:none!important}
-  #jk-panel.open{transform:translateY(0)!important;opacity:1!important;pointer-events:auto!important}
-  .jk-head{padding-top:calc(13px + env(safe-area-inset-top))!important}
-  .jk-cbar{padding-bottom:calc(8px + env(safe-area-inset-bottom))!important}
-  .jk-inbar{padding-bottom:calc(9px + env(safe-area-inset-bottom))!important}
-  .jk-body,.jk-chat,.jk-msgs{min-height:0!important}
+  .panel-head{padding:13px 15px 12px}.panel-head h2{font-size:20px}.panel-head small{font-size:11px}
+  .panel-body{padding:12px;overflow:auto}
+  .panel-body .section{margin-bottom:0;padding:12px;border-radius:16px}
+  .panel.collapsed{display:none}
+  .config-launcher{
+    position:absolute;left:18px;right:18px;bottom:18px;z-index:16;border:0;border-radius:17px;
+    padding:15px 16px;background:linear-gradient(135deg,var(--stone),var(--stone-dk));
+    color:#fdf6ea;font-weight:900;box-shadow:0 16px 40px rgba(42,33,27,.3);cursor:pointer;
+    align-items:center;justify-content:center;gap:8px;
+  }
+  .config-launcher.show{display:flex}
+  .panel-foot{padding:10px 12px 12px}
+  .note{display:none}
+  .choice{min-height:45px;padding:7px 8px;border-radius:13px;gap:7px}
+  .choice i{width:26px;height:26px;border-radius:10px}
+  .choice b{font-size:12.2px}.choice small{font-size:9.8px;line-height:1.1;margin-top:1px}
+  .swatches{grid-template-columns:1fr 1fr;gap:8px}.swatch{min-height:70px}
+  .addons{grid-template-columns:1fr 1fr}
+  .field input,.field textarea{padding:10px 11px;font-size:13px}.field textarea{min-height:56px}
+  .assistant-launcher{left:auto;right:14px;top:78px;bottom:auto;padding:11px 13px}
+  .assistant-panel{left:8px;right:8px;bottom:8px;width:auto;height:min(72dvh,560px);border-radius:24px}
 }
-
-@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:560px){
+  .viewer-card{height:100%;min-height:0}
+  .viewer-head{left:12px;top:12px}
+  .viewer-title{padding:10px 11px;border-radius:15px}
+  .viewer-title h1{font-size:21px}
+  .viewer-tools{right:12px;top:auto;bottom:calc(min(52dvh,420px) + 22px)}
+  .hint{display:none}
+  .scene-strip{display:none}
+  .grid.three,.swatches{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
-
-<!-- ============ STRÁNKA ============ -->
-<div class="jk-demo">
-  <div class="jk-site">
-    <nav class="jk-site-nav" aria-label="Hlavná navigácia">
-      <div class="jk-site-brand"><span></span><b>Kamenárstvo Jantár</b></div>
-      <div class="jk-site-links"><a href="#">Pomníky</a><a href="3d.html">3D konfigurátor</a><a href="#">Obnova</a><a href="#">Kontakt</a></div>
+<div class="page">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Späť na hlavnú stránku">
+      <span class="brand-mark"></span>
+      <span><b>Kamenárstvo Jantár</b><span>3D návrh pomníka a kamenársky konfigurátor</span></span>
+    </a>
+    <nav class="nav" aria-label="Navigácia">
+      <a class="active" href="index.html">3D konfigurátor</a>
+      <a class="alt-link" href="lacnejsia-verzia.html">Lacnejšia verzia</a>
+      <a href="tel:+421900000000">Zavolať</a>
     </nav>
-    <section class="jk-hero">
-      <div class="jk-hero-copy">
-        <div class="eyebrow">Rodinné kamenárstvo</div>
-        <h1>Dôstojný pomník<br>navrhnutý s citom</h1>
-        <p>Výroba pomníkov, obnova nápisov a montáž hrobových miest. Vyberte si tvar, kameň a nápis priamo online a pošlite nezáväzný dopyt.</p>
-        <div class="jk-hero-actions"><button type="button" onclick="jkToggle()">Navrhnúť pomník</button><a href="3d.html">Otvoriť 3D konfigurátor</a><a href="tel:+421900000000">Zavolať</a></div>
-      </div>
-      <div class="jk-hero-visual" aria-hidden="true">
-        <div class="jk-stone-card">
-          <span class="jk-stone-head"></span><span class="jk-stone-base"></span><span class="jk-stone-flower"></span>
+  </header>
+
+  <main class="shell">
+    <section class="viewer-card">
+      <div class="viewer-head">
+        <div class="viewer-title">
+          <small>Interaktívny náhľad</small>
+          <h1>3D konfigurátor pomníka</h1>
+          <a class="viewer-alt" href="lacnejsia-verzia.html">Lacnejšia verzia s fotkami</a>
         </div>
+      </div>
+      <div class="viewer-tools">
+        <button class="toolbtn" type="button" id="focusText">Nápis</button>
+        <button class="toolbtn" type="button" id="resetView">Celý pomník</button>
+      </div>
+      <div id="viewport">
+        <div id="loading">Načítavam 3D scénu</div>
+        <div class="hint">Potiahnite myšou pre otočenie, kolieskom priblížite detail</div>
+        <div class="scene-strip"><span>3D návrh</span><span>reálne materiály</span><span>nezáväzný dopyt</span></div>
       </div>
     </section>
-    <div class="jk-service-row">
-      <article><b>Pomníky na mieru</b><span>žula, tvar, nápis, doplnky</span></article>
-      <article><b>Obnova hrobov</b><span>čistenie, písmo, zlátenie</span></article>
-      <article><b>Montáž a doprava</b><span>zameranie priamo na cintoríne</span></article>
+
+    <aside class="panel" aria-label="Ovládanie 3D konfigurátora">
+      <div class="panel-head">
+        <h2>Návrh pomníka</h2>
+        <small>Výber tvaru, dosky, kameňa, nápisu a doplnkov</small>
+      </div>
+      <div class="mobile-stepbar" aria-label="Kroky konfigurátora">
+        <button type="button" id="mobilePrev">Späť</button>
+        <span id="mobileStepTitle">Tvar kameňa</span>
+        <button type="button" id="mobileNext">Ďalej</button>
+      </div>
+      <div class="panel-body">
+        <section class="section">
+          <div class="section-title"><b>Tvar kameňa</b><span>6 vzorov</span></div>
+          <div class="grid two" id="shapeOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Veľkosť</b><span>hrobové miesto</span></div>
+          <div class="grid two" id="sizeOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Krycia doska</b><span>spodna cast</span></div>
+          <div class="grid two" id="baseOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Materiál</b><span>7 kameňov</span></div>
+          <div class="swatches" id="materialOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Nápis</b><span>živý náhľad</span></div>
+          <div class="field"><label>Meno / rodina</label><input id="nameInput" value="Rodina Nováková" maxlength="28"></div>
+          <div class="field"><label>Dátumy</label><input id="dateInput" value="1948 - 2024" maxlength="24"></div>
+          <div class="field"><label>Venovanie</label><textarea id="epitaphInput" maxlength="64">S láskou spomíname</textarea></div>
+          <div class="section-title" style="margin-top:12px"><b>Farba písma</b><span>kontrast</span></div>
+          <div class="dots" id="letterOptions"></div>
+          <div class="section-title" style="margin-top:14px"><b>Typ písma</b><span>štýl</span></div>
+          <div class="grid two" id="fontOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Doplnky</b><span>volitelne</span></div>
+          <div class="addons" id="addonOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Aktuálny výber</b><span>súhrn</span></div>
+          <div class="summary" id="summary"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Kontakt</b><span>povinne</span></div>
+          <div class="field"><label>Meno a priezvisko</label><input id="clientName" placeholder="Meno a priezvisko" autocomplete="name"></div>
+          <div class="field"><label>Telefón</label><input id="clientPhone" placeholder="+421 ..." autocomplete="tel"></div>
+          <div class="field"><label>E-mail</label><input id="clientEmail" placeholder="email@example.sk" autocomplete="email"></div>
+          <div class="field"><label>Mesto / cintorín</label><input id="clientPlace" placeholder="napr. Nitra, mestský cintorín"></div>
+          <div class="send-status" id="sendStatus"></div>
+        </section>
+      </div>
+      <div class="panel-foot">
+        <button class="cta" type="button" id="sendInquiry">Odoslať nezáväzný dopyt</button>
+        <div class="note">Lacnejšia fotková verzia zostáva dostupná cez prepnutie v hornej časti.</div>
+      </div>
+    </aside>
+  </main>
+
+  <button class="config-launcher" type="button" id="configLauncher">Upravit 3D navrh</button>
+  <button class="assistant-launcher" type="button" id="assistantLauncher"><i></i> AI asistent</button>
+  <section class="assistant-panel" id="assistantPanel" aria-label="AI asistent">
+    <div class="assistant-head">
+      <div><b>AI asistent</b><span>Pomoc s výberom pomníka a materiálu</span></div>
+      <button class="assistant-close" type="button" id="assistantClose" aria-label="Zavrieť chat">x</button>
     </div>
-  </div>
-</div>
-
-<!-- ============ WIDGET (toto vložte do stránky) ============ -->
-<div id="jk-root">
-  <div id="jk-teaser">
-    <button class="tx" aria-label="Zavrieť" onclick="jkCloseTeaser(event)">✕</button>
-    <b>Navrhnite pomník online</b>
-    <span>Tvar, kameň, nápis a AI asistent — nezáväzne.</span>
-  </div>
-
-  <button id="jk-launcher" aria-label="Otvoriť konfigurátor pomníka" onclick="jkToggle()">
-    <span class="jk-dot" id="jk-dot"></span>
-    <span class="jk-mark" id="jk-launch-mark"></span>
-  </button>
-
-  <section id="jk-panel" aria-label="Konfigurátor Kamenárstvo Jantár">
-    <header class="jk-head">
-      <div class="jk-head-top">
-        <div class="jk-av" id="jk-head-av"></div>
-        <div class="jk-head-txt">
-          <b>Kamenárstvo Jantár</b>
-          <span><i class="jk-live"></i> Konfigurátor &amp; AI asistent</span>
-        </div>
-        <div class="jk-hbtns">
-          <button class="jk-hbtn" aria-label="Začať odznova" onclick="jkReset()" title="Začať odznova">
-            <svg viewBox="0 0 24 24"><path d="M12 5V2L7 7l5 5V8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-          </button>
-          <button class="jk-hbtn" aria-label="Zavrieť" onclick="jkToggle()">
-            <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="jk-modes">
-        <button class="jk-mode active" id="jk-tab-cfg" onclick="jkSetMode('config')">
-          <svg viewBox="0 0 24 24"><path d="M6 20h12v-3H6v3Zm2-5h8V8.6a4 4 0 0 0-8 0V15Z"/></svg> Konfigurátor
-        </button>
-        <button class="jk-mode" id="jk-tab-chat" onclick="jkSetMode('chat')">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8l-4 4V5a1 1 0 0 1 1-1Zm3 6h10V8H7v2Zm0 4h7v-2H7v2Z"/></svg> AI asistent
-        </button>
-      </div>
-    </header>
-
-    <!-- KONFIGURÁTOR -->
-    <div class="jk-body jk-view active" id="jk-view-config">
-      <div class="jk-prog">
-        <div class="jk-prog-row">
-          <span class="jk-prog-label" id="jk-prog-label">Tvar</span>
-          <span class="jk-prog-count" id="jk-prog-count">1 / 7</span>
-        </div>
-        <div class="jk-steps" id="jk-steps"></div>
-      </div>
-      <div class="jk-stage" id="jk-stage"></div>
-      <div class="jk-step" id="jk-step"></div>
+    <div class="assistant-msgs" id="assistantMsgs">
+      <div class="msg bot">Dobrý deň. Pomôžem vybrať tvar, kameň, nápis alebo doplnky. Môžete sa pýtať priamo podľa aktuálneho 3D návrhu.</div>
     </div>
-
-    <!-- CHAT -->
-    <div class="jk-view" id="jk-view-chat">
-      <div class="jk-chat">
-        <div class="jk-msgs" id="jk-msgs"></div>
-        <div class="jk-quick" id="jk-quick"></div>
-        <div class="jk-inbar">
-          <input id="jk-input" placeholder="Opýtajte sa na kameň, nápis, údržbu…" onkeydown="if(event.key==='Enter')jkSend()" autocomplete="off">
-          <button class="jk-send" aria-label="Odoslať" onclick="jkSend()">
-            <svg viewBox="0 0 24 24"><path d="M2 21 23 12 2 3l.01 7L17 12 2.01 14z"/></svg>
-          </button>
-        </div>
-        <div class="jk-cbar" id="jk-cbar"></div>
-      </div>
+    <div class="assistant-quick">
+      <button type="button" data-action="config">Otvoriť konfigurátor</button>
+      <button type="button" data-action="classic">Lacnejšia verzia</button>
+      <button type="button" data-q="aky material odporucas">Aký materiál?</button>
+      <button type="button" data-q="ako upravit napis">Ako nápis?</button>
+      <button type="button" data-q="co zvolit na dvojhrob">Dvojhrob</button>
+    </div>
+    <div class="assistant-input">
+      <input id="assistantInput" placeholder="Napíšte otázku..." autocomplete="off">
+      <button type="button" id="assistantSend">Odoslať</button>
     </div>
   </section>
 </div>
 
+<script src="assets/vendor/three.r128.min.js"></script>
 <script>
 (function(){
-"use strict";
+  const SHAPES = {
+    rect:{title:"Rovný",sub:"klasický tvar",icon:"R"},
+    arch:{title:"Oblúk",sub:"jemná hlavica",icon:"O"},
+    doubleArch:{title:"Dvojitý oblúk",sub:"pre dvojhrob",icon:"2"},
+    book:{title:"Kniha",sub:"otvorená spomienka",icon:"K"},
+    wave:{title:"Vlna",sub:"umelecký vrch",icon:"V"},
+    heart:{title:"Srdcový",sub:"mäkký pietny tvar",icon:"S"}
+  };
+  const SIZES = {
+    single:{title:"Jednohrob",sub:"cca 90 x 200 cm",w:1.42,l:2.68,head:1.22},
+    double:{title:"Dvojhrob",sub:"cca 160 x 220 cm",w:2.25,l:2.9,head:1.72}
+  };
+  const BASES = {
+    full:{title:"Plná doska",sub:"dvojdielna krycia doska"},
+    frame:{title:"Otvorený rám",sub:"stred pre štrk alebo výsadbu"},
+    raised:{title:"Zdvihnutá doska",sub:"vyšší profil s fazetou"},
+    garden:{title:"Doska s otvorom",sub:"miesto na kvety v strede"}
+  };
+  const MATERIALS = {
+    black:{title:"Čierna žula",base:"#151518",flecks:["#070708","#34343a","#777780","#e7e7e7"]},
+    gray:{title:"Sivá žula",base:"#737370",flecks:["#454545","#969690","#d9d7cf","#222"]},
+    red:{title:"Červenohnedá",base:"#693627",flecks:["#321914","#8f5541","#c0896e","#220f0c"]},
+    pearl:{title:"Blue pearl",base:"#252a35",flecks:["#121622","#4f6179","#8da1bb","#d8e3ef"]},
+    ivory:{title:"Svetlá žula",base:"#c9c3b4",flecks:["#fff8e8","#8f8778","#6e6558","#ded8cd"]},
+    green:{title:"Tmavozelená",base:"#1d3029",flecks:["#07100d","#315b4b","#8ca99a","#0b1914"]},
+    bronze:{title:"Bronzový kameň",base:"#5c4a35",flecks:["#251b12","#8e7654","#d2b17a","#3c2c1f"]}
+  };
+  const LETTERS = {
+    gold:{title:"Zlatá",color:"#D5B45A"},
+    silver:{title:"Strieborná",color:"#E3E6EA"},
+    ivory:{title:"Slonová kosť",color:"#F4E6C8"},
+    dark:{title:"Tmavá",color:"#16120E"}
+  };
+  const FONTS = {
+    classic:{title:"Klasické",sub:"pietny serif",css:"Cinzel, Georgia, serif"},
+    elegant:{title:"Elegantné",sub:"jemné písmo",css:"Cormorant Garamond, Georgia, serif"},
+    modern:{title:"Moderné",sub:"čisté písmo",css:"Inter, Arial, sans-serif"},
+    roman:{title:"Rímske",sub:"výrazné kapitálky",css:"Georgia, serif"}
+  };
+  const ADDONS = {
+    cross:{title:"Kríž",sub:"na čelnej doske",icon:"+"},
+    vase:{title:"Kamenná váza",sub:"na pravej strane",icon:"V"},
+    lamp:{title:"Kahanec",sub:"svietnik pri doske",icon:"L"},
+    photo:{title:"Fotokeramika",sub:"oválna fotografia",icon:"F"},
+    bench:{title:"Lavička",sub:"jednoduchý doplnok",icon:"B"},
+    edge:{title:"Bronzová linka",sub:"jemný ozdobný detail",icon:"D"}
+  };
+  const state = {
+    shape:"arch", size:"single", base:"full", material:"gray",
+    letter:"gold", font:"classic", name:"Rodina Nováková", dates:"1948 - 2024", epitaph:"S láskou spomíname",
+    addons:{cross:true}
+  };
+  const $ = id => document.getElementById(id);
+  const viewport = $("viewport");
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  viewport.appendChild(renderer.domElement);
 
-/* ========================= NASTAVENIA ========================= */
-var CONFIG = {
-  brand:    'Kamenárstvo Jantár',
-  phone:    '+421900000000',          // ← doplniť reálne číslo
-  phoneTxt: 'Zavolať',
-  email:    'info@kamenarstvojantar.sk',
-  whatsapp: '421900000000',           // medzinárodný formát bez +
-  privacyUrl: '#',
-  assetBase: 'assets/images/',        // cesta k fotkám (graves/ , lettering/)
-  chatApiUrl: '',                     // voliteľný AI backend (Anthropic proxy). Prázdne = lokálny asistent
-  emailjs: { publicKey:'', serviceId:'', templateId:'' }  // voliteľný EmailJS
-};
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x100f0d);
+  const camera = new THREE.PerspectiveCamera(38, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
 
-/* ========================= DÁTA (žiadne ceny) ========================= */
-var DATA = {
-  // kľúče tvarov/veľkostí/kameňov zodpovedajú názvom fotiek: {size}-{shape}-{stone}.webp
-  shapes: {
-    rect: { title:'Rovný',  sub:'klasický stojaci pomník' },
-    arch: { title:'Oblúk',  sub:'jemná oblúková hlava' },
-    book: { title:'Kniha',  sub:'otvorená spomienka' }
-  },
-  sizes: {
-    single: { title:'Jednohrob', sub:'cca 90 × 200 cm' },
-    double: { title:'Dvojhrob',  sub:'cca 160 × 220 cm' }
-  },
-  stones: {
-    black: { title:'Čierna žula',  sub:'najsilnejší kontrast nápisu' },
-    gray:  { title:'Sivá žula',    sub:'pokojná a praktická' },
-    red:   { title:'Červenohnedá', sub:'teplejší výraz kameňa' }
-  },
-  // farby písma – fotovzorky lettering/{stone}-{letter}.webp
-  letters: {
-    gold:   { title:'Zlatá',     fill:'#E3C36A' },
-    silver: { title:'Strieborná', fill:'#EBEEF2' },
-    white:  { title:'Biela',     fill:'#F6F1E6' }
-  },
-  fonts: {
-    classic: { title:'Klasické',  css:"'Cinzel',Georgia,serif",       up:true },
-    roman:   { title:'Elegantné', css:"'Cormorant Garamond',serif",   up:false },
-    modern:  { title:'Moderné',   css:"'Inter',sans-serif",           up:false },
-    script:  { title:'Písané',    css:"'Dancing Script',cursive",     up:false }
-  },
-  addons: {
-    vase:  { title:'Kamenná váza',       sub:'na živé alebo umelé kvety' },
-    lamp:  { title:'Lampáš / kahanec',   sub:'miesto pre sviečku' },
-    photo: { title:'Fotokeramika',       sub:'oválna fotografia do kameňa' },
-    gild:  { title:'Zlátenie písma',     sub:'ručné dozlátenie nápisu' },
-    cover: { title:'Krycia doska / rám', sub:'uzatvorenie hrobového miesta' }
-  },
-  regions: ['Bratislavský','Trnavský','Nitriansky','Trenčiansky','Žilinský','Banskobystrický','Prešovský','Košický']
-};
+  const env = makeEnvironment();
+  scene.environment = env;
+  scene.add(new THREE.HemisphereLight(0xfffbf0,0x1a1714,.7));
+  const key = new THREE.DirectionalLight(0xffffff,1.75); key.position.set(4,7,5); key.castShadow = true; key.shadow.mapSize.set(2048,2048); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffe0b0,.62); fill.position.set(-4,3,1); scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xdce7ff,.95); rim.position.set(0,4,-6); scene.add(rim);
 
-// pozícia živého nápisu na fotke (center x%, center y%, font cqw, max-šírka cqw)
-// pozícia živého nápisu na fotke per konkrétny záber (center x%, center y%, font cqw, max-šírka cqw)
-var POS = {
-  // Stabilne pozicie textu z predoslej verzie; nemenit spolu s UI polishom.
-  // x/y = stred overlayu v celej 3:2 fotke. fs/w su v cqw.
-  'single-rect-black':{x:63,y:26,fs:3.9,w:22}, 'single-rect-gray':{x:63,y:26,fs:3.9,w:22}, 'single-rect-red':{x:63,y:26,fs:3.9,w:22},
-  'single-arch-black':{x:63,y:27,fs:3.9,w:22}, 'single-arch-gray':{x:63,y:27,fs:3.9,w:22}, 'single-arch-red':{x:63,y:27,fs:3.9,w:22},
-  'single-book-black':{x:63,y:25,fs:3.7,w:26}, 'single-book-gray':{x:63,y:25,fs:3.7,w:26}, 'single-book-red':{x:63,y:25,fs:3.7,w:26},
-  'double-rect-black':{x:62,y:25,fs:3.7,w:30}, 'double-rect-gray':{x:62,y:25,fs:3.7,w:30}, 'double-rect-red':{x:62,y:25,fs:3.7,w:30},
-  'double-arch-black':{x:62,y:26,fs:3.7,w:30}, 'double-arch-gray':{x:62,y:26,fs:3.7,w:30}, 'double-arch-red':{x:62,y:26,fs:3.7,w:30},
-  'double-book-black':{x:62,y:25,fs:3.6,w:32}, 'double-book-gray':{x:62,y:25,fs:3.6,w:32}, 'double-book-red':{x:62,y:25,fs:3.6,w:32}
-};
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(44,44), new THREE.MeshStandardMaterial({color:0x17130f,roughness:.92}));
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(44,9), new THREE.MeshStandardMaterial({color:0x211a14,roughness:.9}));
+  wall.position.set(0,4.1,-2.05);
+  wall.receiveShadow = true;
+  scene.add(wall);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.4,5.2), new THREE.MeshBasicMaterial({map:shadowTexture(),transparent:true,depthWrite:false}));
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.set(0,.004,.45);
+  scene.add(shadow);
 
-var STEPS = ['Tvar','Veľkosť','Kameň','Nápis','Doplnky','Miesto','Dopyt'];
+  const monument = new THREE.Group();
+  scene.add(monument);
+  let stoneMat = makeStoneMaterial(state.material);
+  const darkMat = new THREE.MeshStandardMaterial({color:0x0e0b08,roughness:.38,metalness:.18,envMap:env,envMapIntensity:.7});
+  const bronzeMat = new THREE.MeshStandardMaterial({color:0x8b632d,roughness:.3,metalness:.55,envMap:env,envMapIntensity:1});
+  const gravelMat = new THREE.MeshStandardMaterial({map:gravelTexture(),roughness:.95});
 
-/* ========================= STAV ========================= */
-var S = {
-  open:false, mode:'config', step:0,
-  shape:'rect', size:'single', stone:'black',
-  inscription:'Rodina Nováková', dates:'1948 – 2024', epitaph:'',
-  letter:'gold', font:'classic',
-  addons:{},
-  city:'', cemetery:'', region:'',
-  name:'', phone:'', mail:'', message:'', gdpr:false,
-  chat:[], chatBusy:false
-};
+  const textCanvas = document.createElement("canvas");
+  textCanvas.width = 1400;
+  textCanvas.height = 1100;
+  const textCtx = textCanvas.getContext("2d");
+  const textTex = new THREE.CanvasTexture(textCanvas);
+  textTex.encoding = THREE.sRGBEncoding;
+  const textMat = new THREE.MeshBasicMaterial({map:textTex,transparent:true,depthWrite:false,depthTest:false});
 
-/* ========================= POMÔCKY ========================= */
-function $(id){ return document.getElementById(id); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];}); }
+  let frontZ = -0.8;
+  let headBaseY = 0.38;
+  const POSES = {
+    overview:{dist:5.9,yaw:.58,pitch:.38,target:new THREE.Vector3(0,.72,.45)},
+    text:{dist:2.45,yaw:.08,pitch:.08,target:new THREE.Vector3(0,1.18,-.58)}
+  };
+  let camDist = POSES.overview.dist;
+  let yaw = POSES.overview.yaw;
+  let pitch = POSES.overview.pitch;
+  const target = POSES.overview.target.clone();
+  let cameraAnim = null;
+  let dragging = false, px = 0, py = 0;
 
-function graveUrl(size,shape,stone){ return CONFIG.assetBase+'graves/'+size+'-'+shape+'-'+stone+'.webp'; }
-function letterUrl(stone,letter){ return CONFIG.assetBase+'lettering/'+stone+'-'+letter+'.webp'; }
-
-function markSvg(stroke,fill){
-  stroke=stroke||'#fdf6ea';
-  return '<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">'
-    +'<path d="M9 13C9 9.7 11.7 7 15 7h18c3.3 0 6 2.7 6 6v13c0 3.3-2.7 6-6 6H22l-8 6v-6.3A6 6 0 0 1 9 26V13Z" fill="'+(fill||'none')+'" stroke="'+stroke+'" stroke-width="2.4" stroke-linejoin="round"/>'
-    +'<circle cx="18" cy="20" r="2.1" fill="'+stroke+'"/><circle cx="24" cy="20" r="2.1" fill="'+stroke+'"/><circle cx="30" cy="20" r="2.1" fill="'+stroke+'"/>'
-    +'</svg>';
-}
-
-/* ========================= ŽIVÝ FOTONÁHĽAD ========================= */
-function inscOverlay(){
-  var p = POS[S.size+'-'+S.shape+'-'+S.stone] || {x:47,y:25,fs:4.6,w:28};
-  var f = DATA.fonts[S.font], col = DATA.letters[S.letter].fill;
-  var nm = (S.inscription||'').trim().replace(/\s+/g,' ');
-  if(f.up) nm = nm.toUpperCase();
-  var dt = (S.dates||'').trim();
-  if(!nm && !dt) return '';
-
-  var fs = Math.max(p.fs - Math.max(0,nm.length-16)*0.07, p.fs*0.72);
-
-  return '<div class="jk-insc" style="left:'+p.x+'%;top:'+p.y+'%;width:'+p.w+'cqw;max-width:'+p.w+'cqw;font-family:'+f.css+';color:'+col+'">'
-    +(nm?'<span class="nm" style="font-size:'+fs.toFixed(2)+'cqw">'+esc(nm)+'</span>':'')
-    +(dt?'<span class="dt" style="font-size:'+(fs*0.62).toFixed(2)+'cqw">'+esc(dt)+'</span>':'')
-    +'</div>';
-}
-function capChip(){ return '<div class="jk-cap-chip">'+esc(DATA.shapes[S.shape].title+' · '+DATA.sizes[S.size].title+' · '+DATA.stones[S.stone].title)+'</div>'; }
-function stageHtml(){
-  return '<div class="jk-photo">'
-    +'<img src="'+graveUrl(S.size,S.shape,S.stone)+'" alt="'+esc(DATA.shapes[S.shape].title+', '+DATA.sizes[S.size].title+', '+DATA.stones[S.stone].title)+'" loading="eager" decoding="async">'
-    +inscOverlay()+capChip()+'</div>';
-}
-var lastStageKey='';
-function renderStage(){ $('jk-stage').innerHTML = stageHtml(); lastStageKey = S.size+'-'+S.shape+'-'+S.stone; }
-function refreshOverlay(){
-  var ph = $('jk-stage').querySelector('.jk-photo');
-  if(!ph || !ph.querySelector('img')){ renderStage(); return; }
-  ph.innerHTML = ph.querySelector('img').outerHTML + inscOverlay() + capChip();
-}
-
-/* ========================= KARTY ========================= */
-function miniIcon(kind,key){
-  if(kind==='shape') return ({rect:'▮',arch:'⌒',book:'⌁'}[key]||'');
-  if(kind==='size') return ({single:'1',double:'2'}[key]||'');
-  if(kind==='stone') return '<i class="jk-stone-dot '+key+'"></i>';
-  return '';
-}
-function miniCard(kind,key,item,selected){
-  return '<button class="jk-mini'+(selected?' sel':'')+'" onclick="jkPick(\''+kind+'\',\''+key+'\')">'
-    +'<span class="jk-mini-ico">'+miniIcon(kind,key)+'</span>'
-    +'<span class="jk-mini-tx"><b>'+item.title+'</b><small>'+item.sub+'</small></span></button>';
-}
-function shapeCard(key,item){ return miniCard('shape',key,item,S.shape===key); }
-function sizeCard(key,item){ return miniCard('size',key,item,S.size===key); }
-function stoneCard(key,item){ return miniCard('stone',key,item,S.stone===key); }
-function letterCard(key,item){
-  return '<button class="jk-letter'+(S.letter===key?' sel':'')+'" onclick="jkPick(\'letter\',\''+key+'\')">'
-    +'<img class="ph" src="'+letterUrl(S.stone,key)+'" alt="'+esc(item.title)+'" loading="lazy" decoding="async">'
-    +'<span>'+item.title+'</span></button>';
-}
-
-/* ========================= RENDER KROKU ========================= */
-function renderProgress(){
-  $('jk-prog-label').textContent = STEPS[S.step];
-  $('jk-prog-count').textContent = (S.step+1)+' / '+STEPS.length;
-  $('jk-steps').innerHTML = STEPS.map(function(_,i){
-    var cls = i<S.step ? 'done' : (i===S.step ? 'active' : '');
-    return '<i class="jk-seg '+cls+'"></i>';
-  }).join('');
-}
-function head(t,s){ return '<div class="jk-step-title">'+t+'</div>'+(s?'<div class="jk-step-sub">'+s+'</div>':''); }
-function acts(back){
-  return '<div class="jk-actions nav">'
-    +(back?'<button class="jk-btn ghost" onclick="jkBack()">Späť</button>':'')
-    +'<button class="jk-btn" onclick="jkNext()">'+(S.step===STEPS.length-2?'Zhrnutie':'Pokračovať')+'</button></div>';
-}
-function renderStep(keepScroll){
-  var body=$('jk-view-config');
-  var prevScroll = body ? body.scrollTop : 0;
-  if(body) body.setAttribute('data-step', String(S.step));
-  renderProgress();
-  if((S.size+'-'+S.shape+'-'+S.stone)!==lastStageKey) renderStage(); else refreshOverlay();
-  var html='';
-
-  if(S.step===0){
-    html=head('Tvar pomníka','Vyberte základný tvar hlavy pomníka.')
-      +'<div class="jk-mini-grid">'+Object.keys(DATA.shapes).map(function(k){return shapeCard(k,DATA.shapes[k]);}).join('')+'</div>'
-      +acts(false);
+  function makeEnvironment(){
+    const c = document.createElement("canvas");
+    c.width = 512; c.height = 256;
+    const x = c.getContext("2d");
+    const g = x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0,"#564431");
+    g.addColorStop(.42,"#29231e");
+    g.addColorStop(.55,"#171514");
+    g.addColorStop(1,"#0c0b0a");
+    x.fillStyle = g; x.fillRect(0,0,512,256);
+    x.fillStyle = "rgba(255,245,226,.85)";
+    x.fillRect(58,38,92,72); x.fillRect(318,54,126,58); x.fillRect(224,30,42,42);
+    const tex = new THREE.CanvasTexture(c);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    const pm = new THREE.PMREMGenerator(renderer);
+    const out = pm.fromEquirectangular(tex).texture;
+    tex.dispose(); pm.dispose();
+    return out;
   }
-  else if(S.step===1){
-    html=head('Veľkosť miesta','Jednohrob alebo dvojhrob podľa hrobového miesta.')
-      +'<div class="jk-mini-grid two">'+Object.keys(DATA.sizes).map(function(k){return sizeCard(k,DATA.sizes[k]);}).join('')+'</div>'
-      +acts(true);
+  function graniteTexture(key){
+    const m = MATERIALS[key];
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const x = c.getContext("2d");
+    x.fillStyle = m.base;
+    x.fillRect(0,0,512,512);
+    for(let i=0;i<17000;i++){
+      x.globalAlpha = .12 + Math.random()*.55;
+      x.fillStyle = m.flecks[(Math.random()*m.flecks.length)|0];
+      const s = .45 + Math.random()*2.3;
+      x.fillRect(Math.random()*512,Math.random()*512,s,s);
+    }
+    x.globalAlpha = .16;
+    for(let i=0;i<32;i++){
+      x.strokeStyle = m.flecks[(Math.random()*m.flecks.length)|0];
+      x.lineWidth = .7 + Math.random()*1.6;
+      x.beginPath();
+      const y = Math.random()*512;
+      x.moveTo(-20,y);
+      x.bezierCurveTo(160,y+Math.random()*80-40,340,y+Math.random()*80-40,532,y+Math.random()*80-40);
+      x.stroke();
+    }
+    x.globalAlpha = 1;
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(1.8,1.8);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
   }
-  else if(S.step===2){
-    html=head('Kameň','Druh a farba žuly určujú kontrast nápisu.')
-      +'<div class="jk-mini-grid">'+Object.keys(DATA.stones).map(function(k){return stoneCard(k,DATA.stones[k]);}).join('')+'</div>'
-      +acts(true);
+  function makeStoneMaterial(key){
+    return new THREE.MeshPhysicalMaterial({
+      map:graniteTexture(key),
+      roughness:.18,
+      metalness:0,
+      clearcoat:.9,
+      clearcoatRoughness:.11,
+      envMap:env,
+      envMapIntensity:1.22
+    });
   }
-  else if(S.step===3){
-    html=head('Nápis a písmo','Meno, dátumy a štýl písma — náhľad vidíte hore naživo.')
-      +'<input class="jk-input" id="f-insc" value="'+esc(S.inscription)+'" placeholder="Meno / priezvisko, napr. Rodina Nováková" oninput="jkLive()">'
-      +'<input class="jk-input" id="f-dates" value="'+esc(S.dates)+'" placeholder="Dátumy, napr. 1948 – 2024" style="margin-top:10px" oninput="jkLive()">'
-      +'<div class="jk-label">Farba písma</div>'
-      +'<div class="jk-letter-grid">'+Object.keys(DATA.letters).map(function(k){return letterCard(k,DATA.letters[k]);}).join('')+'</div>'
-      +'<div class="jk-label">Štýl písma</div>'
-      +'<div class="jk-chips">'+Object.keys(DATA.fonts).map(function(k){var it=DATA.fonts[k];
-          return '<button class="jk-pick'+(S.font===k?' sel':'')+'" onclick="jkPick(\'font\',\''+k+'\')"><span class="demo-'+k+'">Aa</span><small>'+it.title+'</small></button>';}).join('')+'</div>'
-      +'<div class="jk-label">Epitaf / venovanie (nepovinné)</div>'
-      +'<textarea class="jk-textarea" id="f-epi" placeholder="napr. S láskou spomíname…" oninput="jkLive()">'+esc(S.epitaph)+'</textarea>'
-      +acts(true);
+  function gravelTexture(){
+    const c = document.createElement("canvas");
+    c.width = c.height = 256;
+    const x = c.getContext("2d");
+    x.fillStyle = "#4b4a48"; x.fillRect(0,0,256,256);
+    for(let i=0;i<7000;i++){
+      x.fillStyle = Math.random()>.52 ? "#2f2f30" : "#6d6b66";
+      x.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*2.6,1+Math.random()*2.6);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(5,8);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
   }
-  else if(S.step===4){
-    html=head('Doplnky','Nepovinné prvky, ktoré viete pridať k pomníku.')
-      +Object.keys(DATA.addons).map(function(k){var it=DATA.addons[k];var on=!!S.addons[k];
-        return '<button class="jk-addon'+(on?' sel':'')+'" onclick="jkAddon(\''+k+'\')">'
-          +'<span class="jk-addon-box"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span>'
-          +'<span class="jk-addon-tx"><b>'+it.title+'</b><small>'+it.sub+'</small></span></button>';}).join('')
-      +acts(true);
+  function shadowTexture(){
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const x = c.getContext("2d");
+    const g = x.createRadialGradient(256,256,20,256,256,250);
+    g.addColorStop(0,"rgba(0,0,0,.52)");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    x.fillStyle = g; x.fillRect(0,0,512,512);
+    return new THREE.CanvasTexture(c);
   }
-  else if(S.step===5){
-    html=head('Miesto realizácie','Kde má pomník stáť — dostupnosť potvrdíme telefonicky.')
-      +'<div class="jk-label">Mesto / obec</div>'
-      +'<input class="jk-input" id="f-city" value="'+esc(S.city)+'" placeholder="napr. Nitra" oninput="jkSyncPlace()">'
-      +'<div class="jk-label">Cintorín (nepovinné)</div>'
-      +'<input class="jk-input" id="f-cem" value="'+esc(S.cemetery)+'" placeholder="napr. Mestský cintorín" oninput="jkSyncPlace()">'
-      +'<div class="jk-label">Kraj</div>'
-      +'<select class="jk-select" id="f-region" onchange="jkSyncPlace()">'
-        +'<option value="">— vyberte kraj —</option>'
-        +DATA.regions.map(function(r){return '<option'+(S.region===r?' selected':'')+'>'+r+'</option>';}).join('')
-      +'</select>'
-      +'<div class="jk-note">Presnú dostupnosť a termín potvrdíme telefonicky. Pri starom pomníku zahŕňame aj demontáž a likvidáciu.</div>'
-      +acts(true);
+  function roundedBox(w,h,d,mat){
+    return new THREE.Mesh(new THREE.BoxGeometry(w,h,d,2,1,2), mat);
   }
-  else {
-    html=head('Zhrnutie a dopyt','Skontrolujte návrh a pošlite nezáväzný dopyt.')
-      +summary()
-      +'<div class="jk-form-2">'
-        +'<input class="jk-input" id="f-name" value="'+esc(S.name)+'" placeholder="Meno a priezvisko" oninput="jkSyncContact()">'
-        +'<input class="jk-input" id="f-phone" value="'+esc(S.phone)+'" placeholder="Telefón" oninput="jkSyncContact()">'
-      +'</div>'
-      +'<input class="jk-input" id="f-mail" value="'+esc(S.mail)+'" placeholder="E-mail" style="margin-bottom:10px" oninput="jkSyncContact()">'
-      +'<textarea class="jk-textarea" id="f-msg" placeholder="Poznámka pre kamenára (nepovinné)" oninput="jkSyncContact()">'+esc(S.message)+'</textarea>'
-      +'<label class="jk-gdpr"><input type="checkbox" id="f-gdpr"'+(S.gdpr?' checked':'')+' onchange="jkSyncContact()">'
-        +'<span>Súhlasím so spracovaním osobných údajov za účelom vybavenia dopytu. <a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">Zásady ochrany</a>.</span></label>'
-      +'<div class="jk-actions"><button class="jk-btn ghost" onclick="jkBack()">Späť</button><button class="jk-btn" id="jk-submit" onclick="jkSubmit()">Odoslať dopyt</button></div>'
-      +'<div class="jk-status" id="jk-status"></div>'
-      +'<div class="jk-alt">'
-        +'<a href="tel:'+CONFIG.phone+'"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg> Zavolať</a>'
-        +'<a href="mailto:'+CONFIG.email+'"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5Z"/></svg> E-mail</a>'
-        +'<a class="wa" href="'+waLink()+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.2-4.8-4.4-.2-.2-1.2-1.6-1.2-3s.8-2.2 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .7.5l.9 2c.1.2.1.4 0 .6l-.4.6c-.2.2-.4.5-.2.8.2.4.9 1.5 2 2.4 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4.1.1.1.8-.1 1.4Z"/></svg> WhatsApp</a>'
-      +'</div>'
-      +'<div class="jk-actions" style="margin-top:10px"><button class="jk-btn ghost" style="flex:1" onclick="jkCopy()">Skopírovať dopyt</button></div>';
+  function makeStelaGeometry(shape,w,h,t){
+    const s = new THREE.Shape();
+    if(shape === "rect"){
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h); s.lineTo(-w/2,h); s.lineTo(-w/2,0);
+    } else if(shape === "arch"){
+      const r = w/2;
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h-r*.86);
+      s.quadraticCurveTo(w/2,h,0,h); s.quadraticCurveTo(-w/2,h,-w/2,h-r*.86); s.lineTo(-w/2,0);
+    } else if(shape === "wave"){
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h*.82);
+      s.bezierCurveTo(w*.18,h*.98,-w*.16,h*.70,-w/2,h*.9); s.lineTo(-w/2,0);
+    } else if(shape === "heart"){
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h*.55);
+      s.bezierCurveTo(w/2,h*.92,w*.14,h*1.04,0,h*.78);
+      s.bezierCurveTo(-w*.14,h*1.04,-w/2,h*.92,-w/2,h*.55); s.lineTo(-w/2,0);
+    } else {
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h); s.lineTo(-w/2,h); s.lineTo(-w/2,0);
+    }
+    const geo = new THREE.ExtrudeGeometry(s,{depth:t,bevelEnabled:true,bevelThickness:.018,bevelSize:.018,bevelSegments:3});
+    geo.translate(0,0,-t/2);
+    return geo;
   }
-  var stepEl=$('jk-step');
-  stepEl.innerHTML=html;
-  if(keepScroll!==true){ stepEl.classList.remove('in'); void stepEl.offsetWidth; stepEl.classList.add('in'); }
-  if(body) body.scrollTop = keepScroll===true ? prevScroll : 0;
-}
-
-function summary(){
-  var addons=Object.keys(S.addons).filter(function(k){return S.addons[k];}).map(function(k){return DATA.addons[k].title;});
-  function r(k,v){return '<div class="jk-srow"><span class="k">'+k+'</span><span class="v">'+esc(v)+'</span></div>';}
-  return '<div class="jk-summary">'
-    +r('Tvar', DATA.shapes[S.shape].title)
-    +r('Veľkosť', DATA.sizes[S.size].title+' · '+DATA.sizes[S.size].sub)
-    +r('Kameň', DATA.stones[S.stone].title)
-    +r('Nápis', (S.inscription||'—')+(S.dates?(' · '+S.dates):''))
-    +r('Písmo', DATA.letters[S.letter].title+' · '+DATA.fonts[S.font].title)
-    +(S.epitaph?r('Epitaf', S.epitaph):'')
-    +r('Doplnky', addons.length?addons.join(', '):'—')
-    +r('Miesto', ([S.city,S.cemetery].filter(Boolean).join(', ')+(S.region?(' ('+S.region+')'):'')) || '—')
-    +'</div>';
-}
-
-/* ========================= AKCIE ========================= */
-window.jkPick=function(kind,key){
-  syncInscription();
-  if(kind==='shape')S.shape=key; else if(kind==='size')S.size=key; else if(kind==='stone')S.stone=key;
-  else if(kind==='letter')S.letter=key; else if(kind==='font')S.font=key;
-  renderStep(true);
-};
-window.jkAddon=function(key){ S.addons[key]=!S.addons[key]; renderStep(true); };
-window.jkNext=function(){ syncInscription(); jkSyncPlace(); jkSyncContact(); if(S.step<STEPS.length-1){S.step++;renderStep();} };
-window.jkBack=function(){ syncInscription(); if(S.step>0){S.step--;renderStep();} };
-window.jkLive=function(){ syncInscription(); refreshOverlay(); };
-function syncInscription(){ var i=$('f-insc'),d=$('f-dates'),e=$('f-epi'); if(i)S.inscription=i.value; if(d)S.dates=d.value; if(e)S.epitaph=e.value; }
-window.jkSyncPlace=function(){ var c=$('f-city'),cm=$('f-cem'),r=$('f-region'); if(c)S.city=c.value; if(cm)S.cemetery=cm.value; if(r)S.region=r.value; };
-window.jkSyncContact=function(){ var n=$('f-name'),p=$('f-phone'),m=$('f-mail'),msg=$('f-msg'),g=$('f-gdpr');
-  if(n)S.name=n.value; if(p)S.phone=p.value; if(m)S.mail=m.value; if(msg)S.message=msg.value; if(g)S.gdpr=g.checked; };
-
-window.jkReset=function(){
-  S.step=0;S.shape='rect';S.size='single';S.stone='black';
-  S.inscription='Rodina Nováková';S.dates='1948 – 2024';S.epitaph='';
-  S.letter='gold';S.font='classic';S.addons={};
-  S.city='';S.cemetery='';S.region='';
-  S.name='';S.phone='';S.mail='';S.message='';S.gdpr=false;
-  if(S.mode!=='config')jkSetMode('config'); else renderStep();
-};
-
-/* ========================= DOPYT ========================= */
-function briefText(){
-  var addons=Object.keys(S.addons).filter(function(k){return S.addons[k];}).map(function(k){return DATA.addons[k].title;});
-  return [
-    'DOPYT — '+CONFIG.brand,'',
-    'Tvar: '+DATA.shapes[S.shape].title,
-    'Veľkosť: '+DATA.sizes[S.size].title+' ('+DATA.sizes[S.size].sub+')',
-    'Kameň: '+DATA.stones[S.stone].title,
-    'Nápis: '+(S.inscription||'—')+(S.dates?(' · '+S.dates):''),
-    'Písmo: '+DATA.letters[S.letter].title+', '+DATA.fonts[S.font].title,
-    'Epitaf: '+(S.epitaph||'—'),
-    'Doplnky: '+(addons.length?addons.join(', '):'—'),
-    'Miesto: '+([S.city,S.cemetery].filter(Boolean).join(', ')||'—')+(S.region?(' / '+S.region+' kraj'):''),'',
-    'Meno: '+(S.name||'—'),'Telefón: '+(S.phone||'—'),'E-mail: '+(S.mail||'—'),'Poznámka: '+(S.message||'—')
-  ].join('\n');
-}
-function waLink(){ return 'https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent(briefText()); }
-function mailLink(){ return 'mailto:'+CONFIG.email+'?subject='+encodeURIComponent('Dopyt na pomník — '+CONFIG.brand)+'&body='+encodeURIComponent(briefText()); }
-
-window.jkCopy=function(){
-  var t=briefText();
-  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){toast('Dopyt skopírovaný');}).catch(function(){toast('Dopyt pripravený');}); }
-  else { toast('Dopyt pripravený'); }
-};
-window.jkSubmit=function(){
-  jkSyncContact();
-  var st=$('jk-status');
-  if(!S.name||!(S.phone||S.mail)){ st.className='jk-status err'; st.textContent='Doplňte meno a telefón alebo e-mail.'; return; }
-  if(!S.gdpr){ st.className='jk-status err'; st.textContent='Potvrďte súhlas so spracovaním údajov.'; return; }
-  var btn=$('jk-submit'); btn.disabled=true; btn.textContent='Odosielam…';
-  var done=function(ok){ btn.disabled=false; btn.textContent='Odoslať dopyt';
-    if(ok){ st.className='jk-status ok'; st.textContent='Ďakujeme, dopyt sme prijali. Čoskoro sa ozveme.'; }
-    else { st.className='jk-status err'; st.textContent='Odoslanie cez formulár nevyšlo — otvorili sme e-mail.'; window.location.href=mailLink(); } };
-  var ej=CONFIG.emailjs;
-  if(ej.publicKey&&ej.serviceId&&ej.templateId&&window.emailjs){
-    try{ emailjs.init({publicKey:ej.publicKey});
-      emailjs.send(ej.serviceId,ej.templateId,{from_name:S.name,phone:S.phone,email:S.mail,message:briefText(),brand:CONFIG.brand})
-        .then(function(){done(true);}).catch(function(){done(false);});
-    }catch(e){done(false);}
-  } else { window.location.href=mailLink(); setTimeout(function(){done(true);},400); }
-};
-
-/* ========================= AI ASISTENT ========================= */
-var FALLBACK_INTRO='Dobrý deň. Som AI asistent Kamenárstva Jantár. Poradím s výberom kameňa, veľkosti, nápisu či údržby — alebo otvorte konfigurátor a navrhnite pomník priamo tu.';
-var QUICK=[
-  {label:'Otvoriť konfigurátor', cfg:true, action:function(){jkSetMode('config');}},
-  {label:'Postup spolupráce', q:'Aký je postup spolupráce?'},
-  {label:'Aký kameň zvoliť?', q:'Aký kameň je najvhodnejší na pomník?'},
-  {label:'Veľkosť hrobu', q:'Ako vybrať veľkosť pomníka?'},
-  {label:'Nápis a písmo', q:'Aký nápis a písmo odporúčate?'},
-  {label:'Údržba', q:'Ako sa stará o žulový pomník?'}
-];
-function renderChat(){
-  var box=$('jk-msgs');
-  box.innerHTML = S.chat.map(function(m){
-    if(m.typing) return '<div class="jk-row bot"><span class="ava">'+markSvg('#fdf6ea')+'</span><div class="jk-bub jk-typing"><i></i><i></i><i></i></div></div>';
-    return '<div class="jk-row '+(m.role==='me'?'me':'bot')+'">'+(m.role==='me'?'':'<span class="ava">'+markSvg('#fdf6ea')+'</span>')+'<div class="jk-bub">'+m.html+'</div></div>';
-  }).join('');
-  box.scrollTop=box.scrollHeight;
-  $('jk-quick').innerHTML = QUICK.map(function(q,i){ return '<button class="'+(q.cfg?'cfg':'')+'" onclick="jkQuick('+i+')">'+q.label+'</button>'; }).join('');
-  $('jk-cbar').innerHTML =
-    '<a href="tel:'+CONFIG.phone+'"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.24 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .56 3.5 1 1 0 0 1-.25 1z"/></svg>'+CONFIG.phoneTxt+'</a>'
-    +'<a href="mailto:'+CONFIG.email+'"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5Z"/></svg>E-mail</a>'
-    +'<a href="'+waLink()+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Z"/></svg>WhatsApp</a>';
-}
-window.jkQuick=function(i){ var q=QUICK[i]; if(q.action){q.action();return;} pushMe(q.q); reply(q.q); };
-window.jkSend=function(){ var inp=$('jk-input'); var v=(inp.value||'').trim(); if(!v||S.chatBusy)return; inp.value=''; pushMe(v); reply(v); };
-function pushMe(t){ S.chat.push({role:'me',html:esc(t)}); renderChat(); }
-function pushBot(html){ S.chat.push({role:'bot',html:html}); renderChat(); }
-function reply(q){
-  S.chatBusy=true; S.chat.push({typing:true}); renderChat();
-  var finish=function(text){ S.chat=S.chat.filter(function(m){return !m.typing;}); pushBot(formatReply(text)); S.chatBusy=false; };
-  if(CONFIG.chatApiUrl){
-    fetch(CONFIG.chatApiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,context:contextSummary()})})
-      .then(function(r){return r.json();}).then(function(d){ finish(d.reply||d.message||localAnswer(q)); }).catch(function(){ finish(localAnswer(q)); });
-  } else { setTimeout(function(){ finish(localAnswer(q)); }, 520+Math.random()*420); }
-}
-function formatReply(t){ return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>'); }
-function contextSummary(){ return 'Aktuálny návrh: '+DATA.shapes[S.shape].title+', '+DATA.sizes[S.size].title+', '+DATA.stones[S.stone].title+', písmo '+DATA.letters[S.letter].title+'/'+DATA.fonts[S.font].title+'.'; }
-function localAnswer(q){
-  var l=String(q||'').toLowerCase();
-  if(/postup|spolupr|proces|ako to funguje/.test(l))
-    return 'Postup spolupráce je jednoduchý:\n\n1. **Vyberiete návrh** v konfigurátore — tvar, veľkosť, kameň a nápis.\n2. **Odošlete dopyt** s kontaktom a miestom realizácie.\n3. **Ozveme sa vám** a overíme rozmery, cintorín a technické detaily.\n4. **Pripravíme ponuku** podľa zamerania a zvolených doplnkov.\n5. **Po odsúhlasení** nasleduje výroba, doprava a montáž pomníka.';
-  if(/kame|žul|zul|granit|materi/.test(l))
-    return 'Na pomníky sa používa najmä žula — tvrdá a odolná. **Čierna** dáva najsilnejší kontrast nápisu, **sivá** je pokojná a praktická a **červenohnedá** pôsobí teplejšie. Teraz máte vybranú '+DATA.stones[S.stone].title+'. Pokojne si to prepnite v konfigurátore.';
-  if(/veľko|velko|hrob|rozmer/.test(l))
-    return 'Vyberáte medzi **jednohrobom** a **dvojhrobom**. Presné rozmery vždy potvrdíme zameraním priamo na cintoríne, aby pomník sadol na hrobové miesto.';
-  if(/nápis|napis|písm|pism|font|text/.test(l))
-    return 'Nápis je lepšie držať krátky a čitateľný. Pre tmavý kameň sa hodí **zlatá** alebo **strieborná**, na svetlejší kameň aj **biela**. Farbu aj štýl písma vidíte naživo v kroku „Nápis".';
-  if(/údrž|udrz|čisti|cisti|starostl/.test(l))
-    return 'Žula je nenáročná — stačí ju umyť vodou a jemnou handrou, prípadne neutrálnym prípravkom na kameň. Vyhnite sa kyselinám a drôtenke. Zlátenie písma vieme po rokoch obnoviť.';
-  if(/cen|stoj|rozpo|koľko|kolko|euro/.test(l))
-    return 'Konkrétnu cenu pripravíme ako nezáväznú ponuku — závisí od veľkosti, kameňa, doplnkov, demontáže starého pomníka a miesta. Dokončite návrh v konfigurátore a pošlite dopyt, alebo použite dole tlačidlo Zavolať.';
-  if(/termín|termin|kedy|dlho|čaka|caka/.test(l))
-    return 'Termín závisí od ročného obdobia a typu prác. Po zameraní vám dáme konkrétny odhad — radi to upresníme telefonicky cez tlačidlo Zavolať dole v chate.';
-  if(/demont|stary|starý|obnov|reno/.test(l))
-    return 'Áno, vieme demontovať a zlikvidovať starý pomník, obnoviť písmo aj vyrovnať osadenie. Uveďte to prosím v poznámke dopytu alebo v kroku „Miesto realizácie".';
-  if(/ahoj|dobr|zdrav|čau|cau/.test(l)) return FALLBACK_INTRO;
-  return 'Rád poradím s kameňom, veľkosťou, nápisom, doplnkami či miestom realizácie. Najjednoduchšie je otvoriť **konfigurátor** a navrhnúť pomník krok po kroku — alebo mi napíšte konkrétnu otázku.';
-}
-
-/* ========================= REŽIM / OTVÁRANIE ========================= */
-window.jkSetMode=function(mode){
-  S.mode=mode;
-  $('jk-tab-cfg').classList.toggle('active',mode==='config');
-  $('jk-tab-chat').classList.toggle('active',mode==='chat');
-  $('jk-view-config').classList.toggle('active',mode==='config');
-  $('jk-view-chat').classList.toggle('active',mode==='chat');
-  if(mode==='config') renderStep();
-  else { if(!S.chat.length){ S.chat.push({role:'bot',html:formatReply(FALLBACK_INTRO)}); } renderChat(); setTimeout(function(){var i=$('jk-input');if(i)i.focus();},120); }
-};
-window.jkToggle=function(){
-  S.open=!S.open;
-  $('jk-panel').classList.toggle('open',S.open);
-  $('jk-launcher').classList.toggle('open',S.open);
-  $('jk-dot').classList.remove('show');
-  if(S.open){ jkCloseTeaser(); jkSetMode('config'); }
-};
-window.jkCloseTeaser=function(e){ if(e)e.stopPropagation(); $('jk-teaser').classList.remove('show'); };
-
-function toast(text){
-  var el=$('jk-toast');
-  if(!el){ el=document.createElement('div'); el.id='jk-toast';
-    el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);opacity:0;background:#2A211B;color:#fdf6ea;border-radius:99px;padding:11px 18px;font:700 13px Inter,sans-serif;box-shadow:0 16px 38px rgba(42,33,27,.3);z-index:2147483600;transition:all .22s;pointer-events:none';
-    document.body.appendChild(el); }
-  el.textContent=text; el.style.opacity='1'; el.style.transform='translate(-50%,0)';
-  setTimeout(function(){el.style.opacity='0';el.style.transform='translate(-50%,12px)';},1700);
-}
-
-/* ========================= INIT ========================= */
-function init(){
-  $('jk-launch-mark').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.10)');
-  $('jk-head-av').innerHTML=markSvg('#fdf6ea','rgba(253,246,234,.12)');
-  renderStep();
-  // Mobile Safari / embedded iframe: explicit touch handlers so opening works reliably.
-  var launcher=$('jk-launcher');
-  if(launcher && !launcher.dataset.touchReady){
-    launcher.dataset.touchReady='1';
-    launcher.addEventListener('touchend',function(e){e.preventDefault();jkToggle();},{passive:false});
+  function clearGroup(g){
+    while(g.children.length){
+      const ch = g.children.pop();
+      ch.traverse(o => {
+        if(o.geometry) o.geometry.dispose();
+        if(o.material && o.material.dispose && o.material !== stoneMat && o.material !== textMat) {}
+      });
+      g.remove(ch);
+    }
   }
-  setTimeout(function(){ if(!S.open){ $('jk-teaser').classList.add('show'); $('jk-dot').classList.add('show'); } },2600);
-  // Auto-open preview disabled: file opens closed on desktop aj mobile.
-  try{ if(window.parent!==window){ window.parent.postMessage({jantar:'ready'},'*'); } }catch(e){}
-}
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
-else init();
+  function buildMonument(){
+    clearGroup(monument);
+    const size = SIZES[state.size];
+    const W = size.w;
+    const L = size.l;
+    const rail = .13;
+    const railH = .18;
+    const centerZ = .52;
+    const backZ = centerZ - L/2;
+    const frontRailZ = centerZ + L/2 - rail/2;
+    const backRailZ = backZ + rail/2;
+
+    const slab = roundedBox(W+.16,.07,L+.18,stoneMat);
+    slab.position.set(0,.035,centerZ);
+    monument.add(slab);
+
+    const left = roundedBox(rail,railH,L,stoneMat); left.position.set(-W/2+rail/2,.16,centerZ); monument.add(left);
+    const right = roundedBox(rail,railH,L,stoneMat); right.position.set(W/2-rail/2,.16,centerZ); monument.add(right);
+    const front = roundedBox(W,railH,rail,stoneMat); front.position.set(0,.16,frontRailZ); monument.add(front);
+    const back = roundedBox(W,railH,rail,stoneMat); back.position.set(0,.16,backRailZ); monument.add(back);
+
+    const pedH = .16;
+    const pedD = .48;
+    const pedZ = backZ + .23;
+    const ped = roundedBox(W+.08,pedH,pedD,stoneMat);
+    ped.position.set(0,.24+pedH/2,pedZ);
+    monument.add(ped);
+    headBaseY = .24 + pedH;
+    frontZ = pedZ + .10 + .014;
+
+    const coverStart = backZ + pedD + .04;
+    const coverLen = centerZ + L/2 - coverStart - .03;
+    buildCover(W,coverLen,coverStart,centerZ);
+
+    buildHead(size.head, state.shape, pedZ);
+    buildAccessories(W,L,centerZ,pedZ);
+    monument.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+    drawInscription();
+    updateCameraPose(false);
+  }
+  function buildCover(W,coverLen,coverStart,centerZ){
+    if(state.base === "frame"){
+      const gravel = roundedBox(W-.33,.045,coverLen-.16,gravelMat);
+      gravel.position.set(0,.205,coverStart + coverLen/2);
+      monument.add(gravel);
+      return;
+    }
+    if(state.base === "garden"){
+      const left = roundedBox((W-.16)/2-.14,.08,coverLen,stoneMat);
+      const right = roundedBox((W-.16)/2-.14,.08,coverLen,stoneMat);
+      left.position.set(-W*.25,.29,coverStart+coverLen/2);
+      right.position.set(W*.25,.29,coverStart+coverLen/2);
+      monument.add(left,right);
+      const gravel = roundedBox(.42,.04,coverLen-.22,gravelMat);
+      gravel.position.set(0,.306,coverStart+coverLen/2);
+      monument.add(gravel);
+      return;
+    }
+    if(state.base === "raised"){
+      const bottom = roundedBox(W+.04,.09,coverLen+.02,stoneMat);
+      bottom.position.set(0,.285,coverStart+coverLen/2);
+      const top = roundedBox(W-.12,.055,coverLen-.12,stoneMat);
+      top.position.set(0,.36,coverStart+coverLen/2);
+      monument.add(bottom,top);
+      return;
+    }
+    const gap = .015;
+    const halfW = (W+.04-gap)/2;
+    const a = roundedBox(halfW,.08,coverLen+.02,stoneMat);
+    const b = roundedBox(halfW,.08,coverLen+.02,stoneMat);
+    a.position.set(-halfW/2-gap/2,.30,coverStart+coverLen/2);
+    b.position.set(halfW/2+gap/2,.30,coverStart+coverLen/2);
+    monument.add(a,b);
+  }
+  function buildHead(headW,shape,pedZ){
+    const h = state.size === "double" ? 1.46 : 1.38;
+    const t = .22;
+    if(shape === "doubleArch"){
+      const oneW = headW*.47;
+      const g = makeStelaGeometry("arch",oneW,h,t);
+      const a = new THREE.Mesh(g,stoneMat); a.position.set(-oneW*.53,headBaseY,pedZ);
+      const b = new THREE.Mesh(g.clone(),stoneMat); b.position.set(oneW*.53,headBaseY,pedZ);
+      monument.add(a,b);
+      const seam = roundedBox(.035,h*.78,.235,darkMat); seam.position.set(0,headBaseY+h*.39,pedZ+.01); monument.add(seam);
+    } else if(shape === "book"){
+      const pageW = headW*.49;
+      const pageH = h*.96;
+      const left = new THREE.Mesh(new THREE.BoxGeometry(pageW,pageH,t),stoneMat);
+      const right = new THREE.Mesh(new THREE.BoxGeometry(pageW,pageH,t),stoneMat);
+      left.position.set(-pageW*.48,headBaseY+pageH/2,pedZ);
+      right.position.set(pageW*.48,headBaseY+pageH/2,pedZ);
+      left.rotation.y = -.075; right.rotation.y = .075;
+      monument.add(left,right);
+      const spine = roundedBox(.05,pageH,.24,darkMat); spine.position.set(0,headBaseY+pageH/2,pedZ+.005); monument.add(spine);
+    } else {
+      const g = makeStelaGeometry(shape,headW,h,t);
+      const mesh = new THREE.Mesh(g,stoneMat);
+      mesh.position.set(0,headBaseY,pedZ);
+      monument.add(mesh);
+    }
+    const planeW = Math.min(headW*.82,1.32);
+    const planeH = .82;
+    const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(planeW,planeH),textMat);
+    textPlane.position.set(0,headBaseY+h*.45,pedZ+t/2+.004);
+    textPlane.renderOrder = 20;
+    monument.add(textPlane);
+    POSES.text.target.set(0,headBaseY+h*.45,pedZ+.1);
+  }
+  function buildAccessories(W,L,centerZ,pedZ){
+    if(state.addons.cross){
+      const group = new THREE.Group();
+      const v = roundedBox(.06,.33,.026,bronzeMat);
+      const h = roundedBox(.2,.055,.026,bronzeMat);
+      v.position.y = 0; h.position.y = .08;
+      group.add(v,h);
+      group.position.set(-Math.min(.42,W*.2),headBaseY+1.02,pedZ+.128);
+      monument.add(group);
+    }
+    if(state.addons.photo){
+      const photo = new THREE.Mesh(new THREE.CircleGeometry(.13,48),new THREE.MeshStandardMaterial({color:0xf3eee4,roughness:.35,metalness:.1}));
+      photo.position.set(Math.min(.42,W*.2),headBaseY+.82,pedZ+.129);
+      monument.add(photo);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(.135,.011,8,48),bronzeMat);
+      rim.position.copy(photo.position);
+      monument.add(rim);
+    }
+    if(state.addons.vase){
+      const vase = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(.075,.105,.28,32),stoneMat);
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.09,32),stoneMat);
+      body.position.y=.14; neck.position.y=.325;
+      vase.add(body,neck);
+      vase.position.set(W*.30,.34,centerZ+.82);
+      monument.add(vase);
+    }
+    if(state.addons.lamp){
+      const lamp = new THREE.Group();
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,.08,28),darkMat);
+      const glass = new THREE.Mesh(new THREE.CylinderGeometry(.065,.075,.16,28),new THREE.MeshStandardMaterial({color:0xffd39b,roughness:.18,metalness:0,transparent:true,opacity:.62}));
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,.05,28),bronzeMat);
+      base.position.y=.04; glass.position.y=.16; top.position.y=.265;
+      lamp.add(base,glass,top);
+      lamp.position.set(-W*.32,.34,centerZ+.82);
+      monument.add(lamp);
+    }
+    if(state.addons.bench){
+      const bench = new THREE.Group();
+      const seat = roundedBox(.46,.045,.18,stoneMat);
+      const l1 = roundedBox(.055,.14,.075,stoneMat);
+      const l2 = roundedBox(.055,.14,.075,stoneMat);
+      seat.position.y=.33; l1.position.set(-.15,.24,0); l2.position.set(.15,.24,0);
+      bench.add(seat,l1,l2);
+      bench.position.set(0,.02,centerZ+L/2+.28);
+      monument.add(bench);
+    }
+    if(state.addons.edge){
+      const line = new THREE.Group();
+      const top = roundedBox(W*.72,.018,.022,bronzeMat);
+      const left = roundedBox(.018,.22,.022,bronzeMat);
+      const right = roundedBox(.018,.22,.022,bronzeMat);
+      top.position.set(0,headBaseY+.62,pedZ+.132);
+      left.position.set(-W*.22,headBaseY+.51,pedZ+.132);
+      right.position.set(W*.22,headBaseY+.51,pedZ+.132);
+      line.add(top,left,right);
+      monument.add(line);
+    }
+  }
+  function drawInscription(){
+    const x = textCtx;
+    x.clearRect(0,0,textCanvas.width,textCanvas.height);
+    const letter = LETTERS[state.letter].color;
+    const font = FONTS[state.font].css;
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.shadowColor = "rgba(0,0,0,.55)";
+    x.shadowBlur = 5;
+    x.shadowOffsetY = 3;
+    const name = (state.name || "").trim();
+    const dates = (state.dates || "").trim();
+    const epi = (state.epitaph || "").trim();
+    const cx = state.addons.photo ? 545 : 700;
+    const maxTextWidth = state.addons.photo ? 560 : 900;
+    x.fillStyle = letter;
+    x.font = `700 ${name.length > 20 ? 74 : 88}px ${font}`;
+    wrapCentered(x,name.toUpperCase(),cx,410,maxTextWidth,92);
+    x.font = `500 54px ${font}`;
+    x.fillText(dates,cx,570);
+    if(epi){
+      x.font = `500 46px ${font}`;
+      wrapCentered(x,epi,cx,690,maxTextWidth,54);
+    }
+    x.shadowBlur = 0;
+    x.globalAlpha = .5;
+    x.strokeStyle = letter;
+    x.lineWidth = 3;
+    x.beginPath();
+    x.moveTo(cx-180,500);
+    x.lineTo(cx+180,500);
+    x.stroke();
+    x.globalAlpha = 1;
+    textTex.needsUpdate = true;
+  }
+  function wrapCentered(ctx,text,x,y,maxWidth,lineHeight){
+    if(!text) return;
+    const words = text.split(/\s+/);
+    let lines = [], line = "";
+    words.forEach(word => {
+      const test = line ? line + " " + word : word;
+      if(ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    lines.push(line);
+    const start = y - ((lines.length - 1) * lineHeight / 2);
+    lines.forEach((ln,i) => ctx.fillText(ln,x,start+i*lineHeight));
+  }
+  function applyCamera(){
+    camera.position.set(
+      target.x + camDist*Math.sin(yaw)*Math.cos(pitch),
+      target.y + camDist*Math.sin(pitch),
+      target.z + camDist*Math.cos(yaw)*Math.cos(pitch)
+    );
+    camera.lookAt(target);
+  }
+  function goPose(name){
+    const p = POSES[name];
+    const start = {dist:camDist,yaw,pitch,tx:target.x,ty:target.y,tz:target.z};
+    const t0 = performance.now(), dur = 850;
+    cameraAnim = now => {
+      let k = Math.min((now-t0)/dur,1);
+      k = k < .5 ? 2*k*k : 1 - Math.pow(-2*k+2,2)/2;
+      camDist = start.dist + (p.dist - start.dist)*k;
+      yaw = start.yaw + (p.yaw - start.yaw)*k;
+      pitch = start.pitch + (p.pitch - start.pitch)*k;
+      target.x = start.tx + (p.target.x - start.tx)*k;
+      target.y = start.ty + (p.target.y - start.ty)*k;
+      target.z = start.tz + (p.target.z - start.tz)*k;
+      if(k >= 1) cameraAnim = null;
+    };
+  }
+  function updateCameraPose(animate){
+    if(animate) goPose("overview");
+    else {
+      const p = POSES.overview;
+      camDist = p.dist; yaw = p.yaw; pitch = p.pitch; target.copy(p.target);
+    }
+  }
+  let wizardStepIndex = 0;
+  function renderSummary(){
+    const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title);
+    $("summary").innerHTML =
+      `<div class="summary-grid">`+
+      `<div class="summary-row"><span>Tvar</span><strong>${SHAPES[state.shape].title}</strong></div>`+
+      `<div class="summary-row"><span>Veľkosť</span><strong>${SIZES[state.size].title}</strong></div>`+
+      `<div class="summary-row"><span>Doska</span><strong>${BASES[state.base].title}</strong></div>`+
+      `<div class="summary-row"><span>Material</span><strong>${MATERIALS[state.material].title}</strong></div>`+
+      `<div class="summary-row"><span>Nápis</span><strong>${state.name || "-"} / ${state.dates || "-"}</strong></div>`+
+      `<div class="summary-row"><span>Pismo</span><strong>${FONTS[state.font].title}, ${LETTERS[state.letter].title}</strong></div>`+
+      `<div class="summary-row"><span>Doplnky</span><strong>${addonNames.length ? addonNames.join(", ") : "-"}</strong></div>`+
+      `</div>`;
+  }
+  function optionButton(group,key,item,active,handler){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "choice" + (active ? " sel" : "");
+    b.dataset.key = key;
+    b.innerHTML = `<i>${item.icon || item.title.charAt(0)}</i><span><b>${item.title}</b><small>${item.sub || ""}</small></span>`;
+    b.addEventListener("click", () => {
+      group.querySelectorAll(".choice").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel");
+      handler(key);
+      renderSummary();
+    });
+    group.appendChild(b);
+  }
+  function renderControls(){
+    const shapeEl = $("shapeOptions");
+    Object.entries(SHAPES).forEach(([k,item]) => optionButton(shapeEl,k,item,state.shape===k,key => {state.shape=key;buildMonument();}));
+    const sizeEl = $("sizeOptions");
+    Object.entries(SIZES).forEach(([k,item]) => optionButton(sizeEl,k,item,state.size===k,key => {state.size=key;buildMonument();}));
+    const baseEl = $("baseOptions");
+    Object.entries(BASES).forEach(([k,item]) => optionButton(baseEl,k,item,state.base===k,key => {state.base=key;buildMonument();}));
+    const matEl = $("materialOptions");
+    Object.entries(MATERIALS).forEach(([k,item]) => {
+      const sw = document.createElement("button");
+      sw.type = "button";
+      sw.className = "swatch" + (state.material === k ? " sel" : "");
+      sw.dataset.key = k;
+      sw.style.backgroundImage = `url(${swatchDataUrl(item)})`;
+      sw.style.backgroundSize = "cover";
+      sw.innerHTML = `<span>${item.title}</span>`;
+      sw.addEventListener("click", () => {
+        matEl.querySelectorAll(".swatch").forEach(x=>x.classList.remove("sel"));
+        sw.classList.add("sel");
+        state.material = k;
+        stoneMat = makeStoneMaterial(k);
+        buildMonument();
+        renderSummary();
+      });
+      matEl.appendChild(sw);
+    });
+    const letterEl = $("letterOptions");
+    Object.entries(LETTERS).forEach(([k,item]) => {
+      const d = document.createElement("button");
+      d.type = "button";
+      d.className = "dot" + (state.letter === k ? " sel" : "");
+      d.style.background = item.color;
+      d.title = item.title;
+      d.addEventListener("click", () => {
+        letterEl.querySelectorAll(".dot").forEach(x=>x.classList.remove("sel"));
+        d.classList.add("sel");
+        state.letter = k;
+        drawInscription();
+        renderSummary();
+      });
+      letterEl.appendChild(d);
+    });
+    const fontEl = $("fontOptions");
+    Object.entries(FONTS).forEach(([k,item]) => optionButton(fontEl,k,item,state.font===k,key => {state.font=key;drawInscription();}));
+    const addonEl = $("addonOptions");
+    Object.entries(ADDONS).forEach(([k,item]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "choice addon" + (state.addons[k] ? " sel" : "");
+      b.innerHTML = `<i>${item.icon}</i><span><b>${item.title}</b><small>${item.sub}</small></span>`;
+      b.addEventListener("click", () => {
+        state.addons[k] = !state.addons[k];
+        b.classList.toggle("sel", !!state.addons[k]);
+        buildMonument();
+        renderSummary();
+      });
+      addonEl.appendChild(b);
+    });
+  }
+  function initWizardSteps(){
+    const sections = Array.from(document.querySelectorAll(".panel-body .section"));
+    const prev = $("mobilePrev");
+    const next = $("mobileNext");
+    const title = $("mobileStepTitle");
+    if(!sections.length || !prev || !next || !title) return;
+    function setStep(index){
+      wizardStepIndex = Math.max(0, Math.min(sections.length - 1, index));
+      sections.forEach((section,i) => section.classList.toggle("active", i === wizardStepIndex));
+      const label = sections[wizardStepIndex].querySelector(".section-title b");
+      title.textContent = (wizardStepIndex + 1) + " / " + sections.length + " - " + (label ? label.textContent : "Konfigurator");
+      prev.disabled = wizardStepIndex === 0;
+      next.textContent = wizardStepIndex === sections.length - 1 ? "Náhľad" : "Ďalej";
+      $("sendInquiry").textContent = wizardStepIndex === sections.length - 1 ? "Odoslať nezáväzný dopyt" : "Pokračovať";
+      const body = document.querySelector(".panel-body");
+      if(body) body.scrollTop = 0;
+      if(wizardStepIndex === 4) goPose("text");
+      else goPose("overview");
+    }
+    window.openConfiguratorStep = function(index){
+      const panel = document.querySelector(".panel");
+      const launcher = $("configLauncher");
+      if(panel) panel.classList.remove("collapsed");
+      if(launcher) launcher.classList.remove("show");
+      setStep(typeof index === "number" ? index : wizardStepIndex);
+    };
+    window.collapseConfigurator = function(){
+      const panel = document.querySelector(".panel");
+      const launcher = $("configLauncher");
+      if(panel) panel.classList.add("collapsed");
+      if(launcher) launcher.classList.add("show");
+      goPose("overview");
+    };
+    prev.addEventListener("click", () => setStep(wizardStepIndex - 1));
+    next.addEventListener("click", () => {
+      if(wizardStepIndex < sections.length - 1) setStep(wizardStepIndex + 1);
+      else window.collapseConfigurator();
+    });
+    $("configLauncher").addEventListener("click", () => window.openConfiguratorStep(wizardStepIndex));
+    setStep(0);
+  }
+  function initAssistant(){
+    const launcher = $("assistantLauncher");
+    const panel = $("assistantPanel");
+    const close = $("assistantClose");
+    const input = $("assistantInput");
+    const send = $("assistantSend");
+    const msgs = $("assistantMsgs");
+    if(!launcher || !panel || !close || !input || !send || !msgs) return;
+    function toggle(open){
+      panel.classList.toggle("open", open == null ? !panel.classList.contains("open") : open);
+    }
+    function addMsg(type,text){
+      const el = document.createElement("div");
+      el.className = "msg " + type;
+      el.textContent = text;
+      msgs.appendChild(el);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    function currentContext(){
+      const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "bez doplnkov";
+      return `${SHAPES[state.shape].title}, ${SIZES[state.size].title}, ${MATERIALS[state.material].title}, ${BASES[state.base].title}, doplnky: ${addonNames}`;
+    }
+    function answer(q){
+      const text = q.toLowerCase();
+      if(text.includes("konfigurator") || text.includes("konfigurat")){
+        return "Konfigurátor som otvoril. Postupujte po krokoch: tvar, veľkosť, doska, materiál, nápis, doplnky, súhrn a kontakt.";
+      }
+      if(text.includes("material") || text.includes("kamen") || text.includes("zula")){
+        return `Aktuálne je vybraný materiál ${MATERIALS[state.material].title}. Na silný kontrast nápisu je dobrá čierna alebo Blue pearl, pokojnejšie pôsobí sivá, teplejšie červenohnedá a bronzový kameň.`;
+      }
+      if(text.includes("napis") || text.includes("pismo") || text.includes("text")){
+        return `Pri nápise odporúčam krátke meno alebo rodinu a dátumy pod tým. Aktuálny návrh má text "${state.name}" a farbu ${LETTERS[state.letter].title}. Ak je zapnutá fotokeramika, text sa drží vľavo, aby sa neprekrýval.`;
+      }
+      if(text.includes("dvojhrob") || text.includes("velkost")){
+        return `Pre dvojhrob vyzerá najlepšie širší tvar, hlavne Dvojitý oblúk, Kniha alebo Rovný. Viete to prepnúť v sekcii Veľkosť a Tvar kameňa.`;
+      }
+      if(text.includes("dopln") || text.includes("vaza") || text.includes("kahanec")){
+        return `Doplnky nechajte skor striedme. Bezpecny profesionalny vyber je kriz, vaza alebo kahanec. Aktualny navrh: ${currentContext()}.`;
+      }
+      return `Podľa aktuálneho 3D návrhu máte ${currentContext()}. Ak chcete konzervatívny predajný návrh, odporúčam Oblúk alebo Rovný tvar, sivú/čiernu žulu, zlatý alebo strieborný nápis a najviac 2-3 doplnky.`;
+    }
+    function sendQuestion(q){
+      const clean = (q || "").trim();
+      if(!clean) return;
+      addMsg("me", clean);
+      input.value = "";
+      setTimeout(() => addMsg("bot", answer(clean)), 180);
+    }
+    launcher.addEventListener("click", () => toggle());
+    close.addEventListener("click", () => toggle(false));
+    send.addEventListener("click", () => sendQuestion(input.value));
+    input.addEventListener("keydown", e => { if(e.key === "Enter") sendQuestion(input.value); });
+    document.querySelectorAll(".assistant-quick button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if(btn.dataset.action === "config"){
+          addMsg("me", "Otvoriť konfigurátor");
+          addMsg("bot", "Otváram 3D konfigurátor. Vyberajte postupne po krokoch a potom vyplňte kontakt.");
+          if(window.openConfiguratorStep) window.openConfiguratorStep(0);
+          toggle(false);
+          return;
+        }
+        if(btn.dataset.action === "classic"){
+          addMsg("me", "Lacnejšia verzia");
+          addMsg("bot", "Prepnem vás na jednoduchší fotkový konfigurátor.");
+          window.location.href = "lacnejsia-verzia.html";
+          return;
+        }
+        sendQuestion(btn.dataset.q || btn.textContent);
+      });
+    });
+  }
+  function swatchDataUrl(item){
+    const c = document.createElement("canvas");
+    c.width = c.height = 90;
+    const x = c.getContext("2d");
+    x.fillStyle = item.base;
+    x.fillRect(0,0,90,90);
+    for(let i=0;i<1200;i++){
+      x.globalAlpha = .22 + Math.random()*.6;
+      x.fillStyle = item.flecks[(Math.random()*item.flecks.length)|0];
+      x.fillRect(Math.random()*90,Math.random()*90,1.2,1.2);
+    }
+    x.globalAlpha = 1;
+    return c.toDataURL("image/png");
+  }
+  function bindInputs(){
+    $("nameInput").addEventListener("input",e => {state.name=e.target.value;drawInscription();renderSummary();goPose("text");});
+    $("dateInput").addEventListener("input",e => {state.dates=e.target.value;drawInscription();renderSummary();goPose("text");});
+    $("epitaphInput").addEventListener("input",e => {state.epitaph=e.target.value;drawInscription();renderSummary();goPose("text");});
+    $("focusText").addEventListener("click",()=>goPose("text"));
+    $("resetView").addEventListener("click",()=>goPose("overview"));
+    $("sendInquiry").addEventListener("click",() => {
+      const sections = Array.from(document.querySelectorAll(".panel-body .section"));
+      if(wizardStepIndex < sections.length - 1){
+        $("mobileNext").click();
+        return;
+      }
+      const status = $("sendStatus");
+      const name = $("clientName").value.trim();
+      const phone = $("clientPhone").value.trim();
+      const email = $("clientEmail").value.trim();
+      const place = $("clientPlace").value.trim();
+      if(!name || !phone || !email || !place){
+        status.className = "send-status err";
+        status.textContent = "Vyplňte prosím meno, telefón, e-mail aj miesto realizácie.";
+        return;
+      }
+      const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "-";
+      status.className = "send-status ok";
+      status.textContent = "Dopyt bol pripravene odoslaný. Kamenárstvo Jantár by klienta kontaktovalo telefonicky.";
+      console.info("Fake 3D inquiry", {
+        client:{name,phone,email,place},
+        design:{
+          shape:SHAPES[state.shape].title,
+          size:SIZES[state.size].title,
+          base:BASES[state.base].title,
+          material:MATERIALS[state.material].title,
+          inscription:state.name,
+          dates:state.dates,
+          epitaph:state.epitaph,
+          font:FONTS[state.font].title,
+          letter:LETTERS[state.letter].title,
+          addons:addonNames
+        }
+      });
+    });
+  }
+  function attachViewportControls(){
+    viewport.addEventListener("pointerdown",e => {dragging=true;px=e.clientX;py=e.clientY;cameraAnim=null;viewport.setPointerCapture(e.pointerId);});
+    viewport.addEventListener("pointerup",e => {dragging=false;try{viewport.releasePointerCapture(e.pointerId);}catch(_){}});
+    viewport.addEventListener("pointermove",e => {
+      if(!dragging) return;
+      yaw -= (e.clientX-px)*.008;
+      pitch += (e.clientY-py)*.006;
+      pitch = Math.max(.03,Math.min(1.18,pitch));
+      px=e.clientX; py=e.clientY;
+    });
+    viewport.addEventListener("wheel",e => {
+      e.preventDefault();
+      camDist += e.deltaY*.0026;
+      camDist = Math.max(2.05,Math.min(9,camDist));
+      cameraAnim = null;
+    },{passive:false});
+  }
+  function resize(){
+    const w = Math.max(1,viewport.clientWidth);
+    const h = Math.max(1,viewport.clientHeight);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  }
+  function loop(now){
+    if(cameraAnim) cameraAnim(now);
+    applyCamera();
+    renderer.render(scene,camera);
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener("resize",resize);
+  renderControls();
+  initWizardSteps();
+  initAssistant();
+  bindInputs();
+  attachViewportControls();
+  buildMonument();
+  renderSummary();
+  resize();
+  $("loading").style.display = "none";
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
