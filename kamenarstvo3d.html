@@ -4,11 +4,1265 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kamenárstvo Jantár — 3D konfigurátor pomníka</title>
-<meta http-equiv="refresh" content="0; url=3d.html?v=stable-3d">
-<link rel="canonical" href="3d.html">
-<style>html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#efe4d3;color:#2A211B;display:grid;place-items:center;text-align:center;padding:24px}a{display:inline-flex;margin-top:12px;padding:12px 16px;border-radius:999px;background:#4E3924;color:#fff;text-decoration:none;font-weight:800}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2A211B;
+  --stone:#6E5135;
+  --stone-dk:#4E3924;
+  --bronze:#B07D33;
+  --cream:#FBF7F0;
+  --paper:#fffdf8;
+  --line:#E7DCC9;
+  --muted:#817262;
+  --soft:#F2E8DA;
+  --shadow:0 24px 70px rgba(42,33,27,.18);
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --engrave:"Cinzel",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:var(--ui);color:var(--ink);background:#efe4d3}
+body{overflow:hidden}
+button,input,textarea{font:inherit}
+.page{
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at 15% 8%,#fffdf8 0,rgba(255,253,248,0) 34%),
+    radial-gradient(circle at 88% 8%,rgba(176,125,51,.15),rgba(176,125,51,0) 30%),
+    linear-gradient(155deg,#f9efe1 0%,#e5d7c3 100%);
+}
+.topbar{
+  height:76px;
+  margin:18px 22px 0;
+  padding:0 18px;
+  border:1px solid rgba(231,220,201,.95);
+  border-radius:22px;
+  background:rgba(255,253,248,.82);
+  box-shadow:0 16px 40px rgba(42,33,27,.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  backdrop-filter:blur(10px);
+  flex:0 0 auto;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:inherit}
+.brand-mark{
+  width:40px;height:40px;border-radius:14px;
+  background:linear-gradient(145deg,#7A5B3B 0%,#4E3924 54%,#2A211B 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 8px 18px rgba(42,33,27,.16);
+  position:relative;flex:0 0 auto;
+}
+.brand-mark:before{
+  content:"";position:absolute;left:9px;top:10px;width:22px;height:15px;
+  border:2px solid #fbf7f0;border-radius:10px;background:transparent;
+}
+.brand-mark:after{
+  content:"";position:absolute;left:15px;top:23px;width:8px;height:7px;
+  border-left:2px solid #fbf7f0;border-bottom:2px solid #fbf7f0;border-bottom-left-radius:6px;
+}
+.brand-mark .mark-dot{
+  position:absolute;left:15px;top:17px;width:3px;height:3px;border-radius:50%;background:#fbf7f0;
+  box-shadow:5px 0 0 #fbf7f0,10px 0 0 #fbf7f0;
+}
+.brand b{display:block;font:700 17px var(--ui);letter-spacing:.01em}
+.brand span{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:600}
+.nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.nav a{
+  color:#6c5e50;text-decoration:none;font-weight:800;font-size:13px;
+  padding:10px 13px;border-radius:999px;border:1px solid transparent;
+}
+.nav a:hover,.nav a.active{background:#fff;border-color:var(--line);color:var(--stone-dk)}
+.nav a.alt-link{background:#f7ead7;border-color:#e4cfad;color:#5f4025}
+.shell{
+  flex:1 1 auto;
+  min-height:0;
+  height:calc(100dvh - 94px);
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(360px,430px);
+  gap:22px;
+  padding:22px;
+}
+.viewer-card,.panel{
+  border:1px solid rgba(231,220,201,.95);
+  background:rgba(255,253,248,.82);
+  box-shadow:var(--shadow);
+  border-radius:28px;
+  overflow:hidden;
+}
+.viewer-card{position:relative;min-height:0;display:flex;flex-direction:column}
+.viewer-head{
+  position:absolute;left:20px;top:18px;z-index:4;
+  display:flex;gap:10px;align-items:flex-start;max-width:min(320px,calc(100% - 40px));
+}
+.viewer-title{
+  background:rgba(255,253,248,.88);
+  border:1px solid rgba(231,220,201,.95);
+  border-radius:16px;
+  padding:10px 12px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 14px 30px rgba(42,33,27,.12);
+}
+.viewer-title small{
+  display:block;color:var(--bronze);font-weight:800;font-size:11px;
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;
+}
+.viewer-title h1{margin:0;font:700 clamp(22px,2vw,30px)/1 var(--engrave);letter-spacing:.01em}
+.viewer-alt{
+  display:inline-flex;margin-top:9px;align-items:center;gap:6px;
+  color:var(--stone-dk);text-decoration:none;background:#fff7ea;border:1px solid #e7d4b7;
+  border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;
+}
+.viewer-alt:hover{background:#fff}
+.viewer-tools{display:flex;gap:8px;position:absolute;right:18px;top:18px;z-index:5}
+.toolbtn{
+  border:1px solid rgba(231,220,201,.95);background:rgba(255,253,248,.9);
+  color:var(--stone-dk);border-radius:14px;padding:11px 13px;
+  font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(42,33,27,.12);
+}
+.toolbtn:hover{background:#fff}
+#viewport{position:relative;flex:1 1 auto;min-height:0;background:#100f0d;cursor:grab}
+#viewport:active{cursor:grabbing}
+#viewport canvas{display:block;width:100%;height:100%}
+#loading{
+  position:absolute;inset:0;display:grid;place-items:center;z-index:6;
+  color:#fbf7f0;background:linear-gradient(135deg,#2a211b,#0f0e0d);
+  font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;
+}
+.hint{
+  position:absolute;left:18px;bottom:16px;z-index:4;
+  color:#fdf6ea;background:rgba(42,33,27,.58);
+  border:1px solid rgba(255,255,255,.13);border-radius:14px;
+  padding:9px 12px;font-size:12px;font-weight:700;backdrop-filter:blur(6px);
+}
+.scene-strip{
+  position:absolute;right:18px;bottom:16px;z-index:4;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;
+}
+.scene-strip span{
+  color:#fdf6ea;background:rgba(42,33,27,.58);border:1px solid rgba(255,255,255,.13);
+  border-radius:999px;padding:8px 10px;font-size:11px;font-weight:800;backdrop-filter:blur(6px);
+}
+.panel{display:flex;flex-direction:column;min-height:0;background:var(--cream)}
+.panel-head{
+  padding:18px 18px 16px;
+  background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%);
+  color:#fdf6ea;position:relative;overflow:hidden;flex:0 0 auto;
+}
+.panel-head:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--bronze),#d2b16b,var(--bronze),transparent);
+}
+.panel-head small{display:block;color:rgba(253,246,234,.72);font-weight:700;font-size:12px;margin-top:3px}
+.panel-head h2{margin:0;font:700 22px var(--engrave);letter-spacing:.03em}
+.mobile-stepbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(255,253,248,.76)}
+.mobile-stepbar span{flex:1;text-align:center;font-weight:900;color:var(--stone-dk);font-size:13px}
+.mobile-stepbar button{border:1px solid var(--line);background:#fffdf8;color:var(--stone-dk);border-radius:12px;padding:9px 11px;font-weight:900;cursor:pointer}
+.mobile-stepbar button:disabled{opacity:.45;cursor:default}
+.panel-body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px}
+.panel-body::-webkit-scrollbar{width:7px}.panel-body::-webkit-scrollbar-thumb{background:#ddcdb4;border-radius:8px}
+.section{
+  background:rgba(255,255,255,.68);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+  display:none;
+}
+.section.active{display:block}
+.section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}
+.section-title b{font-size:14px;color:var(--ink)}
+.section-title span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.grid{display:grid;gap:9px}
+.grid.two{grid-template-columns:1fr 1fr}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+.choice{
+  border:1.5px solid var(--line);
+  background:#fffdf8;
+  color:var(--ink);
+  border-radius:15px;
+  padding:12px;
+  min-height:67px;
+  text-align:left;
+  cursor:pointer;
+  transition:.18s ease;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.choice:hover{transform:translateY(-1px);border-color:#d8c3a0;box-shadow:0 8px 18px rgba(110,81,53,.08)}
+.choice.sel{border-color:var(--stone);background:#fbf0df;box-shadow:0 0 0 2px rgba(110,81,53,.15)}
+.choice i{
+  width:34px;height:34px;border-radius:12px;background:#f3eadb;border:1px solid #e3d2bc;
+  display:grid;place-items:center;font-style:normal;font-weight:900;color:var(--stone-dk);flex:0 0 auto;
+}
+.choice b{display:block;font-size:13.5px;line-height:1.12}
+.choice small{display:block;margin-top:3px;color:var(--muted);font-size:11.5px;font-weight:600;line-height:1.2}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.swatch{
+  min-height:84px;border:1.5px solid var(--line);border-radius:15px;overflow:hidden;
+  background:#ddd;cursor:pointer;position:relative;transition:.18s ease;
+}
+.swatch:hover{transform:translateY(-1px)}
+.swatch.sel{border-color:var(--stone);box-shadow:0 0 0 2px rgba(110,81,53,.16)}
+.swatch span{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:18px 6px 7px;text-align:center;color:#fff;font-size:10.5px;font-weight:900;
+  background:linear-gradient(transparent,rgba(0,0,0,.72));
+  text-shadow:0 1px 2px rgba(0,0,0,.45);
+}
+.field{margin-bottom:10px}
+.field label{display:block;margin:0 0 6px;color:var(--muted);font-size:12px;font-weight:800}
+.field input,.field textarea{
+  width:100%;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);
+  padding:12px 13px;outline:none;font-size:14px;
+}
+.field textarea{resize:vertical;min-height:68px}
+.field input:focus,.field textarea:focus{border-color:var(--stone);box-shadow:0 0 0 3px rgba(110,81,53,.12)}
+.dots{display:flex;gap:9px;flex-wrap:wrap}
+.dot{
+  width:38px;height:38px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);
+  cursor:pointer;position:relative;
+}
+.dot.sel{box-shadow:0 0 0 3px rgba(110,81,53,.28)}
+.addons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.addon{justify-content:flex-start;min-height:68px;background:linear-gradient(180deg,#fffdf8,#fbf3e8)}
+.addon i{background:#efe0ca}
+.summary{
+  background:#fffdf8;border:1px solid var(--line);border-radius:18px;padding:13px;
+  font-size:13px;line-height:1.75;color:#5f5145;
+}
+.summary strong{color:var(--ink)}
+.summary-grid{display:grid;gap:8px}
+.summary-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.summary-row:last-child{border-bottom:0}
+.summary-row span{color:var(--muted);font-weight:700}
+.summary-row strong{text-align:right}
+.send-status{display:none;margin-top:10px;padding:11px 12px;border-radius:13px;font-size:13px;font-weight:800;text-align:center}
+.send-status.ok{display:block;background:#eaf4ec;color:#3E7C4F;border:1px solid #cde5d2}
+.send-status.err{display:block;background:#fff0e6;color:#9b4228;border:1px solid #efd3c2}
+.panel-foot{
+  flex:0 0 auto;padding:14px 16px 16px;border-top:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(251,247,240,.86),var(--cream));
+}
+.cta{
+  width:100%;border:0;border-radius:15px;
+  padding:14px 16px;background:linear-gradient(135deg,var(--stone),var(--stone-dk));
+  color:#fdf6ea;font-weight:900;cursor:pointer;box-shadow:0 12px 24px rgba(78,57,36,.24);
+}
+.cta:hover{filter:brightness(1.05)}
+.note{margin-top:9px;color:var(--muted);font-size:11.5px;line-height:1.45;text-align:center}
+.assistant-launcher{
+  position:fixed;left:42px;bottom:96px;z-index:40;border:1px solid rgba(253,246,234,.28);border-radius:999px;
+  padding:12px 18px 12px 15px;background:linear-gradient(135deg,#6E5135,#3A2C20);
+  color:#fdf6ea;font-weight:900;box-shadow:0 14px 34px rgba(42,33,27,.28);cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+}
+.assistant-launcher i{
+  width:30px;height:26px;display:block;position:relative;flex:0 0 auto;
+}
+.assistant-launcher i:before{
+  content:"";position:absolute;left:1px;top:1px;width:24px;height:17px;
+  border:2px solid currentColor;border-radius:10px;
+  background:
+    radial-gradient(circle at 7px 8px,currentColor 0 1.5px,transparent 1.7px),
+    radial-gradient(circle at 12px 8px,currentColor 0 1.5px,transparent 1.7px),
+    radial-gradient(circle at 17px 8px,currentColor 0 1.5px,transparent 1.7px);
+}
+.assistant-launcher i:after{
+  content:"";position:absolute;left:7px;bottom:2px;width:9px;height:7px;
+  border-left:2px solid currentColor;border-bottom:2px solid currentColor;border-bottom-left-radius:6px;
+}
+.assistant-panel{
+  position:fixed;left:22px;bottom:82px;width:min(390px,calc(100vw - 44px));height:min(560px,calc(100dvh - 112px));
+  z-index:41;display:none;flex-direction:column;overflow:hidden;border-radius:24px;border:1px solid var(--line);
+  background:var(--cream);box-shadow:0 24px 70px rgba(42,33,27,.28);
+}
+.assistant-panel.open{display:flex}
+.assistant-head{
+  flex:0 0 auto;padding:15px 16px;background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%);
+  color:#fdf6ea;display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.assistant-head b{display:block;font:700 18px var(--engrave);letter-spacing:.03em}
+.assistant-head span{display:block;font-size:12px;color:rgba(253,246,234,.72);margin-top:2px}
+.assistant-close{border:0;background:rgba(255,247,232,.14);color:#fff;border-radius:12px;width:36px;height:36px;font-weight:900;cursor:pointer}
+.assistant-msgs{flex:1 1 auto;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:11px 13px;border-radius:15px;font-size:13.5px;line-height:1.45}
+.msg.bot{background:#fffdf8;border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--stone),var(--stone-dk));color:#fdf6ea;border-bottom-right-radius:5px}
+.assistant-quick{flex:0 0 auto;display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 10px}
+.assistant-quick button{border:1px solid var(--line);border-radius:999px;background:#fffdf8;color:var(--stone-dk);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer}
+.assistant-input{flex:0 0 auto;display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.assistant-input input{flex:1;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);padding:12px;outline:none}
+.assistant-input button{border:0;border-radius:13px;background:var(--stone);color:#fff;font-weight:900;padding:0 15px;cursor:pointer}
+.config-launcher{display:none}
+@media(max-width:980px){
+  body{overflow:hidden}
+  .page{height:100dvh;min-height:100dvh;overflow:hidden}
+  .topbar{height:60px;margin:8px 8px 0;align-items:center;padding:9px 12px;border-radius:17px}
+  .nav{display:none}
+  .brand-mark{width:34px;height:34px;border-radius:12px}
+  .brand-mark:before{left:7px;top:8px;width:20px;height:14px;border-radius:9px}
+  .brand-mark:after{left:13px;top:20px;width:8px;height:7px}
+  .brand-mark .mark-dot{left:12px;top:14px}
+  .brand b{font-size:14px}.brand span{font-size:11px}
+  .shell{position:relative;display:block;padding:8px;height:calc(100dvh - 68px);overflow:hidden}
+  .viewer-card{height:100%;min-height:0;border-radius:22px}
+  .panel{
+    position:absolute;left:8px;right:8px;bottom:8px;z-index:14;height:min(52dvh,420px);
+    border-radius:24px;box-shadow:0 20px 60px rgba(42,33,27,.28);
+  }
+  .panel-head{padding:13px 15px 12px}.panel-head h2{font-size:20px}.panel-head small{font-size:11px}
+  .panel-body{padding:12px;overflow:auto}
+  .panel-body .section{margin-bottom:0;padding:12px;border-radius:16px}
+  .panel.collapsed{display:none}
+  .config-launcher{
+    position:absolute;left:18px;right:18px;bottom:18px;z-index:16;border:0;border-radius:17px;
+    padding:15px 16px;background:linear-gradient(135deg,var(--stone),var(--stone-dk));
+    color:#fdf6ea;font-weight:900;box-shadow:0 16px 40px rgba(42,33,27,.3);cursor:pointer;
+    align-items:center;justify-content:center;gap:8px;
+  }
+  .config-launcher.show{display:flex}
+  .panel-foot{padding:10px 12px 12px}
+  .note{display:none}
+  .choice{min-height:45px;padding:7px 8px;border-radius:13px;gap:7px}
+  .choice i{width:26px;height:26px;border-radius:10px}
+  .choice b{font-size:12.2px}.choice small{font-size:9.8px;line-height:1.1;margin-top:1px}
+  .swatches{grid-template-columns:1fr 1fr;gap:8px}.swatch{min-height:70px}
+  .addons{grid-template-columns:1fr 1fr}
+  .field input,.field textarea{padding:10px 11px;font-size:13px}.field textarea{min-height:56px}
+  .assistant-launcher{left:auto;right:14px;top:78px;bottom:auto;padding:11px 13px}
+  .assistant-panel{left:8px;right:8px;bottom:8px;width:auto;height:min(72dvh,560px);border-radius:24px}
+}
+@media(max-width:560px){
+  .viewer-card{height:100%;min-height:0}
+  .viewer-head{left:12px;top:12px}
+  .viewer-title{padding:10px 11px;border-radius:15px}
+  .viewer-title h1{font-size:21px}
+  .viewer-tools{right:12px;top:auto;bottom:calc(min(52dvh,420px) + 22px)}
+  .hint{display:none}
+  .scene-strip{display:none}
+  .grid.three,.swatches{grid-template-columns:1fr 1fr}
+}
+</style>
 </head>
 <body>
-<div><strong>Načítava sa 3D konfigurátor.</strong><br><a href="3d.html?v=stable-3d">Otvoriť konfigurátor</a></div>
+<div class="page">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Späť na hlavnú stránku">
+      <span class="brand-mark"><span class="mark-dot"></span></span>
+      <span><b>Kamenárstvo Jantár</b><span>3D návrh pomníka a kamenársky konfigurátor</span></span>
+    </a>
+    <nav class="nav" aria-label="Navigácia">
+      <a class="active" href="index.html">3D konfigurátor</a>
+      <a class="alt-link" href="lacnejsia-verzia.html">Lacnejšia verzia</a>
+      <a href="tel:+421900000000">Zavolať</a>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="viewer-card">
+      <div class="viewer-head">
+        <div class="viewer-title">
+          <small>Interaktívny náhľad</small>
+          <h1>3D konfigurátor pomníka</h1>
+          <a class="viewer-alt" href="lacnejsia-verzia.html">Lacnejšia verzia s fotkami</a>
+        </div>
+      </div>
+      <div class="viewer-tools">
+        <button class="toolbtn" type="button" id="focusText">Nápis</button>
+        <button class="toolbtn" type="button" id="resetView">Celý pomník</button>
+      </div>
+      <div id="viewport">
+        <div id="loading">Načítavam 3D scénu</div>
+        <div class="hint">Potiahnite myšou pre otočenie, kolieskom priblížite detail</div>
+        <div class="scene-strip"><span>3D návrh</span><span>reálne materiály</span><span>nezáväzný dopyt</span></div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Ovládanie 3D konfigurátora">
+      <div class="panel-head">
+        <h2>Návrh pomníka</h2>
+        <small>Výber tvaru, dosky, kameňa, nápisu a doplnkov</small>
+      </div>
+      <div class="mobile-stepbar" aria-label="Kroky konfigurátora">
+        <button type="button" id="mobilePrev">Späť</button>
+        <span id="mobileStepTitle">Tvar kameňa</span>
+        <button type="button" id="mobileNext">Ďalej</button>
+      </div>
+      <div class="panel-body">
+        <section class="section">
+          <div class="section-title"><b>Tvar kameňa</b><span>6 vzorov</span></div>
+          <div class="grid two" id="shapeOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Veľkosť</b><span>hrobové miesto</span></div>
+          <div class="grid two" id="sizeOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Krycia doska</b><span>spodna cast</span></div>
+          <div class="grid two" id="baseOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Materiál</b><span>7 kameňov</span></div>
+          <div class="swatches" id="materialOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Nápis</b><span>živý náhľad</span></div>
+          <div class="field"><label>Meno / rodina</label><input id="nameInput" value="Rodina Nováková" maxlength="28"></div>
+          <div class="field"><label>Dátumy</label><input id="dateInput" value="1948 - 2024" maxlength="24"></div>
+          <div class="field"><label>Venovanie</label><textarea id="epitaphInput" maxlength="64">S láskou spomíname</textarea></div>
+          <div class="section-title" style="margin-top:12px"><b>Farba písma</b><span>kontrast</span></div>
+          <div class="dots" id="letterOptions"></div>
+          <div class="section-title" style="margin-top:14px"><b>Typ písma</b><span>štýl</span></div>
+          <div class="grid two" id="fontOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Doplnky</b><span>volitelne</span></div>
+          <div class="addons" id="addonOptions"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Aktuálny výber</b><span>súhrn</span></div>
+          <div class="summary" id="summary"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title"><b>Kontakt</b><span>povinne</span></div>
+          <div class="field"><label>Meno a priezvisko</label><input id="clientName" placeholder="Meno a priezvisko" autocomplete="name"></div>
+          <div class="field"><label>Telefón</label><input id="clientPhone" placeholder="+421 ..." autocomplete="tel"></div>
+          <div class="field"><label>E-mail</label><input id="clientEmail" placeholder="email@example.sk" autocomplete="email"></div>
+          <div class="field"><label>Mesto / cintorín</label><input id="clientPlace" placeholder="napr. Nitra, mestský cintorín"></div>
+          <div class="send-status" id="sendStatus"></div>
+        </section>
+      </div>
+      <div class="panel-foot">
+        <button class="cta" type="button" id="sendInquiry">Odoslať nezáväzný dopyt</button>
+        <div class="note">Lacnejšia fotková verzia zostáva dostupná cez prepnutie v hornej časti.</div>
+      </div>
+    </aside>
+  </main>
+
+  <button class="config-launcher" type="button" id="configLauncher">Upraviť 3D návrh</button>
+  <button class="assistant-launcher" type="button" id="assistantLauncher"><i></i> AI asistent</button>
+  <section class="assistant-panel" id="assistantPanel" aria-label="AI asistent">
+    <div class="assistant-head">
+      <div><b>AI asistent</b><span>Pomoc s výberom pomníka a materiálu</span></div>
+      <button class="assistant-close" type="button" id="assistantClose" aria-label="Zavrieť chat">x</button>
+    </div>
+    <div class="assistant-msgs" id="assistantMsgs">
+      <div class="msg bot">Dobrý deň. Pomôžem vybrať tvar, kameň, nápis alebo doplnky. Môžete sa pýtať priamo podľa aktuálneho 3D návrhu.</div>
+    </div>
+    <div class="assistant-quick">
+      <button type="button" data-action="config">Otvoriť konfigurátor</button>
+      <button type="button" data-action="classic">Lacnejšia verzia</button>
+      <button type="button" data-q="aky material odporucas">Aký materiál?</button>
+      <button type="button" data-q="ako upravit napis">Ako nápis?</button>
+      <button type="button" data-q="co zvolit na dvojhrob">Dvojhrob</button>
+    </div>
+    <div class="assistant-input">
+      <input id="assistantInput" placeholder="Napíšte otázku..." autocomplete="off">
+      <button type="button" id="assistantSend">Odoslať</button>
+    </div>
+  </section>
+</div>
+
+<script src="assets/vendor/three.r128.min.js"></script>
+<script>
+(function(){
+  const SHAPES = {
+    rect:{title:"Rovný",sub:"klasický tvar",icon:"R"},
+    arch:{title:"Oblúk",sub:"jemná hlavica",icon:"O"},
+    doubleArch:{title:"Dvojitý oblúk",sub:"pre dvojhrob",icon:"2"},
+    book:{title:"Kniha",sub:"otvorená spomienka",icon:"K"},
+    wave:{title:"Vlna",sub:"umelecký vrch",icon:"V"},
+    heart:{title:"Srdcový",sub:"mäkký pietny tvar",icon:"S"}
+  };
+  const SIZES = {
+    single:{title:"Jednohrob",sub:"cca 90 x 200 cm",w:1.42,l:2.68,head:1.22},
+    double:{title:"Dvojhrob",sub:"cca 160 x 220 cm",w:2.25,l:2.9,head:1.72}
+  };
+  const BASES = {
+    full:{title:"Plná doska",sub:"dvojdielna krycia doska"},
+    frame:{title:"Otvorený rám",sub:"stred pre štrk alebo výsadbu"},
+    raised:{title:"Zdvihnutá doska",sub:"vyšší profil s fazetou"},
+    garden:{title:"Doska s otvorom",sub:"miesto na kvety v strede"}
+  };
+  const MATERIALS = {
+    black:{title:"Čierna žula",base:"#151518",flecks:["#070708","#34343a","#777780","#e7e7e7"]},
+    gray:{title:"Sivá žula",base:"#737370",flecks:["#454545","#969690","#d9d7cf","#222"]},
+    red:{title:"Červenohnedá",base:"#693627",flecks:["#321914","#8f5541","#c0896e","#220f0c"]},
+    pearl:{title:"Blue pearl",base:"#252a35",flecks:["#121622","#4f6179","#8da1bb","#d8e3ef"]},
+    ivory:{title:"Svetlá žula",base:"#c9c3b4",flecks:["#fff8e8","#8f8778","#6e6558","#ded8cd"]},
+    green:{title:"Tmavozelená",base:"#1d3029",flecks:["#07100d","#315b4b","#8ca99a","#0b1914"]},
+    bronze:{title:"Bronzový kameň",base:"#5c4a35",flecks:["#251b12","#8e7654","#d2b17a","#3c2c1f"]}
+  };
+  const LETTERS = {
+    gold:{title:"Zlatá",color:"#D5B45A"},
+    silver:{title:"Strieborná",color:"#E3E6EA"},
+    ivory:{title:"Slonová kosť",color:"#F4E6C8"},
+    dark:{title:"Tmavá",color:"#16120E"}
+  };
+  const FONTS = {
+    classic:{title:"Klasické",sub:"pietny serif",css:"Cinzel, Georgia, serif"},
+    elegant:{title:"Elegantné",sub:"jemné písmo",css:"Cormorant Garamond, Georgia, serif"},
+    modern:{title:"Moderné",sub:"čisté písmo",css:"Inter, Arial, sans-serif"},
+    roman:{title:"Rímske",sub:"výrazné kapitálky",css:"Georgia, serif"}
+  };
+  const ADDONS = {
+    cross:{title:"Kríž",sub:"na čelnej doske",icon:"+"},
+    vase:{title:"Kamenná váza",sub:"na pravej strane",icon:"V"},
+    lamp:{title:"Kahanec",sub:"svietnik pri doske",icon:"L"},
+    photo:{title:"Fotokeramika",sub:"oválna fotografia",icon:"F"},
+    bench:{title:"Lavička",sub:"jednoduchý doplnok",icon:"B"},
+    edge:{title:"Bronzová linka",sub:"jemný ozdobný detail",icon:"D"}
+  };
+  const state = {
+    shape:"arch", size:"single", base:"full", material:"gray",
+    letter:"gold", font:"classic", name:"Rodina Nováková", dates:"1948 - 2024", epitaph:"S láskou spomíname",
+    addons:{cross:true}
+  };
+  const $ = id => document.getElementById(id);
+  const viewport = $("viewport");
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  viewport.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x100f0d);
+  const camera = new THREE.PerspectiveCamera(38, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
+
+  const env = makeEnvironment();
+  scene.environment = env;
+  scene.add(new THREE.HemisphereLight(0xfffbf0,0x1a1714,.7));
+  const key = new THREE.DirectionalLight(0xffffff,1.75); key.position.set(4,7,5); key.castShadow = true; key.shadow.mapSize.set(2048,2048); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffe0b0,.62); fill.position.set(-4,3,1); scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xdce7ff,.95); rim.position.set(0,4,-6); scene.add(rim);
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(44,44), new THREE.MeshStandardMaterial({color:0x17130f,roughness:.92}));
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(44,9), new THREE.MeshStandardMaterial({color:0x211a14,roughness:.9}));
+  wall.position.set(0,4.1,-2.05);
+  wall.receiveShadow = true;
+  scene.add(wall);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.4,5.2), new THREE.MeshBasicMaterial({map:shadowTexture(),transparent:true,depthWrite:false}));
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.set(0,.004,.45);
+  scene.add(shadow);
+
+  const monument = new THREE.Group();
+  scene.add(monument);
+  let stoneMat = makeStoneMaterial(state.material);
+  const darkMat = new THREE.MeshStandardMaterial({color:0x0e0b08,roughness:.38,metalness:.18,envMap:env,envMapIntensity:.7});
+  const bronzeMat = new THREE.MeshStandardMaterial({color:0x8b632d,roughness:.3,metalness:.55,envMap:env,envMapIntensity:1});
+  const gravelMat = new THREE.MeshStandardMaterial({map:gravelTexture(),roughness:.95});
+
+  const textCanvas = document.createElement("canvas");
+  textCanvas.width = 1400;
+  textCanvas.height = 1100;
+  const textCtx = textCanvas.getContext("2d");
+  const textTex = new THREE.CanvasTexture(textCanvas);
+  textTex.encoding = THREE.sRGBEncoding;
+  const textMat = new THREE.MeshBasicMaterial({map:textTex,transparent:true,depthWrite:false,depthTest:false});
+
+  let frontZ = -0.8;
+  let headBaseY = 0.38;
+  const POSES = {
+    overview:{dist:5.9,yaw:.58,pitch:.38,target:new THREE.Vector3(0,.72,.45)},
+    text:{dist:2.45,yaw:.08,pitch:.08,target:new THREE.Vector3(0,1.18,-.58)}
+  };
+  let camDist = POSES.overview.dist;
+  let yaw = POSES.overview.yaw;
+  let pitch = POSES.overview.pitch;
+  const target = POSES.overview.target.clone();
+  let cameraAnim = null;
+  let dragging = false, px = 0, py = 0;
+
+  function makeEnvironment(){
+    const c = document.createElement("canvas");
+    c.width = 512; c.height = 256;
+    const x = c.getContext("2d");
+    const g = x.createLinearGradient(0,0,0,256);
+    g.addColorStop(0,"#564431");
+    g.addColorStop(.42,"#29231e");
+    g.addColorStop(.55,"#171514");
+    g.addColorStop(1,"#0c0b0a");
+    x.fillStyle = g; x.fillRect(0,0,512,256);
+    x.fillStyle = "rgba(255,245,226,.85)";
+    x.fillRect(58,38,92,72); x.fillRect(318,54,126,58); x.fillRect(224,30,42,42);
+    const tex = new THREE.CanvasTexture(c);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    const pm = new THREE.PMREMGenerator(renderer);
+    const out = pm.fromEquirectangular(tex).texture;
+    tex.dispose(); pm.dispose();
+    return out;
+  }
+  function graniteTexture(key){
+    const m = MATERIALS[key];
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const x = c.getContext("2d");
+    x.fillStyle = m.base;
+    x.fillRect(0,0,512,512);
+    for(let i=0;i<17000;i++){
+      x.globalAlpha = .12 + Math.random()*.55;
+      x.fillStyle = m.flecks[(Math.random()*m.flecks.length)|0];
+      const s = .45 + Math.random()*2.3;
+      x.fillRect(Math.random()*512,Math.random()*512,s,s);
+    }
+    x.globalAlpha = .16;
+    for(let i=0;i<32;i++){
+      x.strokeStyle = m.flecks[(Math.random()*m.flecks.length)|0];
+      x.lineWidth = .7 + Math.random()*1.6;
+      x.beginPath();
+      const y = Math.random()*512;
+      x.moveTo(-20,y);
+      x.bezierCurveTo(160,y+Math.random()*80-40,340,y+Math.random()*80-40,532,y+Math.random()*80-40);
+      x.stroke();
+    }
+    x.globalAlpha = 1;
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(1.8,1.8);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+  function makeStoneMaterial(key){
+    return new THREE.MeshPhysicalMaterial({
+      map:graniteTexture(key),
+      roughness:.18,
+      metalness:0,
+      clearcoat:.9,
+      clearcoatRoughness:.11,
+      envMap:env,
+      envMapIntensity:1.22
+    });
+  }
+  function gravelTexture(){
+    const c = document.createElement("canvas");
+    c.width = c.height = 256;
+    const x = c.getContext("2d");
+    x.fillStyle = "#4b4a48"; x.fillRect(0,0,256,256);
+    for(let i=0;i<7000;i++){
+      x.fillStyle = Math.random()>.52 ? "#2f2f30" : "#6d6b66";
+      x.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*2.6,1+Math.random()*2.6);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(5,8);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+  function shadowTexture(){
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const x = c.getContext("2d");
+    const g = x.createRadialGradient(256,256,20,256,256,250);
+    g.addColorStop(0,"rgba(0,0,0,.52)");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    x.fillStyle = g; x.fillRect(0,0,512,512);
+    return new THREE.CanvasTexture(c);
+  }
+  function roundedBox(w,h,d,mat){
+    return new THREE.Mesh(new THREE.BoxGeometry(w,h,d,2,1,2), mat);
+  }
+  function makeStelaGeometry(shape,w,h,t){
+    const s = new THREE.Shape();
+    if(shape === "rect"){
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h); s.lineTo(-w/2,h); s.lineTo(-w/2,0);
+    } else if(shape === "arch"){
+      const r = w/2;
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h-r*.86);
+      s.quadraticCurveTo(w/2,h,0,h); s.quadraticCurveTo(-w/2,h,-w/2,h-r*.86); s.lineTo(-w/2,0);
+    } else if(shape === "wave"){
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h*.82);
+      s.bezierCurveTo(w*.18,h*.98,-w*.16,h*.70,-w/2,h*.9); s.lineTo(-w/2,0);
+    } else if(shape === "heart"){
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h*.55);
+      s.bezierCurveTo(w/2,h*.92,w*.14,h*1.04,0,h*.78);
+      s.bezierCurveTo(-w*.14,h*1.04,-w/2,h*.92,-w/2,h*.55); s.lineTo(-w/2,0);
+    } else {
+      s.moveTo(-w/2,0); s.lineTo(w/2,0); s.lineTo(w/2,h); s.lineTo(-w/2,h); s.lineTo(-w/2,0);
+    }
+    const geo = new THREE.ExtrudeGeometry(s,{depth:t,bevelEnabled:true,bevelThickness:.018,bevelSize:.018,bevelSegments:3});
+    geo.translate(0,0,-t/2);
+    return geo;
+  }
+  function clearGroup(g){
+    while(g.children.length){
+      const ch = g.children.pop();
+      ch.traverse(o => {
+        if(o.geometry) o.geometry.dispose();
+        if(o.material && o.material.dispose && o.material !== stoneMat && o.material !== textMat) {}
+      });
+      g.remove(ch);
+    }
+  }
+  function buildMonument(){
+    clearGroup(monument);
+    const size = SIZES[state.size];
+    const W = size.w;
+    const L = size.l;
+    const rail = .13;
+    const railH = .18;
+    const centerZ = .52;
+    const backZ = centerZ - L/2;
+    const frontRailZ = centerZ + L/2 - rail/2;
+    const backRailZ = backZ + rail/2;
+
+    const slab = roundedBox(W+.16,.07,L+.18,stoneMat);
+    slab.position.set(0,.035,centerZ);
+    monument.add(slab);
+
+    const left = roundedBox(rail,railH,L,stoneMat); left.position.set(-W/2+rail/2,.16,centerZ); monument.add(left);
+    const right = roundedBox(rail,railH,L,stoneMat); right.position.set(W/2-rail/2,.16,centerZ); monument.add(right);
+    const front = roundedBox(W,railH,rail,stoneMat); front.position.set(0,.16,frontRailZ); monument.add(front);
+    const back = roundedBox(W,railH,rail,stoneMat); back.position.set(0,.16,backRailZ); monument.add(back);
+
+    const pedH = .16;
+    const pedD = .48;
+    const pedZ = backZ + .23;
+    const ped = roundedBox(W+.08,pedH,pedD,stoneMat);
+    ped.position.set(0,.24+pedH/2,pedZ);
+    monument.add(ped);
+    headBaseY = .24 + pedH;
+    frontZ = pedZ + .10 + .014;
+
+    const coverStart = backZ + pedD + .04;
+    const coverLen = centerZ + L/2 - coverStart - .03;
+    buildCover(W,coverLen,coverStart,centerZ);
+
+    buildHead(size.head, state.shape, pedZ);
+    buildAccessories(W,L,centerZ,pedZ);
+    monument.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+    drawInscription();
+    updateCameraPose(false);
+  }
+  function buildCover(W,coverLen,coverStart,centerZ){
+    if(state.base === "frame"){
+      const gravel = roundedBox(W-.33,.045,coverLen-.16,gravelMat);
+      gravel.position.set(0,.205,coverStart + coverLen/2);
+      monument.add(gravel);
+      return;
+    }
+    if(state.base === "garden"){
+      const left = roundedBox((W-.16)/2-.14,.08,coverLen,stoneMat);
+      const right = roundedBox((W-.16)/2-.14,.08,coverLen,stoneMat);
+      left.position.set(-W*.25,.29,coverStart+coverLen/2);
+      right.position.set(W*.25,.29,coverStart+coverLen/2);
+      monument.add(left,right);
+      const gravel = roundedBox(.42,.04,coverLen-.22,gravelMat);
+      gravel.position.set(0,.306,coverStart+coverLen/2);
+      monument.add(gravel);
+      return;
+    }
+    if(state.base === "raised"){
+      const bottom = roundedBox(W+.04,.09,coverLen+.02,stoneMat);
+      bottom.position.set(0,.285,coverStart+coverLen/2);
+      const top = roundedBox(W-.12,.055,coverLen-.12,stoneMat);
+      top.position.set(0,.36,coverStart+coverLen/2);
+      monument.add(bottom,top);
+      return;
+    }
+    const gap = .015;
+    const halfW = (W+.04-gap)/2;
+    const a = roundedBox(halfW,.08,coverLen+.02,stoneMat);
+    const b = roundedBox(halfW,.08,coverLen+.02,stoneMat);
+    a.position.set(-halfW/2-gap/2,.30,coverStart+coverLen/2);
+    b.position.set(halfW/2+gap/2,.30,coverStart+coverLen/2);
+    monument.add(a,b);
+  }
+  function buildHead(headW,shape,pedZ){
+    const h = state.size === "double" ? 1.46 : 1.38;
+    const t = .22;
+    if(shape === "doubleArch"){
+      const oneW = headW*.47;
+      const g = makeStelaGeometry("arch",oneW,h,t);
+      const a = new THREE.Mesh(g,stoneMat); a.position.set(-oneW*.53,headBaseY,pedZ);
+      const b = new THREE.Mesh(g.clone(),stoneMat); b.position.set(oneW*.53,headBaseY,pedZ);
+      monument.add(a,b);
+      const seam = roundedBox(.035,h*.78,.235,darkMat); seam.position.set(0,headBaseY+h*.39,pedZ+.01); monument.add(seam);
+    } else if(shape === "book"){
+      const pageW = headW*.49;
+      const pageH = h*.96;
+      const left = new THREE.Mesh(new THREE.BoxGeometry(pageW,pageH,t),stoneMat);
+      const right = new THREE.Mesh(new THREE.BoxGeometry(pageW,pageH,t),stoneMat);
+      left.position.set(-pageW*.48,headBaseY+pageH/2,pedZ);
+      right.position.set(pageW*.48,headBaseY+pageH/2,pedZ);
+      left.rotation.y = -.075; right.rotation.y = .075;
+      monument.add(left,right);
+      const spine = roundedBox(.05,pageH,.24,darkMat); spine.position.set(0,headBaseY+pageH/2,pedZ+.005); monument.add(spine);
+    } else {
+      const g = makeStelaGeometry(shape,headW,h,t);
+      const mesh = new THREE.Mesh(g,stoneMat);
+      mesh.position.set(0,headBaseY,pedZ);
+      monument.add(mesh);
+    }
+    const planeW = Math.min(headW*.82,1.32);
+    const planeH = .82;
+    const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(planeW,planeH),textMat);
+    textPlane.position.set(0,headBaseY+h*.45,pedZ+t/2+.004);
+    textPlane.renderOrder = 20;
+    monument.add(textPlane);
+    POSES.text.target.set(0,headBaseY+h*.45,pedZ+.1);
+  }
+  function buildAccessories(W,L,centerZ,pedZ){
+    if(state.addons.cross){
+      const group = new THREE.Group();
+      const v = roundedBox(.06,.33,.026,bronzeMat);
+      const h = roundedBox(.2,.055,.026,bronzeMat);
+      v.position.y = 0; h.position.y = .08;
+      group.add(v,h);
+      group.position.set(-Math.min(.42,W*.2),headBaseY+1.02,pedZ+.128);
+      monument.add(group);
+    }
+    if(state.addons.photo){
+      const photo = new THREE.Mesh(new THREE.CircleGeometry(.13,48),new THREE.MeshStandardMaterial({color:0xf3eee4,roughness:.35,metalness:.1}));
+      photo.position.set(Math.min(.42,W*.2),headBaseY+.82,pedZ+.129);
+      monument.add(photo);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(.135,.011,8,48),bronzeMat);
+      rim.position.copy(photo.position);
+      monument.add(rim);
+    }
+    if(state.addons.vase){
+      const vase = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(.075,.105,.28,32),stoneMat);
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.09,32),stoneMat);
+      body.position.y=.14; neck.position.y=.325;
+      vase.add(body,neck);
+      vase.position.set(W*.30,.34,centerZ+.82);
+      monument.add(vase);
+    }
+    if(state.addons.lamp){
+      const lamp = new THREE.Group();
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,.08,28),darkMat);
+      const glass = new THREE.Mesh(new THREE.CylinderGeometry(.065,.075,.16,28),new THREE.MeshStandardMaterial({color:0xffd39b,roughness:.18,metalness:0,transparent:true,opacity:.62}));
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,.05,28),bronzeMat);
+      base.position.y=.04; glass.position.y=.16; top.position.y=.265;
+      lamp.add(base,glass,top);
+      lamp.position.set(-W*.32,.34,centerZ+.82);
+      monument.add(lamp);
+    }
+    if(state.addons.bench){
+      const bench = new THREE.Group();
+      const seat = roundedBox(.46,.045,.18,stoneMat);
+      const l1 = roundedBox(.055,.14,.075,stoneMat);
+      const l2 = roundedBox(.055,.14,.075,stoneMat);
+      seat.position.y=.33; l1.position.set(-.15,.24,0); l2.position.set(.15,.24,0);
+      bench.add(seat,l1,l2);
+      bench.position.set(0,.02,centerZ+L/2+.28);
+      monument.add(bench);
+    }
+    if(state.addons.edge){
+      const line = new THREE.Group();
+      const top = roundedBox(W*.72,.018,.022,bronzeMat);
+      const left = roundedBox(.018,.22,.022,bronzeMat);
+      const right = roundedBox(.018,.22,.022,bronzeMat);
+      top.position.set(0,headBaseY+.62,pedZ+.132);
+      left.position.set(-W*.22,headBaseY+.51,pedZ+.132);
+      right.position.set(W*.22,headBaseY+.51,pedZ+.132);
+      line.add(top,left,right);
+      monument.add(line);
+    }
+  }
+  function drawInscription(){
+    const x = textCtx;
+    x.clearRect(0,0,textCanvas.width,textCanvas.height);
+    const letter = LETTERS[state.letter].color;
+    const font = FONTS[state.font].css;
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.shadowColor = "rgba(0,0,0,.55)";
+    x.shadowBlur = 5;
+    x.shadowOffsetY = 3;
+    const name = (state.name || "").trim();
+    const dates = (state.dates || "").trim();
+    const epi = (state.epitaph || "").trim();
+    const cx = state.addons.photo ? 545 : 700;
+    const maxTextWidth = state.addons.photo ? 560 : 900;
+    x.fillStyle = letter;
+    x.font = `700 ${name.length > 20 ? 74 : 88}px ${font}`;
+    wrapCentered(x,name.toUpperCase(),cx,410,maxTextWidth,92);
+    x.font = `500 54px ${font}`;
+    x.fillText(dates,cx,570);
+    if(epi){
+      x.font = `500 46px ${font}`;
+      wrapCentered(x,epi,cx,690,maxTextWidth,54);
+    }
+    x.shadowBlur = 0;
+    x.globalAlpha = .5;
+    x.strokeStyle = letter;
+    x.lineWidth = 3;
+    x.beginPath();
+    x.moveTo(cx-180,500);
+    x.lineTo(cx+180,500);
+    x.stroke();
+    x.globalAlpha = 1;
+    textTex.needsUpdate = true;
+  }
+  function wrapCentered(ctx,text,x,y,maxWidth,lineHeight){
+    if(!text) return;
+    const words = text.split(/\s+/);
+    let lines = [], line = "";
+    words.forEach(word => {
+      const test = line ? line + " " + word : word;
+      if(ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    lines.push(line);
+    const start = y - ((lines.length - 1) * lineHeight / 2);
+    lines.forEach((ln,i) => ctx.fillText(ln,x,start+i*lineHeight));
+  }
+  function applyCamera(){
+    camera.position.set(
+      target.x + camDist*Math.sin(yaw)*Math.cos(pitch),
+      target.y + camDist*Math.sin(pitch),
+      target.z + camDist*Math.cos(yaw)*Math.cos(pitch)
+    );
+    camera.lookAt(target);
+  }
+  function goPose(name){
+    const p = POSES[name];
+    const start = {dist:camDist,yaw,pitch,tx:target.x,ty:target.y,tz:target.z};
+    const t0 = performance.now(), dur = 850;
+    cameraAnim = now => {
+      let k = Math.min((now-t0)/dur,1);
+      k = k < .5 ? 2*k*k : 1 - Math.pow(-2*k+2,2)/2;
+      camDist = start.dist + (p.dist - start.dist)*k;
+      yaw = start.yaw + (p.yaw - start.yaw)*k;
+      pitch = start.pitch + (p.pitch - start.pitch)*k;
+      target.x = start.tx + (p.target.x - start.tx)*k;
+      target.y = start.ty + (p.target.y - start.ty)*k;
+      target.z = start.tz + (p.target.z - start.tz)*k;
+      if(k >= 1) cameraAnim = null;
+    };
+  }
+  function updateCameraPose(animate){
+    if(animate) goPose("overview");
+    else {
+      const p = POSES.overview;
+      camDist = p.dist; yaw = p.yaw; pitch = p.pitch; target.copy(p.target);
+    }
+  }
+  let wizardStepIndex = 0;
+  function renderSummary(){
+    const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title);
+    $("summary").innerHTML =
+      `<div class="summary-grid">`+
+      `<div class="summary-row"><span>Tvar</span><strong>${SHAPES[state.shape].title}</strong></div>`+
+      `<div class="summary-row"><span>Veľkosť</span><strong>${SIZES[state.size].title}</strong></div>`+
+      `<div class="summary-row"><span>Doska</span><strong>${BASES[state.base].title}</strong></div>`+
+      `<div class="summary-row"><span>Materiál</span><strong>${MATERIALS[state.material].title}</strong></div>`+
+      `<div class="summary-row"><span>Nápis</span><strong>${state.name || "-"} / ${state.dates || "-"}</strong></div>`+
+      `<div class="summary-row"><span>Písmo</span><strong>${FONTS[state.font].title}, ${LETTERS[state.letter].title}</strong></div>`+
+      `<div class="summary-row"><span>Doplnky</span><strong>${addonNames.length ? addonNames.join(", ") : "-"}</strong></div>`+
+      `</div>`;
+  }
+  function optionButton(group,key,item,active,handler){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "choice" + (active ? " sel" : "");
+    b.dataset.key = key;
+    b.innerHTML = `<i>${item.icon || item.title.charAt(0)}</i><span><b>${item.title}</b><small>${item.sub || ""}</small></span>`;
+    b.addEventListener("click", () => {
+      group.querySelectorAll(".choice").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel");
+      handler(key);
+      renderSummary();
+    });
+    group.appendChild(b);
+  }
+  function renderControls(){
+    const shapeEl = $("shapeOptions");
+    Object.entries(SHAPES).forEach(([k,item]) => optionButton(shapeEl,k,item,state.shape===k,key => {state.shape=key;buildMonument();}));
+    const sizeEl = $("sizeOptions");
+    Object.entries(SIZES).forEach(([k,item]) => optionButton(sizeEl,k,item,state.size===k,key => {state.size=key;buildMonument();}));
+    const baseEl = $("baseOptions");
+    Object.entries(BASES).forEach(([k,item]) => optionButton(baseEl,k,item,state.base===k,key => {state.base=key;buildMonument();}));
+    const matEl = $("materialOptions");
+    Object.entries(MATERIALS).forEach(([k,item]) => {
+      const sw = document.createElement("button");
+      sw.type = "button";
+      sw.className = "swatch" + (state.material === k ? " sel" : "");
+      sw.dataset.key = k;
+      sw.style.backgroundImage = `url(${swatchDataUrl(item)})`;
+      sw.style.backgroundSize = "cover";
+      sw.innerHTML = `<span>${item.title}</span>`;
+      sw.addEventListener("click", () => {
+        matEl.querySelectorAll(".swatch").forEach(x=>x.classList.remove("sel"));
+        sw.classList.add("sel");
+        state.material = k;
+        stoneMat = makeStoneMaterial(k);
+        buildMonument();
+        renderSummary();
+      });
+      matEl.appendChild(sw);
+    });
+    const letterEl = $("letterOptions");
+    Object.entries(LETTERS).forEach(([k,item]) => {
+      const d = document.createElement("button");
+      d.type = "button";
+      d.className = "dot" + (state.letter === k ? " sel" : "");
+      d.style.background = item.color;
+      d.title = item.title;
+      d.addEventListener("click", () => {
+        letterEl.querySelectorAll(".dot").forEach(x=>x.classList.remove("sel"));
+        d.classList.add("sel");
+        state.letter = k;
+        drawInscription();
+        renderSummary();
+      });
+      letterEl.appendChild(d);
+    });
+    const fontEl = $("fontOptions");
+    Object.entries(FONTS).forEach(([k,item]) => optionButton(fontEl,k,item,state.font===k,key => {state.font=key;drawInscription();}));
+    const addonEl = $("addonOptions");
+    Object.entries(ADDONS).forEach(([k,item]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "choice addon" + (state.addons[k] ? " sel" : "");
+      b.innerHTML = `<i>${item.icon}</i><span><b>${item.title}</b><small>${item.sub}</small></span>`;
+      b.addEventListener("click", () => {
+        state.addons[k] = !state.addons[k];
+        b.classList.toggle("sel", !!state.addons[k]);
+        buildMonument();
+        renderSummary();
+      });
+      addonEl.appendChild(b);
+    });
+  }
+  function initWizardSteps(){
+    const sections = Array.from(document.querySelectorAll(".panel-body .section"));
+    const prev = $("mobilePrev");
+    const next = $("mobileNext");
+    const title = $("mobileStepTitle");
+    if(!sections.length || !prev || !next || !title) return;
+    function setStep(index){
+      wizardStepIndex = Math.max(0, Math.min(sections.length - 1, index));
+      sections.forEach((section,i) => section.classList.toggle("active", i === wizardStepIndex));
+      const label = sections[wizardStepIndex].querySelector(".section-title b");
+      title.textContent = (wizardStepIndex + 1) + " / " + sections.length + " - " + (label ? label.textContent : "Konfigurátor");
+      prev.disabled = wizardStepIndex === 0;
+      next.textContent = wizardStepIndex === sections.length - 1 ? "Náhľad" : "Ďalej";
+      $("sendInquiry").textContent = wizardStepIndex === sections.length - 1 ? "Odoslať nezáväzný dopyt" : "Pokračovať";
+      const body = document.querySelector(".panel-body");
+      if(body) body.scrollTop = 0;
+      if(wizardStepIndex === 4) goPose("text");
+      else goPose("overview");
+    }
+    window.openConfiguratorStep = function(index){
+      const panel = document.querySelector(".panel");
+      const launcher = $("configLauncher");
+      if(panel) panel.classList.remove("collapsed");
+      if(launcher) launcher.classList.remove("show");
+      setStep(typeof index === "number" ? index : wizardStepIndex);
+    };
+    window.collapseConfigurator = function(){
+      const panel = document.querySelector(".panel");
+      const launcher = $("configLauncher");
+      if(panel) panel.classList.add("collapsed");
+      if(launcher) launcher.classList.add("show");
+      goPose("overview");
+    };
+    prev.addEventListener("click", () => setStep(wizardStepIndex - 1));
+    next.addEventListener("click", () => {
+      if(wizardStepIndex < sections.length - 1) setStep(wizardStepIndex + 1);
+      else window.collapseConfigurator();
+    });
+    $("configLauncher").addEventListener("click", () => window.openConfiguratorStep(wizardStepIndex));
+    setStep(0);
+  }
+  function initAssistant(){
+    const launcher = $("assistantLauncher");
+    const panel = $("assistantPanel");
+    const close = $("assistantClose");
+    const input = $("assistantInput");
+    const send = $("assistantSend");
+    const msgs = $("assistantMsgs");
+    if(!launcher || !panel || !close || !input || !send || !msgs) return;
+    function toggle(open){
+      panel.classList.toggle("open", open == null ? !panel.classList.contains("open") : open);
+    }
+    function addMsg(type,text){
+      const el = document.createElement("div");
+      el.className = "msg " + type;
+      el.textContent = text;
+      msgs.appendChild(el);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    function currentContext(){
+      const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "bez doplnkov";
+      return `${SHAPES[state.shape].title}, ${SIZES[state.size].title}, ${MATERIALS[state.material].title}, ${BASES[state.base].title}, doplnky: ${addonNames}`;
+    }
+    function answer(q){
+      const text = q.toLowerCase();
+      if(text.includes("konfigurator") || text.includes("konfigurat")){
+        return "Konfigurátor som otvoril. Postupujte po krokoch: tvar, veľkosť, doska, materiál, nápis, doplnky, súhrn a kontakt.";
+      }
+      if(text.includes("material") || text.includes("kamen") || text.includes("zula")){
+        return `Aktuálne je vybraný materiál ${MATERIALS[state.material].title}. Na silný kontrast nápisu je dobrá čierna alebo Blue pearl, pokojnejšie pôsobí sivá, teplejšie červenohnedá a bronzový kameň.`;
+      }
+      if(text.includes("napis") || text.includes("pismo") || text.includes("text")){
+        return `Pri nápise odporúčam krátke meno alebo rodinu a dátumy pod tým. Aktuálny návrh má text "${state.name}" a farbu ${LETTERS[state.letter].title}. Ak je zapnutá fotokeramika, text sa drží vľavo, aby sa neprekrýval.`;
+      }
+      if(text.includes("dvojhrob") || text.includes("velkost")){
+        return `Pre dvojhrob vyzerá najlepšie širší tvar, hlavne Dvojitý oblúk, Kniha alebo Rovný. Viete to prepnúť v sekcii Veľkosť a Tvar kameňa.`;
+      }
+      if(text.includes("dopln") || text.includes("vaza") || text.includes("kahanec")){
+        return `Doplnky nechajte skôr striedme. Bezpečný profesionálny výber je kríž, váza alebo kahanec. Aktuálny návrh: ${currentContext()}.`;
+      }
+      return `Podľa aktuálneho 3D návrhu máte ${currentContext()}. Ak chcete konzervatívny predajný návrh, odporúčam Oblúk alebo Rovný tvar, sivú/čiernu žulu, zlatý alebo strieborný nápis a najviac 2-3 doplnky.`;
+    }
+    function sendQuestion(q){
+      const clean = (q || "").trim();
+      if(!clean) return;
+      addMsg("me", clean);
+      input.value = "";
+      setTimeout(() => addMsg("bot", answer(clean)), 180);
+    }
+    launcher.addEventListener("click", () => toggle());
+    close.addEventListener("click", () => toggle(false));
+    send.addEventListener("click", () => sendQuestion(input.value));
+    input.addEventListener("keydown", e => { if(e.key === "Enter") sendQuestion(input.value); });
+    document.querySelectorAll(".assistant-quick button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if(btn.dataset.action === "config"){
+          addMsg("me", "Otvoriť konfigurátor");
+          addMsg("bot", "Otváram 3D konfigurátor. Vyberajte postupne po krokoch a potom vyplňte kontakt.");
+          if(window.openConfiguratorStep) window.openConfiguratorStep(0);
+          toggle(false);
+          return;
+        }
+        if(btn.dataset.action === "classic"){
+          addMsg("me", "Lacnejšia verzia");
+          addMsg("bot", "Prepnem vás na jednoduchší fotkový konfigurátor.");
+          window.location.href = "lacnejsia-verzia.html";
+          return;
+        }
+        sendQuestion(btn.dataset.q || btn.textContent);
+      });
+    });
+  }
+  function swatchDataUrl(item){
+    const c = document.createElement("canvas");
+    c.width = c.height = 90;
+    const x = c.getContext("2d");
+    x.fillStyle = item.base;
+    x.fillRect(0,0,90,90);
+    for(let i=0;i<1200;i++){
+      x.globalAlpha = .22 + Math.random()*.6;
+      x.fillStyle = item.flecks[(Math.random()*item.flecks.length)|0];
+      x.fillRect(Math.random()*90,Math.random()*90,1.2,1.2);
+    }
+    x.globalAlpha = 1;
+    return c.toDataURL("image/png");
+  }
+  function bindInputs(){
+    $("nameInput").addEventListener("input",e => {state.name=e.target.value;drawInscription();renderSummary();goPose("text");});
+    $("dateInput").addEventListener("input",e => {state.dates=e.target.value;drawInscription();renderSummary();goPose("text");});
+    $("epitaphInput").addEventListener("input",e => {state.epitaph=e.target.value;drawInscription();renderSummary();goPose("text");});
+    $("focusText").addEventListener("click",()=>goPose("text"));
+    $("resetView").addEventListener("click",()=>goPose("overview"));
+    $("sendInquiry").addEventListener("click",() => {
+      const sections = Array.from(document.querySelectorAll(".panel-body .section"));
+      if(wizardStepIndex < sections.length - 1){
+        $("mobileNext").click();
+        return;
+      }
+      const status = $("sendStatus");
+      const name = $("clientName").value.trim();
+      const phone = $("clientPhone").value.trim();
+      const email = $("clientEmail").value.trim();
+      const place = $("clientPlace").value.trim();
+      if(!name || !phone || !email || !place){
+        status.className = "send-status err";
+        status.textContent = "Vyplňte prosím meno, telefón, e-mail aj miesto realizácie.";
+        return;
+      }
+      const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "-";
+      status.className = "send-status ok";
+      status.textContent = "Dopyt bol pripravený na odoslanie. Kamenárstvo Jantár by klienta kontaktovalo telefonicky.";
+      console.info("Fake 3D inquiry", {
+        client:{name,phone,email,place},
+        design:{
+          shape:SHAPES[state.shape].title,
+          size:SIZES[state.size].title,
+          base:BASES[state.base].title,
+          material:MATERIALS[state.material].title,
+          inscription:state.name,
+          dates:state.dates,
+          epitaph:state.epitaph,
+          font:FONTS[state.font].title,
+          letter:LETTERS[state.letter].title,
+          addons:addonNames
+        }
+      });
+    });
+  }
+  function attachViewportControls(){
+    viewport.addEventListener("pointerdown",e => {dragging=true;px=e.clientX;py=e.clientY;cameraAnim=null;viewport.setPointerCapture(e.pointerId);});
+    viewport.addEventListener("pointerup",e => {dragging=false;try{viewport.releasePointerCapture(e.pointerId);}catch(_){}});
+    viewport.addEventListener("pointermove",e => {
+      if(!dragging) return;
+      yaw -= (e.clientX-px)*.008;
+      pitch += (e.clientY-py)*.006;
+      pitch = Math.max(.03,Math.min(1.18,pitch));
+      px=e.clientX; py=e.clientY;
+    });
+    viewport.addEventListener("wheel",e => {
+      e.preventDefault();
+      camDist += e.deltaY*.0026;
+      camDist = Math.max(2.05,Math.min(9,camDist));
+      cameraAnim = null;
+    },{passive:false});
+  }
+  function resize(){
+    const w = Math.max(1,viewport.clientWidth);
+    const h = Math.max(1,viewport.clientHeight);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
+  }
+  function loop(now){
+    if(cameraAnim) cameraAnim(now);
+    applyCamera();
+    renderer.render(scene,camera);
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener("resize",resize);
+  renderControls();
+  initWizardSteps();
+  initAssistant();
+  bindInputs();
+  attachViewportControls();
+  buildMonument();
+  renderSummary();
+  resize();
+  $("loading").style.display = "none";
+  requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>
