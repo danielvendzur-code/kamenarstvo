@@ -57,19 +57,13 @@ button,input,textarea{font:inherit}
   background:linear-gradient(145deg,#7A5B3B 0%,#4E3924 54%,#2A211B 100%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 8px 18px rgba(42,33,27,.16);
   position:relative;flex:0 0 auto;
+  display:grid;place-items:center;
+  color:#FBF7F0;
+  font:700 22px var(--engrave);
+  line-height:1;
+  letter-spacing:.02em;
 }
-.brand-mark:before{
-  content:"";position:absolute;left:9px;top:10px;width:22px;height:15px;
-  border:2px solid #fbf7f0;border-radius:10px;background:transparent;
-}
-.brand-mark:after{
-  content:"";position:absolute;left:15px;top:23px;width:8px;height:7px;
-  border-left:2px solid #fbf7f0;border-bottom:2px solid #fbf7f0;border-bottom-left-radius:6px;
-}
-.brand-mark .mark-dot{
-  position:absolute;left:15px;top:17px;width:3px;height:3px;border-radius:50%;background:#fbf7f0;
-  box-shadow:5px 0 0 #fbf7f0,10px 0 0 #fbf7f0;
-}
+.brand-mark:before,.brand-mark:after,.brand-mark .mark-dot{display:none;content:none}
 .brand b{display:block;font:700 17px var(--ui);letter-spacing:.01em}
 .brand span{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:600}
 .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
@@ -297,19 +291,16 @@ button,input,textarea{font:inherit}
 .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--stone),var(--stone-dk));color:#fdf6ea;border-bottom-right-radius:5px}
 .assistant-quick{flex:0 0 auto;display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 10px}
 .assistant-quick button{border:1px solid var(--line);border-radius:999px;background:#fffdf8;color:var(--stone-dk);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer}
-.assistant-input{flex:0 0 auto;display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.assistant-input{flex:0 0 auto;display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);align-items:center}
 .assistant-input input{flex:1;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);padding:12px;outline:none}
-.assistant-input button{border:0;border-radius:13px;background:var(--stone);color:#fff;font-weight:900;padding:0 15px;cursor:pointer}
+.assistant-input button{border:0;border-radius:14px;background:var(--stone);color:#fff;font-weight:900;width:44px;height:44px;padding:0;cursor:pointer;display:grid;place-items:center;font-size:19px;line-height:1;flex:0 0 44px}
 .config-launcher{display:none}
 @media(max-width:980px){
   body{overflow:hidden}
   .page{height:100dvh;min-height:100dvh;overflow:hidden}
   .topbar{height:60px;margin:8px 8px 0;align-items:center;padding:9px 12px;border-radius:17px}
   .nav{display:none}
-  .brand-mark{width:34px;height:34px;border-radius:12px}
-  .brand-mark:before{left:7px;top:8px;width:20px;height:14px;border-radius:9px}
-  .brand-mark:after{left:13px;top:20px;width:8px;height:7px}
-  .brand-mark .mark-dot{left:12px;top:14px}
+  .brand-mark{width:34px;height:34px;border-radius:12px;font-size:19px}
   .brand b{font-size:14px}.brand span{font-size:11px}
   .shell{position:relative;display:block;padding:8px;height:calc(100dvh - 68px);overflow:hidden}
   .viewer-card{height:100%;min-height:0;border-radius:22px}
@@ -355,12 +346,11 @@ button,input,textarea{font:inherit}
 <div class="page">
   <header class="topbar">
     <a class="brand" href="index.html" aria-label="Späť na hlavnú stránku">
-      <span class="brand-mark"><span class="mark-dot"></span></span>
+      <span class="brand-mark" aria-hidden="true">J</span>
       <span><b>Kamenárstvo Jantár</b><span>3D návrh pomníka a kamenársky konfigurátor</span></span>
     </a>
     <nav class="nav" aria-label="Navigácia">
       <a class="active" href="index.html">3D konfigurátor</a>
-      <a class="alt-link" href="lacnejsia-verzia.html">Lacnejšia verzia</a>
       <a href="tel:+421900000000">Zavolať</a>
     </nav>
   </header>
@@ -371,7 +361,6 @@ button,input,textarea{font:inherit}
         <div class="viewer-title">
           <small>Interaktívny náhľad</small>
           <h1>3D konfigurátor pomníka</h1>
-          <a class="viewer-alt" href="lacnejsia-verzia.html">Lacnejšia verzia s fotkami</a>
         </div>
       </div>
       <div class="viewer-tools">
@@ -448,7 +437,6 @@ button,input,textarea{font:inherit}
       </div>
       <div class="panel-foot">
         <button class="cta" type="button" id="sendInquiry">Odoslať nezáväzný dopyt</button>
-        <div class="note">Lacnejšia fotková verzia zostáva dostupná cez prepnutie v hornej časti.</div>
       </div>
     </aside>
   </main>
@@ -465,14 +453,13 @@ button,input,textarea{font:inherit}
     </div>
     <div class="assistant-quick">
       <button type="button" data-action="config">Otvoriť konfigurátor</button>
-      <button type="button" data-action="classic">Lacnejšia verzia</button>
       <button type="button" data-q="aky material odporucas">Aký materiál?</button>
       <button type="button" data-q="ako upravit napis">Ako nápis?</button>
       <button type="button" data-q="co zvolit na dvojhrob">Dvojhrob</button>
     </div>
     <div class="assistant-input">
       <input id="assistantInput" placeholder="Napíšte otázku..." autocomplete="off">
-      <button type="button" id="assistantSend">Odoslať</button>
+      <button type="button" id="assistantSend" aria-label="Odoslať správu">➤</button>
     </div>
   </section>
 </div>
@@ -481,22 +468,22 @@ button,input,textarea{font:inherit}
 <script>
 (function(){
   const SHAPES = {
-    rect:{title:"Rovný",sub:"klasický tvar",icon:"R"},
-    arch:{title:"Oblúk",sub:"jemná hlavica",icon:"O"},
-    doubleArch:{title:"Dvojitý oblúk",sub:"pre dvojhrob",icon:"2"},
-    book:{title:"Kniha",sub:"otvorená spomienka",icon:"K"},
-    wave:{title:"Vlna",sub:"umelecký vrch",icon:"V"},
-    heart:{title:"Srdcový",sub:"mäkký pietny tvar",icon:"S"}
+    rect:{title:"Rovný",sub:"klasický tvar",icon:"▭"},
+    arch:{title:"Oblúk",sub:"jemná hlavica",icon:"◠"},
+    doubleArch:{title:"Dvojitý oblúk",sub:"pre dvojhrob",icon:"◠◠"},
+    book:{title:"Kniha",sub:"otvorená spomienka",icon:"◫"},
+    wave:{title:"Vlna",sub:"umelecký vrch",icon:"≈"},
+    heart:{title:"Srdcový",sub:"mäkký pietny tvar",icon:"♡"}
   };
   const SIZES = {
-    single:{title:"Jednohrob",sub:"cca 90 x 200 cm",w:1.42,l:2.68,head:1.22},
-    double:{title:"Dvojhrob",sub:"cca 160 x 220 cm",w:2.25,l:2.9,head:1.72}
+    single:{title:"Jednohrob",sub:"cca 90 x 200 cm",icon:"▯",w:1.42,l:2.68,head:1.22},
+    double:{title:"Dvojhrob",sub:"cca 160 x 220 cm",icon:"▭",w:2.25,l:2.9,head:1.72}
   };
   const BASES = {
-    full:{title:"Plná doska",sub:"dvojdielna krycia doska"},
-    frame:{title:"Otvorený rám",sub:"stred pre štrk alebo výsadbu"},
-    raised:{title:"Zdvihnutá doska",sub:"vyšší profil s fazetou"},
-    garden:{title:"Doska s otvorom",sub:"miesto na kvety v strede"}
+    full:{title:"Plná doska",sub:"dvojdielna krycia doska",icon:"▰"},
+    frame:{title:"Otvorený rám",sub:"stred pre štrk alebo výsadbu",icon:"▢"},
+    raised:{title:"Zdvihnutá doska",sub:"vyšší profil s fazetou",icon:"▂"},
+    garden:{title:"Doska s otvorom",sub:"miesto na kvety v strede",icon:"▣"}
   };
   const MATERIALS = {
     black:{title:"Čierna žula",base:"#151518",flecks:["#070708","#34343a","#777780","#e7e7e7"]},
@@ -514,18 +501,18 @@ button,input,textarea{font:inherit}
     dark:{title:"Tmavá",color:"#16120E"}
   };
   const FONTS = {
-    classic:{title:"Klasické",sub:"pietny serif",css:"Cinzel, Georgia, serif"},
-    elegant:{title:"Elegantné",sub:"jemné písmo",css:"Cormorant Garamond, Georgia, serif"},
-    modern:{title:"Moderné",sub:"čisté písmo",css:"Inter, Arial, sans-serif"},
-    roman:{title:"Rímske",sub:"výrazné kapitálky",css:"Georgia, serif"}
+    classic:{title:"Klasické",sub:"pietny serif",icon:"✦",css:"Cinzel, Georgia, serif"},
+    elegant:{title:"Elegantné",sub:"jemné písmo",icon:"✧",css:"Cormorant Garamond, Georgia, serif"},
+    modern:{title:"Moderné",sub:"čisté písmo",icon:"◆",css:"Inter, Arial, sans-serif"},
+    roman:{title:"Rímske",sub:"výrazné kapitálky",icon:"◬",css:"Georgia, serif"}
   };
   const ADDONS = {
-    cross:{title:"Kríž",sub:"na čelnej doske",icon:"+"},
-    vase:{title:"Kamenná váza",sub:"na pravej strane",icon:"V"},
-    lamp:{title:"Kahanec",sub:"svietnik pri doske",icon:"L"},
-    photo:{title:"Fotokeramika",sub:"oválna fotografia",icon:"F"},
-    bench:{title:"Lavička",sub:"jednoduchý doplnok",icon:"B"},
-    edge:{title:"Bronzová linka",sub:"jemný ozdobný detail",icon:"D"}
+    cross:{title:"Kríž",sub:"na čelnej doske",icon:"✝"},
+    vase:{title:"Kamenná váza",sub:"na pravej strane",icon:"⚱"},
+    lamp:{title:"Kahanec",sub:"svietnik pri doske",icon:"◇"},
+    photo:{title:"Fotokeramika",sub:"oválna fotografia",icon:"◉"},
+    bench:{title:"Lavička",sub:"jednoduchý doplnok",icon:"▱"},
+    edge:{title:"Bronzová linka",sub:"jemný ozdobný detail",icon:"━"}
   };
   const state = {
     shape:"arch", size:"single", base:"full", material:"gray",
@@ -1223,7 +1210,7 @@ button,input,textarea{font:inherit}
   }
   function attachViewportControls(){
     viewport.addEventListener("pointerdown",e => {dragging=true;px=e.clientX;py=e.clientY;cameraAnim=null;viewport.setPointerCapture(e.pointerId);});
-    viewport.addEventListener("pointerup",e => {dragging=false;try{viewport.releasePointerCapture(e.pointerId);}catch(_){}});
+    viewport.addEventListener("pointerup",e => {dragging=false;try{viewport.releasePointerCapture(e.pointerId);}catch(_){} });
     viewport.addEventListener("pointermove",e => {
       if(!dragging) return;
       yaw -= (e.clientX-px)*.008;
