@@ -257,49 +257,6 @@ button,input,textarea{font:inherit}
 }
 .cta:hover{filter:brightness(1.05)}
 .note{margin-top:9px;color:var(--muted);font-size:11.5px;line-height:1.45;text-align:center}
-.assistant-launcher{
-  position:fixed;left:42px;bottom:96px;z-index:40;border:1px solid rgba(253,246,234,.28);border-radius:999px;
-  padding:12px 18px 12px 15px;background:linear-gradient(135deg,#6E5135,#3A2C20);
-  color:#fdf6ea;font-weight:900;box-shadow:0 14px 34px rgba(42,33,27,.28);cursor:pointer;
-  display:flex;align-items:center;gap:10px;
-}
-.assistant-launcher i{
-  width:30px;height:26px;display:block;position:relative;flex:0 0 auto;
-}
-.assistant-launcher i:before{
-  content:"";position:absolute;left:1px;top:1px;width:24px;height:17px;
-  border:2px solid currentColor;border-radius:10px;
-  background:
-    radial-gradient(circle at 7px 8px,currentColor 0 1.5px,transparent 1.7px),
-    radial-gradient(circle at 12px 8px,currentColor 0 1.5px,transparent 1.7px),
-    radial-gradient(circle at 17px 8px,currentColor 0 1.5px,transparent 1.7px);
-}
-.assistant-launcher i:after{
-  content:"";position:absolute;left:7px;bottom:2px;width:9px;height:7px;
-  border-left:2px solid currentColor;border-bottom:2px solid currentColor;border-bottom-left-radius:6px;
-}
-.assistant-panel{
-  position:fixed;left:22px;bottom:82px;width:min(390px,calc(100vw - 44px));height:min(560px,calc(100dvh - 112px));
-  z-index:41;display:none;flex-direction:column;overflow:hidden;border-radius:24px;border:1px solid var(--line);
-  background:var(--cream);box-shadow:0 24px 70px rgba(42,33,27,.28);
-}
-.assistant-panel.open{display:flex}
-.assistant-head{
-  flex:0 0 auto;padding:15px 16px;background:linear-gradient(135deg,#3A2C20 0%,#5A4430 58%,#6E5135 100%);
-  color:#fdf6ea;display:flex;align-items:center;justify-content:space-between;gap:12px;
-}
-.assistant-head b{display:block;font:700 18px var(--engrave);letter-spacing:.03em}
-.assistant-head span{display:block;font-size:12px;color:rgba(253,246,234,.72);margin-top:2px}
-.assistant-close{border:0;background:rgba(255,247,232,.14);color:#fff;border-radius:12px;width:36px;height:36px;font-weight:900;cursor:pointer}
-.assistant-msgs{flex:1 1 auto;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.msg{max-width:88%;padding:11px 13px;border-radius:15px;font-size:13.5px;line-height:1.45}
-.msg.bot{background:#fffdf8;border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:5px}
-.msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--stone),var(--stone-dk));color:#fdf6ea;border-bottom-right-radius:5px}
-.assistant-quick{flex:0 0 auto;display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 10px}
-.assistant-quick button{border:1px solid var(--line);border-radius:999px;background:#fffdf8;color:var(--stone-dk);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer}
-.assistant-input{flex:0 0 auto;display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
-.assistant-input input{flex:1;border:1.5px solid var(--line);border-radius:13px;background:#fffdf8;color:var(--ink);padding:12px;outline:none}
-.assistant-input button{border:0;border-radius:13px;background:var(--stone);color:#fff;font-weight:900;padding:0 15px;cursor:pointer}
 .config-launcher{display:none}
 @media(max-width:980px){
   body{overflow:hidden}
@@ -336,8 +293,6 @@ button,input,textarea{font:inherit}
   .swatches{grid-template-columns:1fr 1fr;gap:8px}.swatch{min-height:70px}
   .addons{grid-template-columns:1fr 1fr}
   .field input,.field textarea{padding:10px 11px;font-size:13px}.field textarea{min-height:56px}
-  .assistant-launcher{left:auto;right:14px;top:78px;bottom:auto;padding:11px 13px}
-  .assistant-panel{left:8px;right:8px;bottom:8px;width:auto;height:min(72dvh,560px);border-radius:24px}
 }
 @media(max-width:560px){
   .viewer-card{height:100%;min-height:0}
@@ -454,27 +409,6 @@ button,input,textarea{font:inherit}
   </main>
 
   <button class="config-launcher" type="button" id="configLauncher">Upraviť 3D návrh</button>
-  <button class="assistant-launcher" type="button" id="assistantLauncher"><i></i> AI asistent</button>
-  <section class="assistant-panel" id="assistantPanel" aria-label="AI asistent">
-    <div class="assistant-head">
-      <div><b>AI asistent</b><span>Pomoc s výberom pomníka a materiálu</span></div>
-      <button class="assistant-close" type="button" id="assistantClose" aria-label="Zavrieť chat">x</button>
-    </div>
-    <div class="assistant-msgs" id="assistantMsgs">
-      <div class="msg bot">Dobrý deň. Pomôžem vybrať tvar, kameň, nápis alebo doplnky. Môžete sa pýtať priamo podľa aktuálneho 3D návrhu.</div>
-    </div>
-    <div class="assistant-quick">
-      <button type="button" data-action="config">Otvoriť konfigurátor</button>
-      <button type="button" data-action="classic">Lacnejšia verzia</button>
-      <button type="button" data-q="aky material odporucas">Aký materiál?</button>
-      <button type="button" data-q="ako upravit napis">Ako nápis?</button>
-      <button type="button" data-q="co zvolit na dvojhrob">Dvojhrob</button>
-    </div>
-    <div class="assistant-input">
-      <input id="assistantInput" placeholder="Napíšte otázku..." autocomplete="off">
-      <button type="button" id="assistantSend">Odoslať</button>
-    </div>
-  </section>
 </div>
 
 <script src="assets/vendor/three.r128.min.js"></script>
@@ -1094,77 +1028,6 @@ button,input,textarea{font:inherit}
     $("configLauncher").addEventListener("click", () => window.openConfiguratorStep(wizardStepIndex));
     setStep(0);
   }
-  function initAssistant(){
-    const launcher = $("assistantLauncher");
-    const panel = $("assistantPanel");
-    const close = $("assistantClose");
-    const input = $("assistantInput");
-    const send = $("assistantSend");
-    const msgs = $("assistantMsgs");
-    if(!launcher || !panel || !close || !input || !send || !msgs) return;
-    function toggle(open){
-      panel.classList.toggle("open", open == null ? !panel.classList.contains("open") : open);
-    }
-    function addMsg(type,text){
-      const el = document.createElement("div");
-      el.className = "msg " + type;
-      el.textContent = text;
-      msgs.appendChild(el);
-      msgs.scrollTop = msgs.scrollHeight;
-    }
-    function currentContext(){
-      const addonNames = Object.keys(state.addons).filter(k=>state.addons[k]).map(k=>ADDONS[k].title).join(", ") || "bez doplnkov";
-      return `${SHAPES[state.shape].title}, ${SIZES[state.size].title}, ${MATERIALS[state.material].title}, ${BASES[state.base].title}, doplnky: ${addonNames}`;
-    }
-    function answer(q){
-      const text = q.toLowerCase();
-      if(text.includes("konfigurator") || text.includes("konfigurat")){
-        return "Konfigurátor som otvoril. Postupujte po krokoch: tvar, veľkosť, doska, materiál, nápis, doplnky, súhrn a kontakt.";
-      }
-      if(text.includes("material") || text.includes("kamen") || text.includes("zula")){
-        return `Aktuálne je vybraný materiál ${MATERIALS[state.material].title}. Na silný kontrast nápisu je dobrá čierna alebo Blue pearl, pokojnejšie pôsobí sivá, teplejšie červenohnedá a bronzový kameň.`;
-      }
-      if(text.includes("napis") || text.includes("pismo") || text.includes("text")){
-        return `Pri nápise odporúčam krátke meno alebo rodinu a dátumy pod tým. Aktuálny návrh má text "${state.name}" a farbu ${LETTERS[state.letter].title}. Ak je zapnutá fotokeramika, text sa drží vľavo, aby sa neprekrýval.`;
-      }
-      if(text.includes("dvojhrob") || text.includes("velkost")){
-        return `Pre dvojhrob vyzerá najlepšie širší tvar, hlavne Dvojitý oblúk, Kniha alebo Rovný. Viete to prepnúť v sekcii Veľkosť a Tvar kameňa.`;
-      }
-      if(text.includes("dopln") || text.includes("vaza") || text.includes("kahanec")){
-        return `Doplnky nechajte skôr striedme. Bezpečný profesionálny výber je kríž, váza alebo kahanec. Aktuálny návrh: ${currentContext()}.`;
-      }
-      return `Podľa aktuálneho 3D návrhu máte ${currentContext()}. Ak chcete konzervatívny predajný návrh, odporúčam Oblúk alebo Rovný tvar, sivú/čiernu žulu, zlatý alebo strieborný nápis a najviac 2-3 doplnky.`;
-    }
-    function sendQuestion(q){
-      const clean = (q || "").trim();
-      if(!clean) return;
-      addMsg("me", clean);
-      input.value = "";
-      setTimeout(() => addMsg("bot", answer(clean)), 180);
-    }
-    launcher.addEventListener("click", () => toggle());
-    close.addEventListener("click", () => toggle(false));
-    send.addEventListener("click", () => sendQuestion(input.value));
-    input.addEventListener("keydown", e => { if(e.key === "Enter") sendQuestion(input.value); });
-    document.querySelectorAll(".assistant-quick button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        if(btn.dataset.action === "config"){
-          addMsg("me", "Otvoriť konfigurátor");
-          addMsg("bot", "Otváram 3D konfigurátor. Vyberajte postupne po krokoch a potom vyplňte kontakt.");
-          if(window.openConfiguratorStep) window.openConfiguratorStep(0);
-          toggle(false);
-          return;
-        }
-        if(btn.dataset.action === "classic"){
-          addMsg("me", "Lacnejšia verzia");
-          addMsg("bot", "Prepnem vás na jednoduchší fotkový konfigurátor.");
-          window.location.href = "lacnejsia-verzia.html";
-          return;
-        }
-        sendQuestion(btn.dataset.q || btn.textContent);
-      });
-    });
-  }
   function swatchDataUrl(item){
     const c = document.createElement("canvas");
     c.width = c.height = 90;
@@ -1254,7 +1117,6 @@ button,input,textarea{font:inherit}
   window.addEventListener("resize",resize);
   renderControls();
   initWizardSteps();
-  initAssistant();
   bindInputs();
   attachViewportControls();
   buildMonument();
