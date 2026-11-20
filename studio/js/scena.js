@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {garden,parkSky} from './prostredie.js';
 import {Reflector} from '../vendor/Reflector.js';
 import {OrbitControls} from '../vendor/OrbitControls.js';
 import {vytvorZulu} from './kamen.js';
@@ -69,11 +70,12 @@ function gravel(random){
 
 export function scena(host,model,stone,onOrbit){
   const mobile=matchMedia('(max-width:760px)').matches;
-  const renderer=new T.WebGLRenderer({antialias:true,powerPreference:mobile?'low-power':'high-performance'});
+  const renderer=new T.WebGLRenderer({antialias:!mobile,powerPreference:mobile?'low-power':'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:2));
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   renderer.toneMapping=T.ACESFilmicToneMapping;
+  renderer.domElement.style.visibility='hidden';
   host.append(renderer.domElement);
   let seed=2701;
   const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
@@ -83,8 +85,9 @@ export function scena(host,model,stone,onOrbit){
   generator.dispose();
   scene.background=panorama;scene.backgroundBlurriness=0.17;
   scene.fog=new T.FogExp2(0xd7d7d7,0.055);
+  let fastMotion=false;
   function coverFace(width,depth){
-    const size=mobile?512:1024;
+    const size=mobile?192:1024;
     const face=new Reflector(new T.PlaneGeometry(width,depth),{
       textureWidth:size,textureHeight:size,clipBias:0,multisample:0
     });
@@ -92,11 +95,19 @@ export function scena(host,model,stone,onOrbit){
     face.material=vytvorZulu(stone,{mirror:captureMaterial.uniforms});
     captureMaterial.dispose();
     const capture=face.onBeforeRender;
+    let lastCapture=0;
     face.onBeforeRender=(renderer,scene,camera)=>{
-      const backgroundBlur=scene.backgroundBlurriness;
+      // Reuse the most recent planar capture during short low-tier drags.
+      // Its original projective matrix keeps it registered to the cover.
+      const now=performance.now();
+      if(fastMotion && now-lastCapture<90)return;
+      lastCapture=now;
+      const backgroundBlur=scene.backgroundBlurriness, originalSky=scene.background;
+      const baked=mobile && grounds?.visible && probes.get(active);
+      if(baked){grounds.visible=false;scene.background=baked.texture;}
       scene.backgroundBlurriness=0;
       try{capture(renderer,scene,camera);}
-      finally{scene.backgroundBlurriness=backgroundBlur;}
+      finally{scene.backgroundBlurriness=backgroundBlur;scene.background=originalSky;if(baked)grounds.visible=true;}
     };
     face.receiveShadow=true;
     return face;
@@ -113,7 +124,8 @@ export function scena(host,model,stone,onOrbit){
   const contact=new T.Mesh(new T.PlaneGeometry(model.sirka*1.28,model.dlzka*1.20),
     new T.MeshBasicMaterial({map:new T.CanvasTexture(ctx.canvas),transparent:true,depthWrite:false}));
   contact.rotation.x=-Math.PI/2;contact.position.y=0.001;scene.add(contact);
-  scene.add(new T.HemisphereLight(0xffffff,0x909090,0.6));
+  const hemi=new T.HemisphereLight(0xffffff,0x909090,0.6);
+  scene.add(hemi);
   const sun=new T.DirectionalLight(0xffffff,1.35);
   sun.position.set(-2,7,-1.4);sun.castShadow=true;
   sun.shadow.mapSize.setScalar(mobile?1024:2048);
@@ -146,17 +158,21 @@ export function scena(host,model,stone,onOrbit){
      }
      #elif defined( SHADOWMAP_TYPE_VSM )`
   );
+  function softShadows(materials){
+    if(mobile)return;
+    for(const mat of materials){
+      const compile=mat.onBeforeCompile.bind(mat);
+      mat.onBeforeCompile=(shader,renderer)=>{
+        compile(shader,renderer);
+        shader.fragmentShader=shader.fragmentShader.replace('#include <shadowmap_pars_fragment>',shadowChunk);
+      };
+    }
+  }
   const receivers=new Set([ground.material]);
   monument.traverse(mesh=>{
     if(mesh.isMesh)for(const mat of [mesh.material].flat())receivers.add(mat);
   });
-  for(const mat of receivers){
-    const compile=mat.onBeforeCompile.bind(mat);
-    mat.onBeforeCompile=(shader,renderer)=>{
-      compile(shader,renderer);
-      shader.fragmentShader=shader.fragmentShader.replace('#include <shadowmap_pars_fragment>',shadowChunk);
-    };
-  }
+  softShadows(receivers);
   const camera=new T.PerspectiveCamera(33,1,0.05,180);
   const controls=new OrbitControls(camera,renderer.domElement);
   controls.enablePan=false;controls.minDistance=1.65;controls.maxDistance=7;
@@ -167,14 +183,44 @@ export function scena(host,model,stone,onOrbit){
     return Math.max(4.35,4.48/camera.aspect);
   }
   function view(key){
-    camera.position.fromArray(directions[key]).normalize().multiplyScalar(distance()).add(target);
-    controls.target.copy(target);controls.update();invalidate();
+    const detail=key==='detail', outside=active&&active!=='atelier';
+    const focus=detail?new T.Vector3(0,.68,-.805):target;
+    const direction=detail?[.22,.072,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
+    camera.position.fromArray(direction).normalize().multiplyScalar(detail?1.7:distance()*(outside&&!mobile?.94:1)).add(focus);
+    controls.target.copy(focus);controls.update();invalidate();
   }
-  let frame=0;
+  let frame=0,settleTimer;
+  const fullDpr=renderer.getPixelRatio();
+  let moving=false, lastMove=0, slowFrames=0;
+  let motionDpr=Math.min(.9,fullDpr);
+  function motionDetail(low){
+    fastMotion=low;
+    if(grounds){
+      // Nearby blades disappear into the photographed turf at subpixel size.
+      grounds.children[1].visible=!low;
+    }
+  }
+  function motion(){
+    if(!mobile)return;
+    const now=performance.now(),elapsed=now-lastMove;
+    if(moving&&elapsed>36&&elapsed<250)slowFrames++;
+    lastMove=now;
+    if(slowFrames>=2&&motionDpr>.54){
+      motionDpr=Math.max(.54,motionDpr-.18);
+      renderer.setPixelRatio(motionDpr);motionDetail(true);slowFrames=0;
+    }
+    clearTimeout(settleTimer);
+    if(!moving){
+      moving=true;renderer.setPixelRatio(motionDpr);motionDetail(motionDpr<.75);
+    }
+    settleTimer=setTimeout(()=>{
+      moving=false;motionDetail(false);renderer.setPixelRatio(fullDpr);invalidate();
+    },200);
+  }
   function invalidate(){
     if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);});
   }
-  controls.addEventListener('change',invalidate);
+  controls.addEventListener('change',()=>{motion();invalidate();});
   controls.addEventListener('start',onOrbit);
   function zoom(factor){
     const offset=camera.position.clone().sub(controls.target);
@@ -184,6 +230,78 @@ export function scena(host,model,stone,onOrbit){
   function resize(){
     camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();
     renderer.setSize(host.clientWidth,host.clientHeight,false);invalidate();
+  }
+  const studioEnv=scene.environment, studioFog=scene.fog;
+  const skies=new Map(), probes=new Map();
+  let grounds, groundsPending, active, revision=0, fade;
+  async function environment(name){
+    const request=++revision;
+    if(name===active)return;
+    if(name!=='atelier'){
+      groundsPending??=garden(mobile);
+      if(!skies.has(name))skies.set(name,parkSky(name));
+      const [park,sky]=await Promise.all([groundsPending,skies.get(name)]);
+      if(request!==revision)return;
+      if(!grounds){
+        grounds=park;grounds.visible=false;scene.add(grounds);
+        softShadows([grounds.children[0].material,grounds.children[2].material]);
+      }
+      skies.set(name,sky);
+    }
+    if(request!==revision)return;
+    const first=!active;
+    const old=host.querySelector('.scene-fade');
+    if(!first&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+      renderer.render(scene,camera);
+      const overlay=document.createElement('canvas');
+      overlay.width=renderer.domElement.width;overlay.height=renderer.domElement.height;
+      overlay.className='scene-fade';overlay.setAttribute('aria-hidden','true');
+      const ctx=overlay.getContext('2d');ctx.drawImage(renderer.domElement,0,0);
+      if(old){ctx.globalAlpha=Number(getComputedStyle(old).opacity);ctx.drawImage(old,0,0);}
+      fade?.cancel();old?.remove();host.append(overlay);
+    }
+    const studio=name==='atelier', dusk=name==='podvecer';
+    ground.visible=studio;
+    if(grounds)grounds.visible=!studio;
+    scene.background=studio?panorama:skies.get(name);
+    scene.backgroundBlurriness=studio?.17:0;
+    scene.fog=studio?studioFog:new T.FogExp2(dusk?0xd9b99d:0xcbd5cd,dusk?.026:.020);
+    hemi.color.set(studio?0xffffff:dusk?0xffe8d6:0xd7e7ff);
+    hemi.groundColor.set(studio?0x909090:0x77786c);
+    hemi.intensity=studio?.60:.92;
+    sun.color.set(studio?0xffffff:dusk?0xffc08a:0xffe0ba);
+    sun.intensity=studio?1.35:dusk?2.05:1.83;
+    if(studio)sun.position.set(-2,7,-1.4);
+    else if(dusk)sun.position.set(-6.8,2.25,-2.5);
+    else sun.position.set(-5,3.2,2.7);
+    const extent=studio?2:3.6;
+    Object.assign(sun.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent});
+    sun.shadow.camera.updateProjectionMatrix();
+    if(!studio&&!probes.has(name)){
+      // Capture all six directions at the stela in the actual garden, once per light setup.
+      const target=new T.WebGLCubeRenderTarget(mobile?128:256,{type:T.HalfFloatType});
+      const probe=new T.CubeCamera(.06,90,target);
+      probe.position.set(0,.77,-.80);
+      const pmrem=new T.PMREMGenerator(renderer);
+      scene.environment=null;monument.visible=false;
+      renderer.shadowMap.needsUpdate=true;
+      try{probe.update(renderer,scene);probes.set(name,pmrem.fromCubemap(target.texture));}
+      finally{monument.visible=true;target.dispose();pmrem.dispose();}
+    }
+    scene.environment=studio?studioEnv:probes.get(name).texture;
+    for(const material of receivers){
+      if(material.isMeshPhysicalMaterial)material.envMapIntensity=studio?1:1.24;
+    }
+    renderer.shadowMap.needsUpdate=true;
+    active=name;
+    if(first&&!studio)view('angle');
+    renderer.render(scene,camera);
+    renderer.domElement.style.visibility='visible';
+    const overlay=host.querySelector('.scene-fade');
+    if(overlay){
+      fade=overlay.animate([{opacity:1},{opacity:0}],{duration:300,easing:'ease-out',fill:'forwards'});
+      fade.onfinish=()=>overlay.remove();
+    }
   }
   resize();view('angle');
   new ResizeObserver(resize).observe(host);
@@ -202,5 +320,5 @@ export function scena(host,model,stone,onOrbit){
     }else return;
     event.preventDefault();
   });
-  return {view,zoom,canvas};
+  return {view,zoom,canvas,environment};
 }

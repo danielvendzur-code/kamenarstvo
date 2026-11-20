@@ -17,7 +17,7 @@ async function start(){
   const slug=new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
-  const {firma,tema,katalog}=await json(base+'config.json');
+  const {firma,tema,katalog,prostredia}=await json(base+'config.json');
   const catalog=await json('./katalog/'+encodeURIComponent(katalog.zaklad)+'.json');
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
@@ -40,6 +40,25 @@ async function start(){
     if(button.dataset.action==='reset'){viewer.view('angle');mark('angle');}
     else viewer.zoom(button.dataset.action==='plus'?1/1.18:1.18);
   };
+  const supported=['rano','podvecer','atelier'];
+  const allowed=[...new Set(prostredia?.povolene??['atelier'])].filter(id=>supported.includes(id));
+  if(!allowed.length)allowed.push('atelier');
+  const initial=allowed.includes(prostredia?.predvolene)?prostredia.predvolene:allowed[0];
+  const group=el('environments');
+  let last=0;
+  async function choose(id){
+    const turn=++last;
+    await viewer.environment(id);
+    if(turn!==last)return;
+    for(const button of group.children)button.setAttribute('aria-pressed',String(button.value===id));
+  }
+  for(const id of allowed){
+    const button=document.createElement('button');
+    button.type='button';button.value=id;button.textContent=t[id];button.setAttribute('aria-label',t[id]);
+    button.onclick=()=>choose(id).catch(error=>{console.error(error);el('error').hidden=false;});
+    group.append(button);
+  }
+  await choose(initial);
   mark('angle');
 }
 start().catch(error=>{console.error(error);el('error').hidden=false;});

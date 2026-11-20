@@ -19,5 +19,10 @@
   "hint": "Ťahaním otočíte model",
   "canvas": "Model jednohrobu. Šípky otáčajú pohľad, plus a mínus menia priblíženie.",
   "error": "Náhľad sa nepodarilo načítať.",
-  "unit": "cm"
+  "unit": "cm",
+  "prostredia": "Prostredie",
+  "rano": "Cintorín – ráno",
+  "podvecer": "Cintorín – podvečer",
+  "atelier": "Štúdio",
+  "detail": "Detail čela"
 }

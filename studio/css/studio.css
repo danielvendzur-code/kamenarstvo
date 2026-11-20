@@ -326,3 +326,17 @@ small {
     display:none;
   }
 }
+
+#viewport { position:relative; }
+#viewport .scene-fade { position:absolute; inset:0; pointer-events:none; }
+.environments {
+  position:absolute; left:14px; top:14px; display:flex; padding:3px;
+  background:var(--pozadie);border-radius:9px;box-shadow:0 2px 12px #0002;
+}
+.environments button { font-size:12px;min-height:38px;padding:0 10px;border-radius:6px; }
+.environments button[aria-pressed=true]{background:var(--akcent2);color:var(--pozadie)}
+@media(max-width:760px){
+  .environments{top:8px;left:8px}
+  .environments button{font-size:10px;min-height:40px;padding:0 6px}
+  .tools button{font-size:11px}
+}

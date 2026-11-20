@@ -48,5 +48,13 @@
   "dopyt": {
     "emailjs": null,
     "gdprUrl": "#"
+  },
+  "prostredia": {
+    "povolene": [
+      "rano",
+      "podvecer",
+      "atelier"
+    ],
+    "predvolene": "rano"
   }
 }
