@@ -1,0 +1,28 @@
+{
+  "firma": {
+    "nazov": "Kamenárstvo Vzor",
+    "logo": "logo.svg"
+  },
+  "tema": {
+    "pozadie": "#f8f6f0",
+    "text": "#262c26",
+    "akcent": "#795b38",
+    "akcent2": "#314439",
+    "pismoNadpis": "Cormorant Garamond",
+    "pismoText": "Inter",
+    "zaoblenie": 14
+  },
+  "katalog": {
+    "zaklad": "zaklad",
+    "pomniky": [
+      "jednohrob"
+    ],
+    "tvary": [
+      "rovny"
+    ],
+    "kamene": [
+      "absolute-black"
+    ]
+  },
+  "ceny": null
+}

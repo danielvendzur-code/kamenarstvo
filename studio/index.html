@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Studio</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./css/studio.css">
+    <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="brandmark">
+          <img id="logo" alt="">
+        </span>
+        <span id="brand">
+        </span>
+      </div>
+      <span class="studio" data-t="studio">
+      </span>
+    </header>
+    <main>
+      <h1 data-t="title">
+      </h1>
+      <div class="layout">
+        <section class="viewer">
+          <div id="viewport">
+          </div>
+          <span class="badge">
+            <i>
+            </i>
+            <span data-t="scene">
+            </span>
+          </span>
+          <div class="tools" role="group" data-label="views">
+            <button data-view="angle" data-t="angle">
+            </button>
+            <button data-view="front" data-t="front">
+            </button>
+            <button data-view="side" data-t="side">
+            </button>
+          </div>
+          <div class="zoom">
+            <button data-action="plus" data-label="plus">+</button>
+            <button data-action="minus" data-label="minus">−</button>
+            <button data-action="reset" data-label="reset">↺</button>
+          </div>
+        </section>
+        <aside>
+          <div class="eyebrow" data-t="spec">
+          </div>
+          <h2 id="type">
+          </h2>
+          <svg class="drawing" viewBox="0 0 300 105" fill="none" aria-hidden="true">
+            <g stroke="currentColor" stroke-linejoin="round">
+              <path d="m68 63 94-43 69 22-94 47z m0 0v5l69 26 94-47v-5m-94 47v5M80 62l80-36 57 17-80 40z"/>
+              <path d="M99 54V23l46 14v32z m0-31 5-3 46 14-5 3m5-3v32l-5 3"/>
+              <path opacity=".4" d="m60 77 66 25m22-1 89-45" stroke-dasharray="2 3"/>
+            </g>
+          </svg>
+          <dl>
+            <div>
+              <dt data-t="size">
+              </dt>
+              <dd id="size">
+              </dd>
+            </div>
+            <div>
+              <dt data-t="shape">
+              </dt>
+              <dd id="shape">
+              </dd>
+            </div>
+          </dl>
+          <div class="eyebrow" data-t="stone">
+          </div>
+          <div class="stone">
+            <span class="swatch">
+            </span>
+            <div>
+              <strong id="stone">
+              </strong>
+              <small data-t="finish">
+              </small>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <p class="hint" data-t="hint">
+      </p>
+    </main>
+    <p id="error" role="alert" hidden>
+    </p>
+    <script type="module" src="./js/app.js">
+    </script>
+  </body>
+</html>

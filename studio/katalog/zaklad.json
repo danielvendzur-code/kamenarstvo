@@ -1,0 +1,20 @@
+{
+  "pomniky": {
+    "jednohrob": {
+      "sirka": 1,
+      "dlzka": 2,
+      "vyskaStely": 0.81
+    }
+  },
+  "tvary": {
+    "rovny": {}
+  },
+  "kamene": {
+    "absolute-black": {
+      "nazov": "Absolute Black",
+      "farba": "#121414",
+      "zrno": 430,
+      "drsnost": 0.115
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "studio": "Návrhové štúdio",
+  "title": "Návrh pomníka",
+  "scene": "3D náhľad",
+  "spec": "Špecifikácia",
+  "jednohrob": "Jednohrob",
+  "rovny": "Rovná stela",
+  "shape": "Tvar stely",
+  "size": "Pôdorys",
+  "stone": "Materiál",
+  "finish": "Leštená čierna žula",
+  "views": "Pohľad",
+  "angle": "Perspektíva",
+  "front": "Spredu",
+  "side": "Z boku",
+  "plus": "Priblížiť",
+  "minus": "Oddialiť",
+  "reset": "Obnoviť pohľad",
+  "hint": "Ťahaním otočíte model",
+  "canvas": "Model jednohrobu. Šípky otáčajú pohľad, plus a mínus menia priblíženie.",
+  "error": "Náhľad sa nepodarilo načítať.",
+  "unit": "cm"
+}
