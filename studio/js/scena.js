@@ -122,8 +122,8 @@ export function scena(host,model,stone,onOrbit){
   const ctx=surface(256,512);
   ctx.filter='blur(11px)';ctx.fillStyle='rgba(31,29,25,.54)';ctx.fillRect(24,29,208,454);
   const contact=new T.Mesh(new T.PlaneGeometry(model.sirka*1.28,model.dlzka*1.20),
-    new T.MeshBasicMaterial({map:new T.CanvasTexture(ctx.canvas),transparent:true,depthWrite:false}));
-  contact.rotation.x=-Math.PI/2;contact.position.y=0.001;scene.add(contact);
+    new T.MeshBasicMaterial({color:0x000000,map:new T.CanvasTexture(ctx.canvas),transparent:true,opacity:.70,depthWrite:false,fog:false,toneMapped:false}));
+  contact.renderOrder=1;contact.rotation.x=-Math.PI/2;contact.position.y=0.001;scene.add(contact);
   const hemi=new T.HemisphereLight(0xffffff,0x909090,0.6);
   scene.add(hemi);
   const sun=new T.DirectionalLight(0xffffff,1.35);
@@ -176,7 +176,7 @@ export function scena(host,model,stone,onOrbit){
   const camera=new T.PerspectiveCamera(33,1,0.05,180);
   const controls=new OrbitControls(camera,renderer.domElement);
   controls.enablePan=false;controls.minDistance=1.65;controls.maxDistance=7;
-  controls.minPolarAngle=0.14;controls.maxPolarAngle=Math.PI*0.48;
+  controls.minPolarAngle=0.14;controls.maxPolarAngle=Math.PI*.49;
   const target=new T.Vector3(0,0.39,0.03);
   const directions={angle:[1.65,1.13,2.22],front:[0,0.8,3],side:[3,0.8,0]};
   function distance(){
@@ -186,8 +186,8 @@ export function scena(host,model,stone,onOrbit){
   function view(key,duration=640){
     const detail=key==='detail', outside=active&&active!=='atelier';
     const focus=detail?new T.Vector3(0,.68,-.805):target;
-    const direction=detail?[.22,.072,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
-    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?1.7:distance()*(outside&&!mobile?.94:1));
+    const direction=detail?[-.29,.03,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
+    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?2.02:distance()*(outside&&!mobile?.94:1));
     const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));
     const to=new T.Spherical().setFromVector3(end);
     const delta=Math.atan2(Math.sin(to.theta-from.theta),Math.cos(to.theta-from.theta));
@@ -285,23 +285,24 @@ export function scena(host,model,stone,onOrbit){
     if(grounds)grounds.visible=!studio;
     scene.background=studio?panorama:skies.get(name);
     scene.backgroundBlurriness=studio?.17:0;
+    scene.backgroundIntensity=studio?1:dusk?.93:1.12;
     scene.fog=studio?studioFog:new T.FogExp2(dusk?0xd9b99d:0xcbd5cd,dusk?.026:.020);
     hemi.color.set(studio?0xffffff:dusk?0xffe8d6:0xd7e7ff);
     hemi.groundColor.set(studio?0x909090:0x77786c);
     hemi.intensity=studio?.60:.92;
     sun.color.set(studio?0xffffff:dusk?0xffc08a:0xffe0ba);
-    sun.intensity=studio?1.35:dusk?2.05:1.83;
+    sun.intensity=studio?1.35:dusk?2.0:2.15;
     if(studio)sun.position.set(-2,7,-1.4);
-    else if(dusk)sun.position.set(-6.8,2.25,-2.5);
-    else sun.position.set(-5,3.2,2.7);
-    const extent=studio?2:3.6;
-    Object.assign(sun.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent});
+    else if(dusk)sun.position.set(-6.8,1.65,-4.6);
+    else sun.position.set(5.5,3.4,-3.1);
+    const extent=studio?2:6.8;
+    Object.assign(sun.shadow.camera,{left:-extent,right:extent,top:extent,bottom:-extent,far:studio?12:20});
     sun.shadow.camera.updateProjectionMatrix();
     if(!studio&&!probes.has(name)){
       // Capture all six directions at the stela in the actual garden, once per light setup.
       const target=new T.WebGLCubeRenderTarget(mobile?128:256,{type:T.HalfFloatType});
       const probe=new T.CubeCamera(.06,90,target);
-      probe.position.set(0,.77,-.80);
+      probe.position.set(0,.85,-.72);
       const pmrem=new T.PMREMGenerator(renderer);
       scene.environment=null;monument.visible=false;
       renderer.shadowMap.needsUpdate=true;

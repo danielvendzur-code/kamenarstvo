@@ -53,6 +53,8 @@ export function jednohrob({sirka:w,dlzka:d,vyskaStely:h},polished,satin,makeCove
   group.add(face);
   block(w*0.89,0.085,0.32,coverHeight,-d/2+0.195,polished);
   const stela=block(w*0.78,h,0.125,coverHeight+0.085,-d/2+0.195,[polished,satin],0.004);
+  stela.rotation.x=-0.065;
+  stela.position.y-=0.004;
   // Keep the broad inscription faces polished and the narrow return faces satin.
   const normals=stela.geometry.getAttribute('normal');
   let start=0,previous=-1;

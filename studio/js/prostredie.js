@@ -96,6 +96,15 @@ function grassBlades(random,mobile){
     patches.push({position:[x,0,z],scale:[s,s,s],angle:random()*6.28,
       color:new T.Color().setHSL(.21+random()*.025,.22+random()*.15,.245+random()*.082,T.SRGBColorSpace)});
   }
+  // Tighter tufts in the uncut strip along the kerb and the dressed stone.
+  for(let i=0;i<(mobile?750:1800);i++){
+    const sign=random()<.5?-1:1, gap=.008+random()*.055;
+    const x=i%3===0?(random()-.5)*4.8:i%3===1?sign*(.50+gap):(random()-.5);
+    const z=i%3===0?1.273-gap:i%3===1?(random()-.5)*2:sign*(1+gap);
+    const s=.38+random()*.45;
+    patches.push({position:[x,.001,z],scale:[s,s,s],angle:random()*6.28,
+      color:new T.Color().setHSL(.22,.3,.27+random()*.055,T.SRGBColorSpace)});
+  }
   const mat=new T.MeshBasicMaterial({side:T.DoubleSide});
   const blades=instanced(geo,mat,patches);
   blades.receiveShadow=true;
@@ -129,11 +138,19 @@ export async function garden(mobile){
   // Dressed limestone in staggered courses, with a slightly overhanging coping.
   for(const side of [-1,1]){
     for(let row=0;row<4;row++){
-      for(let j=0;j<26;j++){
-        const cap=row===3, height=cap?.09:.19;
-        blocks.push({position:[side*6.7,cap?.615:.095+row*.19,-10+j*.8+(row%2)*.4],
-          scale:[cap?.40:.34,height-.004,.796],color:new T.Color().setHSL(.1,.10,.48+random()*.085,T.SRGBColorSpace)});
+      let z=-10;
+      while(z<10-.002){
+        const cap=row===3,h=cap?.092:.19;
+        const length=Math.min(10-z,(cap?.85:.49)+random()*.48);
+        blocks.push({position:[side*6.7+(random()-.5)*.018,cap?.615:.095+row*.19,z+length/2],
+          scale:[(cap?.43:.345)+random()*.018,h-.006,length-.006],
+          angle:(random()-.5)*.013,color:new T.Color().setHSL(.105,.09,.50+random()*.12,T.SRGBColorSpace)});
+        z+=length;
       }
+    }
+    for(const end of [-10,10]){
+      blocks.push({position:[side*6.7,.34,end],scale:[.49,.68,.5]},
+        {position:[side*6.7,.72,end],scale:[.54,.09,.56]});
     }
   }
   const stones=instanced(new T.BoxGeometry(),new T.MeshStandardMaterial({map:limestone,bumpMap:limestone,bumpScale:.016,roughness:.94}),blocks);
@@ -154,18 +171,33 @@ export async function garden(mobile){
     [-8,0,5.3,4.2,1.5,1],[-5,5,6.1,4.4,2.2,2],[4,8,7.5,4.7,-2.6,0],
     [8,2,5.9,4.5,-1.7,2]
   ];
-  const treeMat=new T.MeshBasicMaterial({map:crowns,alphaTest:.24,side:T.DoubleSide,fog:true});
+  crowns.generateMipmaps=true;crowns.minFilter=T.LinearMipmapLinearFilter;
+  const treeMat=new T.MeshBasicMaterial({map:crowns,transparent:true,alphaTest:.025,
+    depthWrite:false,premultipliedAlpha:true,side:T.DoubleSide,fog:true});
+  treeMat.forceSinglePass=true;
   for(const [x,z,w,h,angle,tile] of trees){
     const geometry=new T.PlaneGeometry(w,h),uv=geometry.attributes.uv;
     for(let i=0;i<uv.count;i++)uv.setX(i,(tile+.002+.996*uv.getX(i))/3);
     const tree=new T.Mesh(geometry,treeMat);
-    tree.position.set(x,h/2-.22,z);tree.rotation.y=angle;group.add(tree);
+    tree.renderOrder=-2;tree.position.set(x,h/2-.22,z);tree.rotation.y=angle;group.add(tree);
   }
   return group;
 }
 
 export async function parkSky(name){
   const sky=await texture(name);
+  if(name==='podvecer'){
+    // Keep the trees and horizon of the same site, with sunset sky above them.
+    const morning=await texture('rano');
+    const canvas=document.createElement('canvas');canvas.width=2048;canvas.height=1024;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(morning.image,0,0);ctx.fillStyle='rgba(164,121,62,.10)';ctx.fillRect(0,0,2048,1024);
+    const layer=document.createElement('canvas');layer.width=2048;layer.height=1024;
+    const l=layer.getContext('2d');l.drawImage(sky.image,0,0);
+    const g=l.createLinearGradient(0,325,0,473);g.addColorStop(0,'white');g.addColorStop(1,'transparent');
+    l.globalCompositeOperation='destination-in';l.fillStyle=g;l.fillRect(0,0,2048,1024);
+    ctx.drawImage(layer,0,0);sky.image=canvas;sky.needsUpdate=true;morning.dispose();
+  }
   sky.mapping=T.EquirectangularReflectionMapping;
   return sky;
 }

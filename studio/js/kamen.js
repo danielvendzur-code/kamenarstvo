@@ -24,11 +24,11 @@ const noiseGLSL=`
 
 export function vytvorZulu(stone,{satin=false,mirror=null}={}){
   const material=new T.MeshPhysicalMaterial({
-    color:stone.farba, roughness:satin?0.29:stone.drsnost, metalness:0,
-    ior:1.52, clearcoat:satin?0.18:1, clearcoatRoughness:satin?0.24:0.04,
+    color:stone.farba, roughness:satin?.53:Math.max(.115,stone.drsnost), metalness:0,
+    ior:1.49, clearcoat:satin?.06:.38, clearcoatRoughness:satin?.36:.10,
     fog:false
   });
-  material.customProgramCacheKey=()=>mirror?'granite-planar':'granite-environment';
+  material.customProgramCacheKey=()=>mirror?'granite-planar':satin?'granite-satin':'granite-polished';
   material.onBeforeCompile=shader=>{
     shader.uniforms.grainScale={value:stone.zrno};
     shader.vertexShader='varying vec3 vStone;\n'+shader.vertexShader.replace(
@@ -43,6 +43,14 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
       diffuseColor.rgb*=1.0+coarse*visibleGrain(p)*0.65+fine*visibleGrain(p*2.13)*0.38;
       diffuseColor.rgb+=vec3(0.035)*mix(0.012,crystals,visibleGrain(micro));
     `);
+    if(!mirror&&!satin){
+      const ibl=T.ShaderChunk.envmap_physical_pars_fragment.replace(
+        'return envMapColor.rgb * envMapIntensity;',
+        `vec3 reflected=envMapColor.rgb;
+         float daylight=dot(reflected,vec3(.2126,.7152,.0722));
+         return (mix(vec3(daylight),reflected,.67)+vec3(.90*sqrt(max(daylight,0.0))))*envMapIntensity;`);
+      shader.fragmentShader=shader.fragmentShader.replace('#include <envmap_physical_pars_fragment>',ibl);
+    }
     if(mirror){
       // The reflected scene replaces incident specular radiance. The physical
       // shader still applies its dielectric Fresnel, grain and clear coat once.
@@ -53,7 +61,7 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
           '#include <begin_vertex>\nmirrorUV=mirrorMatrix*vec4(position,1.0);');
       const ibl=T.ShaderChunk.envmap_physical_pars_fragment.replace(
         'vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );',
-        'vec4 envMapColor = texture2DProj(reflectedScene,mirrorUV);');
+        'vec4 envMapColor = texture2DProj(reflectedScene,mirrorUV) * 0.52;');
       shader.fragmentShader='uniform sampler2D reflectedScene; varying vec4 mirrorUV;\n'+
         shader.fragmentShader.replace('#include <envmap_physical_pars_fragment>',ibl);
     }
