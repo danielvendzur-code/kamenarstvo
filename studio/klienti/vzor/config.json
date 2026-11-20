@@ -1,6 +1,11 @@
 {
   "firma": {
     "nazov": "Kamenárstvo Vzor",
+    "slogan": "Pomníky s úctou od roku 1998",
+    "telefon": "+421 900 000 000",
+    "email": "info@vzor.sk",
+    "web": "https://vzor.sk",
+    "adresa": "Hlavná 1, 000 00 Mesto",
     "logo": "logo.svg"
   },
   "tema": {
@@ -17,12 +22,31 @@
     "pomniky": [
       "jednohrob"
     ],
+    "dosky": [],
     "tvary": [
       "rovny"
     ],
     "kamene": [
       "absolute-black"
-    ]
+    ],
+    "pisma": [],
+    "farbyPisma": [],
+    "doplnky": []
   },
-  "ceny": null
+  "ceny": null,
+  "web": {
+    "menu": [
+      "Úvod",
+      "Pomníky",
+      "Hrobky",
+      "Doplnky",
+      "Kontakt"
+    ],
+    "heroObrazok": null,
+    "patickaText": "© Kamenárstvo Vzor"
+  },
+  "dopyt": {
+    "emailjs": null,
+    "gdprUrl": "#"
+  }
 }

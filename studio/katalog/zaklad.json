@@ -12,9 +12,9 @@
   "kamene": {
     "absolute-black": {
       "nazov": "Absolute Black",
-      "farba": "#121414",
+      "farba": "#0b0c0d",
       "zrno": 430,
-      "drsnost": 0.115
+      "drsnost": 0.05
     }
   }
 }

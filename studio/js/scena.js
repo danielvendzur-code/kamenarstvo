@@ -13,19 +13,39 @@ function surface(w,h){
 function landscape(random){
   const ctx=surface(2048,1024);
   const sky=ctx.createLinearGradient(0,0,0,1024);
-  for(const [stop,color] of [[0,'#869fb1'],[0.39,'#e2e4df'],[0.49,'#fff2da'],[0.53,'#95937b'],[1,'#777665']]) sky.addColorStop(stop,color);
-  ctx.fillStyle=sky; ctx.fillRect(0,0,2048,1024);
-  const light=ctx.createRadialGradient(470,382,0,470,382,210);
-  light.addColorStop(0,'#fff9e8'); light.addColorStop(1,'#fff9e800');
-  ctx.fillStyle=light; ctx.fillRect(0,0,2048,560);
-  for(let i=0;i<480;i++){
-    const x=random()*2048, a=x/2048*Math.PI*2;
-    const height=95+44*Math.sin(4*a)+26*Math.cos(7*a)+random()*24+88*Math.pow(Math.cos(a),4);
-    const width=6+random()*17;
-    const tone=Math.floor(59+random()*36);
-    ctx.fillStyle='rgb('+tone+','+(tone+6)+','+(tone-8)+')';
-    for(const shift of [-2048,0,2048]){
-      ctx.beginPath();ctx.ellipse(x+shift,525-height/2,width,height/2,0,0,Math.PI*2);ctx.fill();
+  for(const [stop,color] of [[0,'#aaaeb2'],[0.40,'#f2f3f4'],[0.49,'#ffffff'],
+                            [0.53,'#a3a4a5'],[0.65,'#424446'],[1,'#242526']]){
+    sky.addColorStop(stop,color);
+  }
+  ctx.fillStyle=sky;ctx.fillRect(0,0,2048,1024);
+  // Different heights and distances break the horizon into sky, crowns and trunks.
+  for(let i=0;i<56;i++){
+    const x=(i+0.2+0.6*random())*2048/56, foot=535+random()*85;
+    const height=186+random()*152;
+    const shade=Math.round(42+random()*63);
+    const tree=surface(230,300);
+    tree.lineCap='round';
+    function branch(px,py,length,angle,width,level){
+      const ex=px+length*Math.sin(angle),ey=py-length*Math.cos(angle);
+      tree.strokeStyle='rgb('+shade+' '+shade+' '+shade+')';
+      tree.lineWidth=width;
+      tree.beginPath();tree.moveTo(px,py);tree.lineTo(ex,ey);tree.stroke();
+      if(level>0){
+        for(const sign of [-1,1]){
+          branch(ex,ey,length*(0.58+random()*0.16),angle+sign*(0.18+random()*0.49),
+            width*0.61,level-1);
+        }
+      }else{
+        for(let k=0;k<22;k++){
+          const radius=1+random()*2.6,value=shade+Math.round(random()*34);
+          tree.fillStyle='rgb('+value+' '+value+' '+value+')';
+          tree.beginPath();tree.arc(ex+(random()-0.5)*20,ey+(random()-0.5)*15,radius,0,2*Math.PI);tree.fill();
+        }
+      }
+    }
+    branch(115,299,87,random()*0.14-0.07,7,6);
+    for(const dx of [-2048,0,2048]){
+      ctx.drawImage(tree.canvas,x+dx-height*0.38,foot-height,height*0.76,height);
     }
   }
   const tex=new T.CanvasTexture(ctx.canvas);
@@ -51,7 +71,7 @@ export function scena(host,model,stone,onOrbit){
   const mobile=matchMedia('(max-width:760px)').matches;
   const renderer=new T.WebGLRenderer({antialias:true,powerPreference:mobile?'low-power':'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:2));
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.VSMShadowMap;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   renderer.toneMapping=T.ACESFilmicToneMapping;
   host.append(renderer.domElement);
@@ -62,18 +82,27 @@ export function scena(host,model,stone,onOrbit){
   scene.environment=generator.fromEquirectangular(panorama).texture;
   generator.dispose();
   scene.background=panorama;scene.backgroundBlurriness=0.17;
-  scene.fog=new T.FogExp2(0xdad6c8,0.072);
-  const monument=jednohrob(model,vytvorZulu(stone));scene.add(monument);
-  // Local reflection adds the stela and its plinth to the polished cover.
-  const mirrorSize=mobile?256:512;
-  const reflection=new Reflector(new T.PlaneGeometry(model.sirka+0.006,model.dlzka+0.006),{
-    textureWidth:mirrorSize,textureHeight:mirrorSize,multisample:0,clipBias:0.002
-  });
-  reflection.rotation.x=-Math.PI/2;reflection.position.y=0.2432;
-  reflection.material.transparent=true;reflection.material.depthWrite=false;
-  reflection.material.fragmentShader=reflection.material.fragmentShader.replace(
-    'vec4( blendOverlay( base.rgb, color ), 1.0 )','vec4(base.rgb,0.23)');
-  scene.add(reflection);
+  scene.fog=new T.FogExp2(0xd7d7d7,0.055);
+  function coverFace(width,depth){
+    const size=mobile?512:1024;
+    const face=new Reflector(new T.PlaneGeometry(width,depth),{
+      textureWidth:size,textureHeight:size,clipBias:0,multisample:0
+    });
+    const captureMaterial=face.material;
+    face.material=vytvorZulu(stone,{mirror:captureMaterial.uniforms});
+    captureMaterial.dispose();
+    const capture=face.onBeforeRender;
+    face.onBeforeRender=(renderer,scene,camera)=>{
+      const backgroundBlur=scene.backgroundBlurriness;
+      scene.backgroundBlurriness=0;
+      try{capture(renderer,scene,camera);}
+      finally{scene.backgroundBlurriness=backgroundBlur;}
+    };
+    face.receiveShadow=true;
+    return face;
+  }
+  const monument=jednohrob(model,vytvorZulu(stone),vytvorZulu(stone,{satin:true}),coverFace);
+  scene.add(monument);
   const ground=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshStandardMaterial({
     map:gravel(random),roughness:1
   }));
@@ -84,12 +113,50 @@ export function scena(host,model,stone,onOrbit){
   const contact=new T.Mesh(new T.PlaneGeometry(model.sirka*1.28,model.dlzka*1.20),
     new T.MeshBasicMaterial({map:new T.CanvasTexture(ctx.canvas),transparent:true,depthWrite:false}));
   contact.rotation.x=-Math.PI/2;contact.position.y=0.001;scene.add(contact);
-  scene.add(new T.HemisphereLight(0xfff4dc,0xa6a79a,0.78));
-  const sun=new T.DirectionalLight(0xfff0d6,1.55);
+  scene.add(new T.HemisphereLight(0xffffff,0x909090,0.6));
+  const sun=new T.DirectionalLight(0xffffff,1.35);
   sun.position.set(-2,7,-1.4);sun.castShadow=true;
   sun.shadow.mapSize.setScalar(mobile?1024:2048);
   Object.assign(sun.shadow.camera,{left:-2,right:2,top:2,bottom:-2,near:1,far:12});
-  sun.shadow.radius=9;sun.shadow.blurSamples=8;sun.shadow.normalBias=0.003;sun.shadow.bias=-0.00015;scene.add(sun);
+  sun.shadow.normalBias=0.0012;
+  sun.shadow.bias=-0.00007;
+  scene.add(sun);
+  // Expand the PCF footprint with blocker distance for this orthographic light.
+  // Near the contact line keep the built-in sub-texel PCFSoft filter.
+  const shadowChunk=T.ShaderChunk.shadowmap_pars_fragment.replace(
+    '#elif defined( SHADOWMAP_TYPE_VSM )',
+    `float blockerDepth=unpackRGBAToDepth(texture2D(shadowMap,shadowCoord.xy));
+     float separation=max(0.0,shadowCoord.z-blockerDepth);
+     // Look just inside the silhouette as well, so the penumbra extends outside.
+     for(int i=0;i<6;i++){
+       float angle=float(i)*1.04719755;
+       vec2 offset=vec2(cos(angle),sin(angle))*0.0025;
+       float sampleDepth=unpackRGBAToDepth(texture2D(shadowMap,shadowCoord.xy+offset));
+       separation=max(separation,shadowCoord.z-sampleDepth);
+     }
+     float radius=min(0.005,separation*0.065);
+     if(radius>texelSize.x){
+       float visibility=0.0;
+       for(int i=0;i<16;i++){
+         float n=float(i)+0.5;
+         vec2 disk=vec2(cos(n*2.399963),sin(n*2.399963))*sqrt(n/16.0);
+         visibility+=texture2DCompare(shadowMap,shadowCoord.xy+disk*radius,shadowCoord.z);
+       }
+       shadow=mix(shadow,visibility/16.0,smoothstep(texelSize.x,2.0*texelSize.x,radius));
+     }
+     #elif defined( SHADOWMAP_TYPE_VSM )`
+  );
+  const receivers=new Set([ground.material]);
+  monument.traverse(mesh=>{
+    if(mesh.isMesh)for(const mat of [mesh.material].flat())receivers.add(mat);
+  });
+  for(const mat of receivers){
+    const compile=mat.onBeforeCompile.bind(mat);
+    mat.onBeforeCompile=(shader,renderer)=>{
+      compile(shader,renderer);
+      shader.fragmentShader=shader.fragmentShader.replace('#include <shadowmap_pars_fragment>',shadowChunk);
+    };
+  }
   const camera=new T.PerspectiveCamera(33,1,0.05,180);
   const controls=new OrbitControls(camera,renderer.domElement);
   controls.enablePan=false;controls.minDistance=1.65;controls.maxDistance=7;
