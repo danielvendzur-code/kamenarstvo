@@ -2,7 +2,7 @@ import * as T from 'three';
 import {garden,parkSky} from './prostredie.js';
 import {Reflector} from '../vendor/Reflector.js';
 import {OrbitControls} from '../vendor/OrbitControls.js';
-import {vytvorZulu} from './kamen.js';
+import {vytvorZulu,vzorka} from './kamen.js';
 import {jednohrob} from './tvary.js';
 
 function surface(w,h){
@@ -182,12 +182,28 @@ export function scena(host,model,stone,onOrbit){
   function distance(){
     return Math.max(4.35,4.48/camera.aspect);
   }
-  function view(key){
+  let flight=0;
+  function view(key,duration=640){
     const detail=key==='detail', outside=active&&active!=='atelier';
     const focus=detail?new T.Vector3(0,.68,-.805):target;
     const direction=detail?[.22,.072,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
-    camera.position.fromArray(direction).normalize().multiplyScalar(detail?1.7:distance()*(outside&&!mobile?.94:1)).add(focus);
-    controls.target.copy(focus);controls.update();invalidate();
+    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?1.7:distance()*(outside&&!mobile?.94:1));
+    const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));
+    const to=new T.Spherical().setFromVector3(end);
+    const delta=Math.atan2(Math.sin(to.theta-from.theta),Math.cos(to.theta-from.theta));
+    cancelAnimationFrame(flight);
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches)duration=0;
+    const start=performance.now();
+    function step(now){
+      const t=duration?Math.min(1,(now-start)/duration):1, u=1-(1-t)**3;
+      const spherical=new T.Spherical(T.MathUtils.lerp(from.radius,to.radius,u),
+        T.MathUtils.lerp(from.phi,to.phi,u),from.theta+delta*u);
+      controls.target.lerpVectors(fromFocus,focus,u);
+      camera.position.setFromSpherical(spherical).add(controls.target);
+      controls.update();invalidate();
+      if(t<1)flight=requestAnimationFrame(step);
+    }
+    step(start);
   }
   let frame=0,settleTimer;
   const fullDpr=renderer.getPixelRatio();
@@ -221,14 +237,18 @@ export function scena(host,model,stone,onOrbit){
     if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);});
   }
   controls.addEventListener('change',()=>{motion();invalidate();});
-  controls.addEventListener('start',onOrbit);
+  controls.addEventListener('start',()=>{cancelAnimationFrame(flight);onOrbit();});
   function zoom(factor){
+    cancelAnimationFrame(flight);
     const offset=camera.position.clone().sub(controls.target);
     camera.position.copy(offset.setLength(T.MathUtils.clamp(offset.length()*factor,controls.minDistance,controls.maxDistance))).add(controls.target);
     controls.update();invalidate();
   }
   function resize(){
-    camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();
+    camera.aspect=host.clientWidth/host.clientHeight;
+    const offset=host.clientWidth>760?(document.querySelector('aside').offsetWidth+28)*.48:0;
+    camera.setViewOffset(host.clientWidth,host.clientHeight,offset,0,host.clientWidth,host.clientHeight);
+    camera.updateProjectionMatrix();
     renderer.setSize(host.clientWidth,host.clientHeight,false);invalidate();
   }
   const studioEnv=scene.environment, studioFog=scene.fog;
@@ -294,7 +314,7 @@ export function scena(host,model,stone,onOrbit){
     }
     renderer.shadowMap.needsUpdate=true;
     active=name;
-    if(first&&!studio)view('angle');
+    if(first){camera.position.set(3,2.05,4.4);controls.target.copy(target);controls.update();view('angle',1600);}
     renderer.render(scene,camera);
     renderer.domElement.style.visibility='visible';
     const overlay=host.querySelector('.scene-fade');
@@ -303,7 +323,7 @@ export function scena(host,model,stone,onOrbit){
       fade.onfinish=()=>overlay.remove();
     }
   }
-  resize();view('angle');
+  resize();view('angle',0);
   new ResizeObserver(resize).observe(host);
   const canvas=renderer.domElement;
   canvas.tabIndex=0;
@@ -320,5 +340,5 @@ export function scena(host,model,stone,onOrbit){
     }else return;
     event.preventDefault();
   });
-  return {view,zoom,canvas,environment};
+  return {view,zoom,canvas,environment,sample:stone=>vzorka(renderer,stone,studioEnv)};
 }

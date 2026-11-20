@@ -2,7 +2,7 @@
   "studio": "Návrhové štúdio",
   "title": "Návrh pomníka",
   "scene": "3D náhľad",
-  "spec": "Špecifikácia",
+  "spec": "Váš návrh",
   "jednohrob": "Jednohrob",
   "rovny": "Rovná stela",
   "shape": "Tvar stely",
@@ -24,5 +24,8 @@
   "rano": "Cintorín – ráno",
   "podvecer": "Cintorín – podvečer",
   "atelier": "Štúdio",
-  "detail": "Detail čela"
+  "detail": "Detail čela",
+  "sheet": "Rozbaliť alebo zbaliť panel",
+  "edge": "Zrazenie hrany stely",
+  "loading": "Načítava sa návrh"
 }

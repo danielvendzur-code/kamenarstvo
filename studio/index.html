@@ -10,6 +10,7 @@
     <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
   </head>
   <body>
+    <div id="loader" role="status"><img id="load-logo" alt=""><progress max="4" value="0"></progress></div>
     <header>
       <div class="brand">
         <span class="brandmark">
@@ -22,8 +23,7 @@
       </span>
     </header>
     <main>
-      <h1 data-t="title">
-      </h1>
+      
       <div class="layout">
         <section class="viewer">
           <div id="viewport">
@@ -44,18 +44,11 @@
             <button data-action="reset" data-label="reset">↺</button>
           </div>
         </section>
-        <aside>
+        <aside><button id="handle" aria-controls="sheet-content" aria-expanded="true" data-label="sheet"><i></i></button><div id="sheet-content">
           <div class="eyebrow" data-t="spec">
           </div>
-          <h2 id="type">
-          </h2>
-          <svg class="drawing" viewBox="0 0 300 105" fill="none" aria-hidden="true">
-            <g stroke="currentColor" stroke-linejoin="round">
-              <path d="m68 63 94-43 69 22-94 47z m0 0v5l69 26 94-47v-5m-94 47v5M80 62l80-36 57 17-80 40z"/>
-              <path d="M99 54V23l46 14v32z m0-31 5-3 46 14-5 3m5-3v32l-5 3"/>
-              <path opacity=".4" d="m60 77 66 25m22-1 89-45" stroke-dasharray="2 3"/>
-            </g>
-          </svg>
+          <h1 id="type">
+          </h1>
           <dl>
             <div>
               <dt data-t="size">
@@ -69,12 +62,12 @@
               <dd id="shape">
               </dd>
             </div>
+            <div><dt data-t="edge"></dt><dd id="edge"></dd></div>
           </dl>
           <div class="eyebrow" data-t="stone">
           </div>
           <div class="stone">
-            <span class="swatch">
-            </span>
+            <img class="swatch" id="swatch" alt="">
             <div>
               <strong id="stone">
               </strong>
@@ -82,7 +75,7 @@
               </small>
             </div>
           </div>
-        </aside>
+        </div></aside>
       </div>
       <p class="hint" data-t="hint">
       </p>

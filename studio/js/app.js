@@ -24,6 +24,8 @@ async function start(){
   }
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title+' · '+firma.nazov;
+  el('load-logo').src=base+firma.logo;
+  const progress=document.querySelector('progress');progress.value=2;progress.setAttribute('aria-label',t.loading);
   el('brand').textContent=firma.nazov;el('logo').src=base+firma.logo;
   for(const node of document.querySelectorAll('[data-t]'))node.textContent=t[node.dataset.t];
   for(const node of document.querySelectorAll('[data-label],[data-view]')){
@@ -33,6 +35,17 @@ async function start(){
   el('type').textContent=t[type];el('stone').textContent=stone.nazov;
   el('shape').textContent=t[katalog.tvary[0]];
   el('size').textContent=[model.sirka,model.dlzka].map(x=>Math.round(x*100)).join(' × ')+' '+t.unit;
+  el('edge').textContent='4 mm';
+  const handle=el('handle'),layout=document.querySelector('.layout');
+  function fold(closed){
+    layout.classList.toggle('folded',closed);handle.setAttribute('aria-expanded',String(!closed));
+    el('sheet-content').inert=closed;
+  }
+  handle.onclick=()=>fold(!layout.classList.contains('folded'));
+  let y=0;
+  handle.onpointerdown=e=>{y=e.clientY;handle.setPointerCapture(e.pointerId);};
+  handle.onpointerup=e=>{if(Math.abs(e.clientY-y)>24){fold(e.clientY>y);handle.addEventListener('click',e=>e.stopImmediatePropagation(),{capture:true,once:true});}};
+  matchMedia('(max-width:760px)').addEventListener('change',()=>fold(false));
   const viewer=scena(el('viewport'),model,stone,()=>mark(null));
   viewer.canvas.setAttribute('aria-label',t.canvas);
   for(const button of views)button.onclick=()=>{viewer.view(button.dataset.view);mark(button.dataset.view);};
@@ -58,7 +71,9 @@ async function start(){
     button.onclick=()=>choose(id).catch(error=>{console.error(error);el('error').hidden=false;});
     group.append(button);
   }
+  progress.value=3;el('swatch').src=viewer.sample(stone);
   await choose(initial);
+  progress.value=4;el('loader').hidden=true;
   mark('angle');
 }
 start().catch(error=>{console.error(error);el('error').hidden=false;});

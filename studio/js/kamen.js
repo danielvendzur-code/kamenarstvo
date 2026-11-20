@@ -60,3 +60,25 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
   };
   return material;
 }
+
+// Photograph a centimetre-scale sample with the production material and lighting.
+export function vzorka(renderer,stone,environment){
+  const sample=new T.Scene();
+  sample.environment=environment;
+  const material=vytvorZulu(stone);
+  const disc=new T.Mesh(new T.SphereGeometry(.065,48,32),material);
+  sample.add(disc,new T.HemisphereLight(0xffffff,0x888888,1.4));
+  const light=new T.DirectionalLight(0xffffff,2);light.position.set(-1,2,2);sample.add(light);
+  const camera=new T.OrthographicCamera(-.049,.049,.049,-.049,.001,1);
+  camera.position.z=.22;
+  const n=96,rt=new T.WebGLRenderTarget(n,n,{colorSpace:T.SRGBColorSpace});
+  const previous=renderer.getRenderTarget();
+  renderer.setRenderTarget(rt);renderer.render(sample,camera);
+  const bytes=new Uint8Array(n*n*4);renderer.readRenderTargetPixels(rt,0,0,n,n,bytes);
+  renderer.setRenderTarget(previous);
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=n;
+  const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(n,n);
+  for(let y=0;y<n;y++)pixels.data.set(bytes.subarray(y*n*4,(y+1)*n*4),(n-y-1)*n*4);
+  ctx.putImageData(pixels,0,0);disc.geometry.dispose();material.dispose();rt.dispose();
+  return canvas.toDataURL();
+}
