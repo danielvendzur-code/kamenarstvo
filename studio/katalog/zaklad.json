@@ -1,0 +1,118 @@
+{
+  "pomniky": {
+    "jednohrob": {
+      "sirka": 1,
+      "dlzka": 2,
+      "vyskaStely": 0.81
+    },
+    "dvojhrob": {
+      "sirka": 2,
+      "dlzka": 2,
+      "vyskaStely": 0.89
+    }
+  },
+  "tvary": {
+    "rovny": {},
+    "obluk": {},
+    "kniha": {},
+    "vlna": {}
+  },
+  "kamene": {
+    "absolute-black": {
+      "nazov": "Absolute Black",
+      "farba": "#0b0c0d",
+      "krystal": "#67696b",
+      "zila": "#272a2c",
+      "zrno": 430,
+      "zilkovanie": 0,
+      "drsnost": 0.13,
+      "kontrast": 0.09
+    },
+    "impala": {
+      "nazov": "Impala",
+      "farba": "#36393b",
+      "krystal": "#b7b5ac",
+      "zila": "#292b2c",
+      "zrno": 190,
+      "zilkovanie": 0.1,
+      "drsnost": 0.17,
+      "kontrast": 0.75
+    },
+    "aurora": {
+      "nazov": "Aurora",
+      "farba": "#804e46",
+      "krystal": "#c58778",
+      "zila": "#342e37",
+      "zrno": 165,
+      "zilkovanie": 0.84,
+      "drsnost": 0.18,
+      "kontrast": 0.61
+    },
+    "viscont-white": {
+      "nazov": "Viscont White",
+      "farba": "#c7c5bc",
+      "krystal": "#eae6dc",
+      "zila": "#494d50",
+      "zrno": 240,
+      "zilkovanie": 0.86,
+      "drsnost": 0.24,
+      "kontrast": 0.35
+    },
+    "tan-brown": {
+      "nazov": "Tan Brown",
+      "farba": "#32221f",
+      "krystal": "#ab6944",
+      "zila": "#191718",
+      "zrno": 120,
+      "zilkovanie": 0.2,
+      "drsnost": 0.19,
+      "kontrast": 0.9
+    },
+    "indian-juparana": {
+      "nazov": "Indian Juparana",
+      "farba": "#bd927c",
+      "krystal": "#f0d4b3",
+      "zila": "#655951",
+      "zrno": 200,
+      "zilkovanie": 0.72,
+      "drsnost": 0.2,
+      "kontrast": 0.58
+    }
+  },
+  "dosky": {
+    "urna": {
+      "sirka": 0.4,
+      "dlzka": 0.4,
+      "vyskaStely": 0.4
+    },
+    "pamatna": {
+      "sirka": 0.6,
+      "dlzka": 0.04,
+      "vyskaStely": 0.4
+    }
+  },
+  "krycieDosky": {
+    "cela": {},
+    "delena": {},
+    "kvety": {}
+  },
+  "pisma": {
+    "cinzel": {},
+    "cormorant": {},
+    "playfair": {},
+    "great-vibes": {}
+  },
+  "farbyPisma": {
+    "zlata": {},
+    "strieborna": {},
+    "biela": {},
+    "piesokovana": {}
+  },
+  "doplnky": {
+    "vaza": {},
+    "lampas": {},
+    "fotokeramika": {},
+    "kriz": {},
+    "ornament-ruza": {}
+  }
+}

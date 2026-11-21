@@ -1,0 +1,110 @@
+{
+  "firma": {
+    "nazov": "Kamenárstvo Vzor",
+    "slogan": "Pomníky s úctou od roku 1998",
+    "telefon": "+421 900 000 000",
+    "email": "info@vzor.sk",
+    "web": "https://vzor.sk",
+    "adresa": "Hlavná 1, 000 00 Mesto",
+    "logo": "logo.svg"
+  },
+  "tema": {
+    "pozadie": "#f8f6f0",
+    "text": "#262c26",
+    "akcent": "#795b38",
+    "akcent2": "#314439",
+    "pismoNadpis": "Georgia",
+    "pismoText": "Arial",
+    "zaoblenie": 14
+  },
+  "katalog": {
+    "zaklad": "zaklad",
+    "pomniky": [
+      "jednohrob",
+      "dvojhrob"
+    ],
+    "dosky": [
+      "urna",
+      "pamatna"
+    ],
+    "tvary": [
+      "rovny",
+      "obluk",
+      "kniha",
+      "vlna"
+    ],
+    "kamene": [
+      "absolute-black",
+      "impala",
+      "aurora",
+      "viscont-white",
+      "tan-brown",
+      "indian-juparana"
+    ],
+    "pisma": [
+      "cinzel",
+      "cormorant",
+      "playfair",
+      "great-vibes"
+    ],
+    "farbyPisma": [
+      "zlata",
+      "strieborna",
+      "biela",
+      "piesokovana"
+    ],
+    "doplnky": [
+      "vaza",
+      "lampas",
+      "fotokeramika",
+      "kriz",
+      "ornament-ruza"
+    ],
+    "krycieDosky": [
+      "cela",
+      "delena",
+      "kvety"
+    ],
+    "vzorNapisu": {
+      "osoby": [
+        {
+          "first": "Anna",
+          "last": "Šimková",
+          "birth": "1932",
+          "death": "2020"
+        },
+        {
+          "first": "Jozef",
+          "last": "Šimko",
+          "birth": "1930",
+          "death": "2014"
+        }
+      ],
+      "epitaf": "S láskou spomíname"
+    }
+  },
+  "ceny": null,
+  "web": {
+    "menu": [
+      "Úvod",
+      "Pomníky",
+      "Hrobky",
+      "Doplnky",
+      "Kontakt"
+    ],
+    "heroObrazok": null,
+    "patickaText": "© Kamenárstvo Vzor"
+  },
+  "dopyt": {
+    "emailjs": null,
+    "gdprUrl": "#"
+  },
+  "prostredia": {
+    "povolene": [
+      "rano",
+      "podvecer",
+      "atelier"
+    ],
+    "predvolene": "rano"
+  }
+}
