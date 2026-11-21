@@ -1,3 +1,4 @@
+import {editor} from './editor.js';
 import {scena} from './scena.js';
 
 async function json(path){
@@ -96,7 +97,11 @@ async function start(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
     describe();
   }
-  product.onchange=()=>{profiles();apply();mark('angle');};
+  el('letter-panel').addEventListener('toggle',()=>{
+    if(el('letter-panel').open){viewer.view('detail');mark('detail');}
+  });
+  const syncEditor=editor(katalog,t,product,viewer);
+  product.onchange=()=>{profiles();syncEditor();apply();mark('angle');};
   profile.onchange=cover.onchange=apply;
   for(const id of katalog.kamene){
     const button=document.createElement('button'),img=document.createElement('img');

@@ -95,5 +95,24 @@
     "cela": {},
     "delena": {},
     "kvety": {}
+  },
+  "pisma": {
+    "cinzel": {},
+    "cormorant": {},
+    "playfair": {},
+    "great-vibes": {}
+  },
+  "farbyPisma": {
+    "zlata": {},
+    "strieborna": {},
+    "biela": {},
+    "piesokovana": {}
+  },
+  "doplnky": {
+    "vaza": {},
+    "lampas": {},
+    "fotokeramika": {},
+    "kriz": {},
+    "ornament-ruza": {}
   }
 }

@@ -77,7 +77,11 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     return add(blockGeometry(width,height,depth,.002,false),mat,0,bottom+height/2,z);
   }
   function profileFace(path,depth,base,z){
-    return add(sheet(path,depth,.004),faces,0,base+.004,z-depth/2+.004);
+    const mesh=add(sheet(path,depth,.004),faces,0,base+.004,z-depth/2+.004);
+    const bounds=path.getPoints(64);
+    const xs=bounds.map(p=>p.x),ys=bounds.map(p=>p.y);
+    mesh.userData.face={left:Math.min(...xs),right:Math.max(...xs),height:Math.max(...ys),z:depth-.004};
+    return mesh;
   }
   if(type==='urna'){
     block(.32,.052,.32,0,0,satin);

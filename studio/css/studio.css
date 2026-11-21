@@ -36,3 +36,12 @@ select{min-width:0;width:100%;height:38px;padding:0 6px;background:var(--paper);
 #samples img{width:100%;display:block;aspect-ratio:1;border-radius:50%}
 .stone{margin:0 0 14px}.stone small{font-size:12px}
 @media(max-width:760px){.choices{grid-template-columns:1fr 1fr;gap:7px 12px;padding:8px 0}.choices label{display:flex;flex-direction:column;align-items:start;gap:2px}.choices label:first-child{grid-column:1/-1;display:grid;grid-template-columns:85px 1fr}.material-field{padding-top:8px}aside{padding-bottom:18px}}
+@font-face{font-family:Cinzel;src:url('../fonts/Cinzel.ttf')}@font-face{font-family:Cormorant;src:url('../fonts/Cormorant.ttf')}@font-face{font-family:Playfair;src:url('../fonts/Playfair.ttf')}@font-face{font-family:GreatVibes;src:url('../fonts/GreatVibes.ttf')}
+aside details{border-top:1px solid var(--rule)}aside summary{cursor:pointer;padding:12px 0;font:18px var(--pismoNadpis),serif}
+.engrave-fields,.engrave-fields fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.engrave-fields{padding:4px 0 16px}.engrave-fields label,#extras label{font-size:13px}
+.engrave-fields input,.engrave-fields textarea{width:100%;padding:8px;border:1px solid var(--rule);background:var(--paper);border-radius:3px;font:inherit;color:inherit}
+.engrave-fields label:has(textarea),.engrave-fields fieldset{grid-column:1/-1}.engrave-fields fieldset{border:0;border-top:1px solid var(--rule);padding:6px 0;margin:2px 0}.engrave-fields fieldset[hidden]{display:none}
+#extras>label{display:flex;justify-content:space-between;align-items:center;min-height:42px;border-bottom:1px solid var(--rule)}#extras input[type=checkbox]{accent-color:var(--green);width:18px;height:18px}#extras input[type=file]{width:100%;margin:6px 0 10px}#extras{padding:0 0 12px}
+.example{grid-column:1/-1;justify-self:start;padding:0;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+@media(max-width:760px){#handle{position:sticky;top:0;z-index:2;background:var(--paper)}aside summary{scroll-margin-top:32px}.engrave-fields input,.engrave-fields textarea{font-size:16px}}

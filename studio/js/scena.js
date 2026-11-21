@@ -3,6 +3,7 @@ import {garden,parkSky} from './prostredie.js';
 import {Reflector} from '../vendor/Reflector.js';
 import {OrbitControls} from '../vendor/OrbitControls.js';
 import {vytvorZulu,vzorka} from './kamen.js';
+import {personalizuj,odstran} from './pismo.js';
 import {pomnik} from './tvary.js';
 
 function surface(w,h){
@@ -101,7 +102,7 @@ export function scena(host,model,stone,onOrbit){
       // Reuse the most recent planar capture during short low-tier drags.
       // Its original projective matrix keeps it registered to the cover.
       const now=performance.now();
-      if(fastMotion && now-lastCapture<90)return;
+      if(fastMotion && now-lastCapture<180)return;
       lastCapture=now;
       const backgroundBlur=scene.backgroundBlurriness, originalSky=scene.background;
       const baked=mobile && grounds?.visible && probes.get(active);
@@ -191,7 +192,8 @@ export function scena(host,model,stone,onOrbit){
     const plaque=['urna','pamatna'].includes(selection.type);
     const focus=detail&&!plaque?new T.Vector3(0,.68,-.805):target;
     const direction=detail?[-.29,.03,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
-    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?(plaque?.97:2.02):distance()*(outside&&!mobile?.94:1));
+    const detailDistance=plaque?.97:Math.max(2.02,model.sirka*.78/((mobile?1.68:1.36)*camera.aspect*Math.tan(T.MathUtils.degToRad(camera.fov/2))));
+    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?detailDistance:distance()*(outside&&!mobile?.94:1));
     const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));
     const to=new T.Spherical().setFromVector3(end);
     const delta=Math.atan2(Math.sin(to.theta-from.theta),Math.cos(to.theta-from.theta));
@@ -212,7 +214,7 @@ export function scena(host,model,stone,onOrbit){
   let frame=0,settleTimer;
   const fullDpr=renderer.getPixelRatio();
   let moving=false, lastMove=0, slowFrames=0;
-  let motionDpr=Math.min(.9,fullDpr);
+  let motionDpr=Math.min(.80,fullDpr);
   function motionDetail(low){
     fastMotion=low;
     if(grounds){
@@ -223,10 +225,10 @@ export function scena(host,model,stone,onOrbit){
   function motion(){
     if(!mobile)return;
     const now=performance.now(),elapsed=now-lastMove;
-    if(moving&&elapsed>36&&elapsed<250)slowFrames++;
+    if(moving&&elapsed>32&&elapsed<250)slowFrames++;
     lastMove=now;
-    if(slowFrames>=2&&motionDpr>.54){
-      motionDpr=Math.max(.54,motionDpr-.18);
+    if(slowFrames>=2&&motionDpr>.42){
+      motionDpr=Math.max(.42,motionDpr-.14);
       renderer.setPixelRatio(motionDpr);motionDetail(true);slowFrames=0;
     }
     clearTimeout(settleTimer);
@@ -322,6 +324,9 @@ export function scena(host,model,stone,onOrbit){
     }
     renderer.shadowMap.needsUpdate=true;
     active=name;
+    monument.traverse(mesh=>{
+      if(mesh.userData.face)mesh.material[0].envMapIntensity=studio?1:1.24;
+    });
     if(first){camera.position.set(3,2.05,4.4);controls.target.copy(target);controls.update();view('angle',1600);}
     renderer.render(scene,camera);
     renderer.domElement.style.visibility='visible';
@@ -334,10 +339,19 @@ export function scena(host,model,stone,onOrbit){
       fade.onfinish=()=>overlay.remove();
     }
   }
+  let design,decoration,shadowExtras;
+  function decorate(next){
+    design=next;odstran(decoration);
+    decoration=personalizuj(monument,design,selection,model,Math.min(8,renderer.capabilities.getMaxAnisotropy()),mobile?1024:1536);
+    const extras=[...next.extras].sort().join(',');
+    if(extras!==shadowExtras)renderer.shadowMap.needsUpdate=true;
+    shadowExtras=extras;invalidate();
+  }
   function change(next,newModel,newStone){
     snapshot();
     const typeChanged=selection.type!==next.type;
     selection={...next};model=newModel;stone=newStone;
+    odstran(decoration);decoration=null;
     const previous=monument;
     monument=pomnik(model,vytvorZulu(stone),vytvorZulu(stone,{satin:true}),coverFace,selection);
     scene.remove(previous);scene.add(monument);
@@ -361,6 +375,7 @@ export function scena(host,model,stone,onOrbit){
     contact.scale.set(next.type==='pamatna'?.76:model.sirka,next.type==='pamatna'?.09:model.dlzka/2,1);
     renderer.shadowMap.needsUpdate=true;
     if(typeChanged)view('angle');
+    if(design)decorate(design);
     renderer.render(scene,camera);reveal();invalidate();
   }
   resize();view('angle',0);
@@ -380,5 +395,5 @@ export function scena(host,model,stone,onOrbit){
     }else return;
     event.preventDefault();
   });
-  return {view,zoom,canvas,environment,change,sample:stone=>vzorka(renderer,stone,studioEnv)};
+  return {view,zoom,canvas,environment,change,decorate,sample:stone=>vzorka(renderer,stone,studioEnv)};
 }
