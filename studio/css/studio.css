@@ -24,3 +24,15 @@ aside{position:absolute;top:24px;right:28px;width:min(330px,31vw);max-height:cal
  .environments{left:8px;top:8px}.tools{left:8px;bottom:8px}.zoom{right:8px;top:8px;bottom:auto;flex-direction:column}.zoom button{width:31px;min-height:34px}.environments button,.tools button{font-size:11px;padding:0 7px;min-height:36px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.choices{display:grid;gap:9px;padding:12px 0 18px;border-top:1px solid var(--rule)}
+.choices label{display:grid;grid-template-columns:80px 1fr;align-items:center;font-size:13px}
+.choices label[hidden]{display:none}
+select{min-width:0;width:100%;height:38px;padding:0 6px;background:var(--paper);border:1px solid var(--rule);border-radius:3px}
+.material-field{padding-top:10px;border-top:1px solid var(--rule);font-size:13px}
+#samples{display:flex;flex-wrap:wrap;gap:4px;margin:7px 0}
+#samples button{width:calc((100% - 20px)/6);max-width:46px;min-height:40px;padding:3px;border:1px solid transparent;border-radius:50%;background:transparent}
+#samples button[aria-pressed=true]{border-color:var(--ink)}
+#samples img{width:100%;display:block;aspect-ratio:1;border-radius:50%}
+.stone{margin:0 0 14px}.stone small{font-size:12px}
+@media(max-width:760px){.choices{grid-template-columns:1fr 1fr;gap:7px 12px;padding:8px 0}.choices label{display:flex;flex-direction:column;align-items:start;gap:2px}.choices label:first-child{grid-column:1/-1;display:grid;grid-template-columns:85px 1fr}.material-field{padding-top:8px}aside{padding-bottom:18px}}

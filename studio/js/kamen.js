@@ -3,7 +3,8 @@ import * as T from 'three';
 // Interpolation and footprint filtering keep the minerals continuous at both scales.
 const noiseGLSL=`
   varying vec3 vStone;
-  uniform float grainScale;
+  uniform float grainScale, contrast, band, splitFace;
+  uniform vec3 mineralColor, veinColor;
   float lattice(vec3 p){
     p=fract(p*0.1031);p+=dot(p,p.yzx+33.33);
     return fract((p.x+p.y)*p.z);
@@ -30,7 +31,11 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
   });
   material.customProgramCacheKey=()=>mirror?'granite-planar':satin?'granite-satin':'granite-polished';
   material.onBeforeCompile=shader=>{
-    shader.uniforms.grainScale={value:stone.zrno};
+    Object.assign(shader.uniforms,{
+      grainScale:{value:stone.zrno},contrast:{value:stone.kontrast},band:{value:stone.zilkovanie},
+      mineralColor:{value:new T.Color(stone.krystal)},veinColor:{value:new T.Color(stone.zila)},
+      splitFace:{value:satin?1:0}
+    });
     shader.vertexShader='varying vec3 vStone;\n'+shader.vertexShader.replace(
       '#include <begin_vertex>','#include <begin_vertex>\nvStone=position;');
     shader.fragmentShader=noiseGLSL+shader.fragmentShader.replace('#include <color_fragment>',`
@@ -41,8 +46,29 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
       vec3 micro=p*4.51+17.2;
       float crystals=smoothstep(0.76,0.94,smoothNoise(micro));
       diffuseColor.rgb*=1.0+coarse*visibleGrain(p)*0.65+fine*visibleGrain(p*2.13)*0.38;
-      diffuseColor.rgb+=vec3(0.035)*mix(0.012,crystals,visibleGrain(micro));
+      float feldspar=smoothstep(.53,.81,coarse+.5+fine*.34);
+      float fleck=mix(.10,feldspar,visibleGrain(p));
+      vec3 q=vStone*3.4;
+      float fold=smoothNoise(q*1.8)+.32*smoothNoise(q*4.3);
+      float strata=q.x*.85+q.y*.45+q.z*.64+fold*1.18;
+      float vein=1.0-smoothstep(.028,.18,abs(fract(strata)-.5));
+      float drift=.5+.5*cos(strata*6.283);
+      diffuseColor.rgb=mix(diffuseColor.rgb,mineralColor,contrast*(fleck*.76+.13*drift));
+      diffuseColor.rgb=mix(diffuseColor.rgb,veinColor,band*(.72*vein+.25*drift));
+      diffuseColor.rgb+=mineralColor*(.12*contrast)*mix(.012,crystals,visibleGrain(micro));
+      diffuseColor.rgb+=splitFace*(.009+.021*(coarse+.5));
+
     `);
+    if(satin){
+      shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`
+        #include <normal_fragment_maps>
+        float relief=smoothNoise(vStone*85.)*.0015+smoothNoise(vStone*224.)*.00045;
+        vec3 sx=dFdx(-vViewPosition),sy=dFdy(-vViewPosition);
+        vec3 r1=cross(sy,normal),r2=cross(normal,sx);
+        float det=dot(sx,r1);
+        normal=normalize(abs(det)*normal-sign(det)*(dFdx(relief)*r1+dFdy(relief)*r2));
+      `);
+    }
     if(!mirror&&!satin){
       const ibl=T.ShaderChunk.envmap_physical_pars_fragment.replace(
         'return envMapColor.rgb * envMapIntensity;',

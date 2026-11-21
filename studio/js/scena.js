@@ -3,7 +3,7 @@ import {garden,parkSky} from './prostredie.js';
 import {Reflector} from '../vendor/Reflector.js';
 import {OrbitControls} from '../vendor/OrbitControls.js';
 import {vytvorZulu,vzorka} from './kamen.js';
-import {jednohrob} from './tvary.js';
+import {pomnik} from './tvary.js';
 
 function surface(w,h){
   const canvas=document.createElement('canvas');
@@ -69,6 +69,7 @@ function gravel(random){
 }
 
 export function scena(host,model,stone,onOrbit){
+  let selection={type:'jednohrob',shape:'rovny',cover:'cela'};
   const mobile=matchMedia('(max-width:760px)').matches;
   const renderer=new T.WebGLRenderer({antialias:!mobile,powerPreference:mobile?'low-power':'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:2));
@@ -86,9 +87,9 @@ export function scena(host,model,stone,onOrbit){
   scene.background=panorama;scene.backgroundBlurriness=0.17;
   scene.fog=new T.FogExp2(0xd7d7d7,0.055);
   let fastMotion=false;
-  function coverFace(width,depth){
+  function coverFace(geometry){
     const size=mobile?192:1024;
-    const face=new Reflector(new T.PlaneGeometry(width,depth),{
+    const face=new Reflector(geometry,{
       textureWidth:size,textureHeight:size,clipBias:0,multisample:0
     });
     const captureMaterial=face.material;
@@ -112,7 +113,7 @@ export function scena(host,model,stone,onOrbit){
     face.receiveShadow=true;
     return face;
   }
-  const monument=jednohrob(model,vytvorZulu(stone),vytvorZulu(stone,{satin:true}),coverFace);
+  let monument=pomnik(model,vytvorZulu(stone),vytvorZulu(stone,{satin:true}),coverFace);
   scene.add(monument);
   const ground=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshStandardMaterial({
     map:gravel(random),roughness:1
@@ -180,14 +181,17 @@ export function scena(host,model,stone,onOrbit){
   const target=new T.Vector3(0,0.39,0.03);
   const directions={angle:[1.65,1.13,2.22],front:[0,0.8,3],side:[3,0.8,0]};
   function distance(){
-    return Math.max(4.35,4.48/camera.aspect);
+    const plaque=selection.type==='urna'||selection.type==='pamatna';
+    const fit=plaque?(selection.type==='urna'?.34:.43):1+.30*(model.sirka-1);
+    return Math.max(4.35,4.48/camera.aspect)*fit;
   }
   let flight=0;
   function view(key,duration=640){
     const detail=key==='detail', outside=active&&active!=='atelier';
-    const focus=detail?new T.Vector3(0,.68,-.805):target;
+    const plaque=['urna','pamatna'].includes(selection.type);
+    const focus=detail&&!plaque?new T.Vector3(0,.68,-.805):target;
     const direction=detail?[-.29,.03,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
-    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?2.02:distance()*(outside&&!mobile?.94:1));
+    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?(plaque?.97:2.02):distance()*(outside&&!mobile?.94:1));
     const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));
     const to=new T.Spherical().setFromVector3(end);
     const delta=Math.atan2(Math.sin(to.theta-from.theta),Math.cos(to.theta-from.theta));
@@ -254,6 +258,18 @@ export function scena(host,model,stone,onOrbit){
   const studioEnv=scene.environment, studioFog=scene.fog;
   const skies=new Map(), probes=new Map();
   let grounds, groundsPending, active, revision=0, fade;
+  function snapshot(){
+    const old=host.querySelector('.scene-fade');
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+      renderer.render(scene,camera);
+      const overlay=document.createElement('canvas');
+      overlay.width=renderer.domElement.width;overlay.height=renderer.domElement.height;
+      overlay.className='scene-fade';overlay.setAttribute('aria-hidden','true');
+      const ctx=overlay.getContext('2d');ctx.drawImage(renderer.domElement,0,0);
+      if(old){ctx.globalAlpha=Number(getComputedStyle(old).opacity);ctx.drawImage(old,0,0);}
+      fade?.cancel();old?.remove();host.append(overlay);
+    }
+  }
   async function environment(name){
     const request=++revision;
     if(name===active)return;
@@ -270,16 +286,7 @@ export function scena(host,model,stone,onOrbit){
     }
     if(request!==revision)return;
     const first=!active;
-    const old=host.querySelector('.scene-fade');
-    if(!first&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
-      renderer.render(scene,camera);
-      const overlay=document.createElement('canvas');
-      overlay.width=renderer.domElement.width;overlay.height=renderer.domElement.height;
-      overlay.className='scene-fade';overlay.setAttribute('aria-hidden','true');
-      const ctx=overlay.getContext('2d');ctx.drawImage(renderer.domElement,0,0);
-      if(old){ctx.globalAlpha=Number(getComputedStyle(old).opacity);ctx.drawImage(old,0,0);}
-      fade?.cancel();old?.remove();host.append(overlay);
-    }
+    if(!first)snapshot();
     const studio=name==='atelier', dusk=name==='podvecer';
     ground.visible=studio;
     if(grounds)grounds.visible=!studio;
@@ -318,11 +325,43 @@ export function scena(host,model,stone,onOrbit){
     if(first){camera.position.set(3,2.05,4.4);controls.target.copy(target);controls.update();view('angle',1600);}
     renderer.render(scene,camera);
     renderer.domElement.style.visibility='visible';
+    reveal();
+  }
+  function reveal(){
     const overlay=host.querySelector('.scene-fade');
     if(overlay){
       fade=overlay.animate([{opacity:1},{opacity:0}],{duration:300,easing:'ease-out',fill:'forwards'});
       fade.onfinish=()=>overlay.remove();
     }
+  }
+  function change(next,newModel,newStone){
+    snapshot();
+    const typeChanged=selection.type!==next.type;
+    selection={...next};model=newModel;stone=newStone;
+    const previous=monument;
+    monument=pomnik(model,vytvorZulu(stone),vytvorZulu(stone,{satin:true}),coverFace,selection);
+    scene.remove(previous);scene.add(monument);
+    const oldMaterials=new Set();
+    previous.traverse(mesh=>{
+      if(!mesh.isMesh)return;
+      mesh.geometry.dispose();mesh.getRenderTarget?.().dispose();
+      for(const mat of [mesh.material].flat())oldMaterials.add(mat);
+    });
+    for(const mat of oldMaterials){receivers.delete(mat);mat.dispose();}
+    const fresh=new Set();
+    monument.traverse(mesh=>{if(mesh.isMesh)for(const mat of [mesh.material].flat())fresh.add(mat);});
+    softShadows(fresh);
+    for(const mat of fresh){
+      receivers.add(mat);
+      if(mat.isMeshPhysicalMaterial)mat.envMapIntensity=active==='atelier'?1:1.24;
+    }
+    const plaque=['urna','pamatna'].includes(next.type);
+    controls.minDistance=plaque?.65:1.65;
+    target.set(0,next.type==='urna'?.13:next.type==='pamatna'?.30:.39,plaque?0:.03);
+    contact.scale.set(next.type==='pamatna'?.76:model.sirka,next.type==='pamatna'?.09:model.dlzka/2,1);
+    renderer.shadowMap.needsUpdate=true;
+    if(typeChanged)view('angle');
+    renderer.render(scene,camera);reveal();invalidate();
   }
   resize();view('angle',0);
   new ResizeObserver(resize).observe(host);
@@ -341,5 +380,5 @@ export function scena(host,model,stone,onOrbit){
     }else return;
     event.preventDefault();
   });
-  return {view,zoom,canvas,environment,sample:stone=>vzorka(renderer,stone,studioEnv)};
+  return {view,zoom,canvas,environment,change,sample:stone=>vzorka(renderer,stone,studioEnv)};
 }

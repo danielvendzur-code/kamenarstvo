@@ -27,5 +27,21 @@
   "detail": "Detail čela",
   "sheet": "Rozbaliť alebo zbaliť panel",
   "edge": "Zrazenie hrany stely",
-  "loading": "Načítava sa návrh"
+  "loading": "Načítava sa návrh",
+  "dvojhrob": "Dvojhrob",
+  "urna": "Doska na urnu",
+  "pamatna": "Pamätná doska",
+  "obluk": "Oblúk",
+  "kniha": "Otvorená kniha",
+  "vlna": "Vlna",
+  "cela": "Celá",
+  "delena": "Delená",
+  "kvety": "S otvorom na kvety",
+  "product": "Vyhotovenie",
+  "profile": "Profil",
+  "cover": "Krycia doska",
+  "dims": "Rozmery",
+  "stoneFinish": "Leštené čelo · matné boky",
+  "unitEdge": "mm",
+  "panel": "Návrh pomníka"
 }

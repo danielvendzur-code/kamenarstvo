@@ -20,18 +20,35 @@
   "katalog": {
     "zaklad": "zaklad",
     "pomniky": [
-      "jednohrob"
+      "jednohrob",
+      "dvojhrob"
     ],
-    "dosky": [],
+    "dosky": [
+      "urna",
+      "pamatna"
+    ],
     "tvary": [
-      "rovny"
+      "rovny",
+      "obluk",
+      "kniha",
+      "vlna"
     ],
     "kamene": [
-      "absolute-black"
+      "absolute-black",
+      "impala",
+      "aurora",
+      "viscont-white",
+      "tan-brown",
+      "indian-juparana"
     ],
     "pisma": [],
     "farbyPisma": [],
-    "doplnky": []
+    "doplnky": [],
+    "krycieDosky": [
+      "cela",
+      "delena",
+      "kvety"
+    ]
   },
   "ceny": null,
   "web": {
