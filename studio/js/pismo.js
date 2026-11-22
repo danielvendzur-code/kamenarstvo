@@ -1,7 +1,7 @@
 import * as T from 'three';
 
 const finishes={
-  zlata:[0xe9c98a,.46,.33],strieborna:[0xd3d7d9,.60,.32],
+  zlata:[0xf4d79b,.32,.34],strieborna:[0xd3d7d9,.60,.32],
   cierna:[0x161819,.05,.55],biela:[0xe4dfd2,.03,.75],piesokovana:[0xb5ab98,0,.93]
 };
 
@@ -22,9 +22,9 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
     px*=Math.min(1,mask.width*.82*span/Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight,1));
     for(const c of [ctx,cut]){c.font=px+'px '+font;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';}
     const x=mask.width*center,baseline=(.20+y*.72)*mask.height;
-    ctx.strokeStyle='rgb(0,0,0)';ctx.lineWidth=5;ctx.strokeText(text,x,baseline);
+    ctx.strokeStyle='rgb(0,0,0)';ctx.lineWidth=6;ctx.strokeText(text,x,baseline);
     ctx.fillStyle='white';ctx.fillText(text,x,baseline);
-    ctx.strokeStyle='white';ctx.lineWidth=2;ctx.strokeText(text,x,baseline);
+    ctx.strokeStyle='white';ctx.lineWidth=2.8;ctx.strokeText(text,x,baseline);
     cut.fillStyle='#999';cut.fillText(text,x,baseline);
     for(const [width,tone] of [[5,220],[3,182],[1,145]]){
       cut.strokeStyle='rgb('+tone+' '+tone+' '+tone+')';cut.lineWidth=width;cut.strokeText(text,x,baseline);

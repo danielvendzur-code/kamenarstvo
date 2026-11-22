@@ -8,7 +8,7 @@ export function loadStone(stone){
   if(!maps.has(id)){
     const pending=Promise.all(['','-drsnost'].map(async suffix=>{
       const map=await loader.loadAsync(new URL(id+suffix+'.webp',root).href);
-      map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=4;
+      map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=8;map.minFilter=T.LinearMipmapLinearFilter;
       if(!suffix)map.colorSpace=T.SRGBColorSpace;
       return map;
     })).then(pair=>{stone.maps=pair;}).catch(error=>{maps.delete(id);throw error;});
@@ -18,29 +18,34 @@ export function loadStone(stone){
 }
 export function vytvorZulu(stone,{satin=false,mirror=null}={}){
   const material=new T.MeshPhysicalMaterial({
-    color:0xffffff,roughness:satin?.67:.065,ior:1.53,metalness:0,
+    color:0xffffff,roughness:satin?.85:.065,ior:1.53,metalness:0,
     clearcoat:satin?.02:.38,clearcoatRoughness:.055,fog:false
   });
   material.customProgramCacheKey=()=>mirror?'granite-planar':satin?'granite-satin':'granite-polished';
   material.onBeforeCompile=shader=>{
     shader.uniforms.slab={value:stone.maps[0]};shader.uniforms.grit={value:stone.maps[1]};
-    shader.vertexShader='varying vec3 vStone,cutPos,cutNormal;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
+    shader.vertexShader='attribute float slabCut; varying vec3 vStone,cutPos,cutNormal; varying vec2 slabAxis;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
       #include <begin_vertex>
       vStone=position;
       cutPos=position/1.65+modelMatrix[3].xyz*vec3(1.732,2.914,3.176);
+      float angle=dot(modelMatrix[3].xyz,vec3(3.79,8.73,4.11));
+      angle+=slabCut*.74;
+      cutPos+=slabCut*vec3(.41,.63,.28);
+      slabAxis=vec2(cos(angle),sin(angle));
       cutNormal=normal;`);
     shader.fragmentShader=`
-      varying vec3 vStone,cutPos,cutNormal;
+      varying vec3 vStone,cutPos,cutNormal; varying vec2 slabAxis;
       uniform sampler2D slab,grit;
       vec4 projectSlab(sampler2D tex,vec3 weights){
-        return texture2D(tex,cutPos.zy)*weights.x+texture2D(tex,cutPos.xz)*weights.y+texture2D(tex,cutPos.xy)*weights.z;
+        mat2 turn=mat2(slabAxis.x,-slabAxis.y,slabAxis.y,slabAxis.x);
+        return texture2D(tex,turn*cutPos.zy)*weights.x+texture2D(tex,turn*cutPos.xz)*weights.y+texture2D(tex,turn*cutPos.xy)*weights.z;
       }
     `+shader.fragmentShader.replace('#include <color_fragment>',`
       #include <color_fragment>
       vec3 weights=pow(abs(normalize(cutNormal)),vec3(8.));weights/=dot(weights,vec3(1.));
       diffuseColor.rgb=projectSlab(slab,weights).rgb;
       float surfaceGrain=projectSlab(grit,weights).g;
-      diffuseColor.rgb+=${satin?'vec3(.010+.014*surfaceGrain)':'vec3(0.)'};`)
+      diffuseColor.rgb+=${satin?'vec3(.027+.035*surfaceGrain)':'vec3(0.)'};`)
       .replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
         roughnessFactor+= (surfaceGrain-.375)*${satin?'.65':'.25'};`);
     if(satin)shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`

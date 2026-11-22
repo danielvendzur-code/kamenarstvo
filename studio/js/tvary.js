@@ -9,7 +9,7 @@ function blockGeometry(w, h, d, bevel, openTop) {
   const end=[0,1,1,2,2,3,3,0].map(i=>corners[i]);
   const ring=(points,y)=>points.map(([px,pz])=>new T.Vector3(px,y,pz));
   const rings=[ring(end,-h/2),ring(rim,-h/2+b),ring(rim,h/2-b),ring(end,h/2)];
-  const positions=[];
+  const positions=[],groups=[];
   function triangle(a,b,c){
     const n=new T.Vector3().subVectors(b,a).cross(new T.Vector3().subVectors(c,a));
     if(n.lengthSq()<1e-20)return;
@@ -18,18 +18,23 @@ function blockGeometry(w, h, d, bevel, openTop) {
     for(const point of face)positions.push(point.x,point.y,point.z);
   }
   for(let layer=0;layer<3;layer++){
+    const start=positions.length/3;
     for(let i=0;i<8;i++){
       const j=(i+1)%8, lower=rings[layer], upper=rings[layer+1];
       triangle(lower[i],lower[j],upper[j]);
       triangle(lower[i],upper[j],upper[i]);
     }
+    groups.push([start,positions.length/3-start,layer===1?1:0]);
   }
+  const capStart=positions.length/3;
   for(const y of openTop?[-h/2]:[-h/2,h/2]){
     const [a,b,c,d]=ring(corners,y);
     triangle(a,b,c);triangle(a,c,d);
   }
   const geometry=new T.BufferGeometry();
   geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  groups.push([capStart,positions.length/3-capStart,0]);
+  groups.forEach(g=>geometry.addGroup(...g));
   geometry.computeVertexNormals();
   return geometry;
 }
@@ -159,6 +164,14 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     }
     gravel.receiveShadow=true;group.add(gravel);
   }
+  function markSlabs(geometry){
+    if(cover==='delena'){
+      const pos=geometry.attributes.position;
+      geometry.setAttribute('slabCut',new T.Float32BufferAttribute(
+        Float32Array.from({length:pos.count},(_,i)=>Number(pos.getX(i)>0)),1));
+    }
+    return geometry;
+  }
   for(const path of covers){
     const body=sheet(path,model.hrubkaDosky,bevel),normals=body.attributes.normal,indices=[];
     // Keep the vertical band in satin and its chamfer polished.
@@ -170,12 +183,12 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
       body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
     }
-    body.setIndex(indices);add(body,faces,0,shoulder+bevel,0).rotation.x=-Math.PI/2;
+    body.setIndex(indices);add(markSlabs(body),faces,0,shoulder+bevel,0).rotation.x=-Math.PI/2;
   }
-  const face=makeCoverFace(new T.ShapeGeometry(covers,28));
+  const face=makeCoverFace(markSlabs(new T.ShapeGeometry(covers,28)));
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
-  block(w*.89,baseHeight,.32,top,z,polished);
+  block(w*.89,baseHeight,.32,top,z,faces);
   if(shape==='kniha'){
     // Two carved leaves meet at the recessed spine. Their faces have distinct normals.
     for(const sign of [-1,1]){

@@ -94,3 +94,6 @@ aside details summary{font-weight:600;font-size:23px}aside details[open]>div{ani
   aside details::details-content{block-size:0;overflow:clip;transition:block-size .22s ease,content-visibility .22s allow-discrete}
   aside details[open]::details-content{block-size:auto}
 }
+
+#samples button{position:relative}
+#samples button::after{content:"";position:absolute;inset:3px;border-radius:50%;pointer-events:none;background:linear-gradient(140deg,#ffffff40,transparent 47%);box-shadow:inset 0 0 0 1px #19190f25}
