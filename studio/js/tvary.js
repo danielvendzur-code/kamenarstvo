@@ -9,7 +9,7 @@ function blockGeometry(w, h, d, bevel, openTop) {
   const end=[0,1,1,2,2,3,3,0].map(i=>corners[i]);
   const ring=(points,y)=>points.map(([px,pz])=>new T.Vector3(px,y,pz));
   const rings=[ring(end,-h/2),ring(rim,-h/2+b),ring(rim,h/2-b),ring(end,h/2)];
-  const positions=[];
+  const positions=[],groups=[];
   function triangle(a,b,c){
     const n=new T.Vector3().subVectors(b,a).cross(new T.Vector3().subVectors(c,a));
     if(n.lengthSq()<1e-20)return;
@@ -18,18 +18,23 @@ function blockGeometry(w, h, d, bevel, openTop) {
     for(const point of face)positions.push(point.x,point.y,point.z);
   }
   for(let layer=0;layer<3;layer++){
+    const start=positions.length/3;
     for(let i=0;i<8;i++){
       const j=(i+1)%8, lower=rings[layer], upper=rings[layer+1];
       triangle(lower[i],lower[j],upper[j]);
       triangle(lower[i],upper[j],upper[i]);
     }
+    groups.push([start,positions.length/3-start,layer===1?1:0]);
   }
+  const capStart=positions.length/3;
   for(const y of openTop?[-h/2]:[-h/2,h/2]){
     const [a,b,c,d]=ring(corners,y);
     triangle(a,b,c);triangle(a,c,d);
   }
   const geometry=new T.BufferGeometry();
   geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  groups.push([capStart,positions.length/3-capStart,0]);
+  groups.forEach(g=>geometry.addGroup(...g));
   geometry.computeVertexNormals();
   return geometry;
 }
@@ -49,7 +54,7 @@ function outline(w,h,profile){
 
 function sheet(shape,depth,b){
   return new T.ExtrudeGeometry(shape,{depth:depth-2*b,bevelSize:b,bevelThickness:b,
-    bevelSegments:1,steps:1,curveSegments:28});
+    bevelSegments:2,steps:1,curveSegments:40});
 }
 
 function rectangle(x0,y0,x1,y1){
@@ -67,23 +72,36 @@ function recess(w,d,grow=0){
 function bookSurface(geometry,width,sign){
   const pos=geometry.attributes.position,norm=geometry.attributes.normal;
   const xyz=[],directions=[],groups=[];
-  function emit(a,b,c,n,depth){
-    if(depth){
-      const ab=a.clone().lerp(b,.5),bc=b.clone().lerp(c,.5),ca=c.clone().lerp(a,.5);
-      emit(a,ab,ca,n,depth-1);emit(ab,b,bc,n,depth-1);emit(ca,bc,c,n,depth-1);emit(ab,bc,ca,n,depth-1);return;
+  // Cut every triangle at the same stations so the cap and its bevel share a seam.
+  function clip(points,x,keepLeft){
+    const polygon=[];
+    for(let i=0;i<points.length;i++){
+      const a=points[i],b=points[(i+1)%points.length];
+      if(keepLeft?a.x<=x:a.x>=x)polygon.push(a);
+      if((a.x<x&&b.x>x)||(a.x>x&&b.x<x))
+        polygon.push(a.clone().lerp(b,(x-a.x)/(b.x-a.x)));
     }
-    for(const v of [a,b,c]){
-      const u=Math.max(0,Math.min(1,sign*v.x/width)),lift=.011*Math.sin(Math.PI*u);
-      const tangent=.011*Math.PI*sign*Math.cos(Math.PI*u)/width;
-      const normal=new T.Vector3(n.x-tangent*n.z,n.y,n.z).normalize();
-      xyz.push(v.x,v.y,v.z+lift);directions.push(normal.x,normal.y,normal.z);
+    return polygon;
+  }
+  function emit(vertices,n){
+    const stations=12,step=width/stations;
+    const low=Math.floor(Math.min(...vertices.map(v=>v.x))/step);
+    const high=Math.max(low,Math.ceil(Math.max(...vertices.map(v=>v.x))/step)-1);
+    for(let j=low;j<=high;j++){
+      const polygon=clip(clip(vertices,j*step,false),(j+1)*step,true);
+      for(let i=1;i<polygon.length-1;i++)for(const v of [polygon[0],polygon[i],polygon[i+1]]){
+        const u=T.MathUtils.clamp(sign*v.x/width,0,1),lift=.014*Math.sin(Math.PI*u);
+        const slope=.014*Math.PI*sign*Math.cos(Math.PI*u)/width;
+        const normal=new T.Vector3(n.x-slope*n.z,n.y,n.z).normalize();
+        xyz.push(v.x,v.y,v.z+lift);directions.push(normal.x,normal.y,normal.z);
+      }
     }
   }
   for(const g of geometry.groups){
     const first=xyz.length/3;
     for(let i=g.start;i<g.start+g.count;i+=3){
       const vertices=[0,1,2].map(k=>new T.Vector3().fromBufferAttribute(pos,i+k));
-      emit(...vertices,new T.Vector3().fromBufferAttribute(norm,i),3);
+      emit(vertices,new T.Vector3().fromBufferAttribute(norm,i));
     }
     groups.push([first,xyz.length/3-first,g.materialIndex]);
   }
@@ -112,18 +130,54 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     mesh.userData.face={left:Math.min(...xs),right:Math.max(...xs),height:Math.max(...ys),z:depth-.004};
     return mesh;
   }
-  if(type==='urna'){
-    block(.32,.052,.32,0,0,satin);
-    const pad=block(.26,.105,.21,.052,-.042,satin);pad.rotation.x=-.28;
-    const plaque=profileFace(outline(w-.008,d-.008,shape),.049,.073,.17);
-    plaque.rotation.x=-1.22;
-    return group;
+  function addTablet(sw,h,depth,bottom,z,tilt){
+    if(shape==='kniha'){
+      // Two carved leaves meet at the recessed spine. Their faces have distinct normals.
+      const pivot=new T.Group();pivot.position.set(0,bottom,z);pivot.rotation.x=tilt;group.add(pivot);
+      for(const sign of [-1,1]){
+        const leaf=new T.Shape(),width=sw*.494;
+        leaf.moveTo(0,.03);leaf.quadraticCurveTo(sign*width*.48,.072,sign*width*.95,.045);
+        leaf.quadraticCurveTo(sign*width,.043,sign*width,.062);
+        leaf.lineTo(sign*width,h*.86);leaf.quadraticCurveTo(sign*width,h*.90,sign*width*.95,h*.91);leaf.quadraticCurveTo(sign*width*.48,h*1.046,0,h*.89);
+        leaf.closePath();
+        const mesh=profileFace(leaf,depth,-.03,0);
+        mesh.geometry=bookSurface(mesh.geometry,width,sign);mesh.userData.face.curveWidth=width;
+        mesh.position.x=sign*.005;mesh.rotation.y=-sign*.095;pivot.add(mesh);
+      }
+      const spine=block(.024,h*.85,depth*.88,0,0,polished);
+      pivot.add(spine);
+    }else{
+      const stela=profileFace(outline(sw-.008,h-.008,shape),depth,bottom,z);
+      stela.rotation.x=tilt;
+    }
   }
-  if(type==='pamatna'){
-    // A freestanding masonry sample represents the wall mounting in the viewer.
-    const backing=new T.MeshStandardMaterial({color:0xaba497,roughness:1});
-    block(.76,.61,.18,0,-.124,backing);
-    profileFace(outline(w-.008,h-.008,shape),.042,.105,-.012);
+  if(type==='urna'||type==='pamatna'){
+    const urn=type==='urna',width=w+.18,length=urn?.67:.39,baseZ=urn?.035:-.012;
+    block(width-.024,.026,length-.024,0,baseZ,satin);
+    const pan=rectangle(-width/2,-length/2,width/2,length/2);
+    const slabs=cover==='delena'?[rectangle(-width/2,-length/2,-.006,length/2),
+      rectangle(.006,-length/2,width/2,length/2)]:[pan];
+    if(cover==='kvety'){
+      const pocket=rectangle(-width*.32,-length*.46,width*.32,-length*.29);
+      pan.holes.push(pocket);
+      const earth=new T.MeshStandardMaterial({color:0x473c32,roughness:1});
+      add(new T.ShapeGeometry(pocket),earth,0,.028,baseZ).rotation.x=-Math.PI/2;
+    }
+    for(const slab of slabs)add(sheet(slab,.032,.003),faces,0,.029,baseZ).rotation.x=-Math.PI/2;
+    if(urn){
+      // The wedge supports the entire sloped face, including the book binding.
+      const wedge=new T.Shape();
+      wedge.moveTo(-.123,0);wedge.lineTo(.123,0);wedge.lineTo(.123,.118);
+      wedge.lineTo(-.123,.028);wedge.closePath();
+      const support=add(sheet(wedge,w*.68,.003),faces,-w*.34+.003,.061,-.015);
+      support.rotation.y=Math.PI/2;
+      addTablet(w,d,.042,.070,.172,-1.22);
+    }else{
+      const backing=new T.MeshStandardMaterial({color:0xaaa59a,roughness:.92});
+      block(w+.07,h+.095,.095,.058,-.105,backing);
+      block(w*.69,h*.64,.029,.15,-.043,satin);
+      addTablet(w,h,.042,.11,-.011,0);
+    }
     return group;
   }
   const bevel=model.zrazenie, footing=.035, shoulder=footing+model.vyskaObruby;
@@ -159,6 +213,14 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     }
     gravel.receiveShadow=true;group.add(gravel);
   }
+  function markSlabs(geometry){
+    if(cover==='delena'){
+      const pos=geometry.attributes.position;
+      geometry.setAttribute('slabCut',new T.Float32BufferAttribute(
+        Float32Array.from({length:pos.count},(_,i)=>Number(pos.getX(i)>0)),1));
+    }
+    return geometry;
+  }
   for(const path of covers){
     const body=sheet(path,model.hrubkaDosky,bevel),normals=body.attributes.normal,indices=[];
     // Keep the vertical band in satin and its chamfer polished.
@@ -170,28 +232,12 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
       body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
     }
-    body.setIndex(indices);add(body,faces,0,shoulder+bevel,0).rotation.x=-Math.PI/2;
+    body.setIndex(indices);add(markSlabs(body),faces,0,shoulder+bevel,0).rotation.x=-Math.PI/2;
   }
-  const face=makeCoverFace(new T.ShapeGeometry(covers,28));
+  const face=makeCoverFace(markSlabs(new T.ShapeGeometry(covers,28)));
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
-  block(w*.89,baseHeight,.32,top,z,polished);
-  if(shape==='kniha'){
-    // Two carved leaves meet at the recessed spine. Their faces have distinct normals.
-    for(const sign of [-1,1]){
-      const leaf=new T.Shape(),width=sw*.494;
-      leaf.moveTo(0,.03);leaf.quadraticCurveTo(sign*width*.48,.085,sign*width,.045);
-      leaf.lineTo(sign*width,h*.86);leaf.quadraticCurveTo(sign*width,h*.90,sign*width*.95,h*.91);leaf.quadraticCurveTo(sign*width*.48,h*1.046,0,h*.89);
-      leaf.closePath();
-      const mesh=profileFace(leaf,model.hrubkaStely,top+baseHeight-.03,z+.012);
-      mesh.geometry=bookSurface(mesh.geometry,width,sign);mesh.userData.face.curveWidth=width;
-      mesh.position.x=sign*.005;mesh.rotation.set(-.07,-sign*.095,0);
-    }
-    const spine=block(.018,h*.84,.084,top+baseHeight,z+.005-h*.42*Math.sin(.07),polished);
-    spine.rotation.x=-.07;
-  }else{
-    const stela=profileFace(outline(sw-.008,h-.008,shape),model.hrubkaStely,top+baseHeight,z);
-    stela.rotation.x=-.065;
-  }
+  block(w*.89,baseHeight,.32,top,z,faces);
+  addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,-.065);
   return group;
 }

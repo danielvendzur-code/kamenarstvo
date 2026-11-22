@@ -73,8 +73,8 @@ export function editor(config,t,product,viewer,detail){
     const id=++version,family=fonts[font.value]??'Cormorant';
     await document.fonts.load('24px '+family);
     await new Promise(requestAnimationFrame);if(id!==version)return;
-    viewer.decorate({font:family,finish:finish.value,extras:selected,photo,epitaph:epitaph.value,
-      people:people.map(person=>Object.fromEntries(Object.entries(person).map(([k,input])=>[k,input.value.trim()])))});
+    viewer.decorate({font:family,finish:finish.value,extras:selected,photo,epitaph:epitaph.value.normalize('NFC'),
+      people:people.map(person=>Object.fromEntries(Object.entries(person).map(([k,input])=>[k,input.value.trim().normalize('NFC')])))});
   }
   let chosen=false;
   finish.container.addEventListener('change',()=>{chosen=true;});

@@ -59,11 +59,12 @@ function hedgeGeometry(length,random){
   geo.setIndex(indices);geo.computeVertexNormals();return geo;
 }
 
-function lawnMaterial(map){
+function lawnMaterial(map,blades=false){
   const mat=new T.MeshLambertMaterial({map,transparent:true});
+  mat.customProgramCacheKey=()=>blades?'lawn-blades':'lawn-plane';
   mat.onBeforeCompile=shader=>{
     shader.vertexShader='varying vec2 lawnXZ;\n'+shader.vertexShader.replace(
-      '#include <begin_vertex>','#include <begin_vertex>\nlawnXZ=position.xy;');
+      '#include <begin_vertex>','#include <begin_vertex>\n'+(blades?'lawnXZ=vec2(instanceMatrix[3].x,-instanceMatrix[3].z);':'lawnXZ=position.xy;'));
     shader.fragmentShader='varying vec2 lawnXZ;\n'+shader.fragmentShader.replace('#include <map_fragment>',`
       vec2 p=lawnXZ;
       vec2 bend=vec2(sin(p.y*.67+p.x*.27),cos(p.x*.85-p.y*.21))*.085;
@@ -79,7 +80,29 @@ function lawnMaterial(map){
   return mat;
 }
 
-function grassBlades(random,mobile){
+// Eight unequal corner flats and two smaller rings describe chipped arrises.
+function rubble(random){
+  const positions=[],colors=[];
+  const footprint=[[-.50,-.39],[-.38,-.50],[.40,-.50],[.50,-.40],
+    [.50,.36],[.37,.50],[-.39,.50],[-.50,.38]];
+  const rings=[[-.50,.91],[-.39,1],[.36,1],[.50,.89]].map(([y,k])=>
+    footprint.map(([x,z])=>new T.Vector3(x*k+(random()-.5)*.035,y+(random()-.5)*.043,z*k)));
+  function facet(a,b,c){
+    const tone=.88+.12*random();
+    for(const v of [a,b,c]){positions.push(v.x,v.y,v.z);colors.push(tone,tone,tone);}
+  }
+  for(let j=0;j<3;j++)for(let i=0;i<8;i++){
+    const k=(i+1)%8,a=rings[j],b=rings[j+1];
+    facet(a[i],b[i],b[k]);facet(a[i],b[k],a[k]);
+  }
+  for(let i=1;i<7;i++)facet(rings[3][0],rings[3][i+1],rings[3][i]);
+  const geo=new T.BufferGeometry();
+  geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.computeVertexNormals();
+  return geo;
+}
+
+function grassBlades(random,mobile,grass){
   const geo=new T.BufferGeometry();
   // Three leaning blades per tuft in a single instanced draw.
   geo.setAttribute('position',new T.Float32BufferAttribute([
@@ -88,24 +111,25 @@ function grassBlades(random,mobile){
     .006,0,-.01,.015,0,-.008,.024,.03,-.019
   ],3));
   geo.computeVertexNormals();
+  for(let i=0;i<geo.attributes.normal.count;i++)geo.attributes.normal.setXYZ(i,0,1,0);
   const patches=[];
   for(let i=0;i<(mobile?5000:18000);i++){
     const x=(random()-.5)*8,z=(random()-.5)*7;
     if((Math.abs(x)<.51&&Math.abs(z)<1.01)||(z>1.28&&z<2.52))continue;
     const s=.22+random()*.34;
     patches.push({position:[x,0,z],scale:[s,s,s],angle:random()*6.28,
-      color:new T.Color().setHSL(.21+random()*.025,.22+random()*.15,.245+random()*.082,T.SRGBColorSpace)});
+      color:new T.Color().setScalar(.88+random()*.22)});
   }
   // Tighter tufts in the uncut strip along the kerb and the dressed stone.
-  for(let i=0;i<(mobile?750:1800);i++){
+  for(let i=0;i<(mobile?500:1150);i++){
     const sign=random()<.5?-1:1, gap=.008+random()*.055;
     const x=i%3===0?(random()-.5)*4.8:i%3===1?sign*(.50+gap):(random()-.5);
     const z=i%3===0?1.273-gap:i%3===1?(random()-.5)*2:sign*(1+gap);
-    const s=.38+random()*.45;
+    const s=.24+random()*.36;
     patches.push({position:[x,.001,z],scale:[s,s,s],angle:random()*6.28,
-      color:new T.Color().setHSL(.22,.3,.27+random()*.055,T.SRGBColorSpace)});
+      color:new T.Color().setScalar(.78+random()*.19)});
   }
-  const mat=new T.MeshBasicMaterial({side:T.DoubleSide});
+  const mat=lawnMaterial(grass,true);mat.side=T.FrontSide;mat.transparent=false;
   const blades=instanced(geo,mat,patches);
   blades.receiveShadow=true;
   const lod=new T.LOD();
@@ -121,7 +145,7 @@ export async function garden(mobile){
   }
   const group=new T.Group();
   const lawn=new T.Mesh(new T.PlaneGeometry(72,72),lawnMaterial(grass));
-  lawn.renderOrder=-3;lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;group.add(lawn,grassBlades(random,mobile));
+  lawn.renderOrder=-3;lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;group.add(lawn,grassBlades(random,mobile,grass));
   const path=new T.Mesh(new T.PlaneGeometry(45,1.12),new T.MeshStandardMaterial({
     map:gravel,bumpMap:gravel,bumpScale:.012,color:0xbdc3c5,roughness:.99
   }));
@@ -135,26 +159,51 @@ export async function garden(mobile){
       color:new T.Color().setScalar(.44+random()*.075)
     });
   }
-  // Dressed limestone in staggered courses, with a slightly overhanging coping.
+  const kerb=instanced(new T.BoxGeometry(),new T.MeshStandardMaterial({
+    map:limestone,bumpMap:limestone,bumpScale:.004,roughness:.94}),blocks);
+  kerb.castShadow=kerb.receiveShadow=true;group.add(kerb);
+  const courses=[[],[],[],[]], caps=[];
+  const mortar=new T.MeshStandardMaterial({color:0x817c70,roughness:1});
   for(const side of [-1,1]){
+    const core=new T.Mesh(new T.BoxGeometry(.28,.55,19.97),mortar);
+    core.position.set(side*6.7,.275,0);group.add(core);
     for(let row=0;row<4;row++){
       let z=-10;
-      while(z<10-.002){
-        const cap=row===3,h=cap?.092:.19;
-        const length=Math.min(10-z,(cap?.85:.49)+random()*.48);
-        blocks.push({position:[side*6.7+(random()-.5)*.018,cap?.615:.095+row*.19,z+length/2],
-          scale:[(cap?.43:.345)+random()*.018,h-.006,length-.006],
-          angle:(random()-.5)*.013,color:new T.Color().setHSL(.105,.09,.50+random()*.12,T.SRGBColorSpace)});
+      const cap=row===3;
+      while(z<9.999){
+        let length=Math.min(10-z,(cap?.70:.36)+random()*.47);
+        if(10-z-length<.23)length=10-z;
+        const stones=cap?caps:courses[Math.floor(random()*courses.length)];
+        stones.push({position:[side*6.7+(random()-.5)*.031,cap?.62:.094+row*.19,z+length/2],
+          scale:[(cap?.47:.37)+random()*.025,cap?.098:.186,length-.009],
+          angle:(random()-.5)*.024,color:new T.Color().setHSL(.096,.07+random()*.10,.46+random()*.14,T.SRGBColorSpace)});
         z+=length;
       }
     }
-    for(const end of [-10,10]){
-      blocks.push({position:[side*6.7,.34,end],scale:[.49,.68,.5]},
-        {position:[side*6.7,.72,end],scale:[.54,.09,.56]});
+    for(const end of [-10.19,10.19]){
+      for(let row=0;row<4;row++)courses[row].push({position:[side*6.7,.092+row*.185,end],scale:[.45,.181,.38]});
+      caps.push({position:[side*6.7,.78,end],scale:[.51,.095,.46]});
     }
   }
-  const stones=instanced(new T.BoxGeometry(),new T.MeshStandardMaterial({map:limestone,bumpMap:limestone,bumpScale:.016,roughness:.94}),blocks);
-  stones.castShadow=stones.receiveShadow=true;group.add(stones);
+  const limestoneMat=new T.MeshStandardMaterial({roughness:.96,vertexColors:true});
+  limestoneMat.onBeforeCompile=shader=>{
+    shader.vertexShader='varying vec3 wallPoint;\n'+shader.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\nwallPoint=(instanceMatrix*vec4(position,1.)).xyz;');
+    shader.fragmentShader=`varying vec3 wallPoint;
+      float stoneHash(vec3 v){return fract(sin(dot(v,vec3(12.98,78.23,45.16)))*4375.54);}
+      float fleck(vec3 p){
+        vec3 cell=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+        vec4 a=vec4(stoneHash(cell),stoneHash(cell+vec3(1,0,0)),stoneHash(cell+vec3(0,1,0)),stoneHash(cell+vec3(1,1,0)));
+        cell.z+=1.;
+        vec4 b=vec4(stoneHash(cell),stoneHash(cell+vec3(1,0,0)),stoneHash(cell+vec3(0,1,0)),stoneHash(cell+vec3(1,1,0)));
+        vec4 t=mix(a,b,f.z);return mix(mix(t.x,t.y,f.x),mix(t.z,t.w,f.x),f.y);
+      }\n`+shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+        diffuseColor.rgb*=.74+.30*fleck(wallPoint*17.)+.16*fleck(wallPoint*64.);`);
+  };
+  for(const course of [...courses,caps]){
+    const stones=instanced(rubble(random),limestoneMat,course);
+    stones.castShadow=stones.receiveShadow=true;group.add(stones);
+  }
   const hedgeMat=new T.MeshStandardMaterial({
     map:cedar,bumpMap:cedar,bumpScale:.009,roughness:1,vertexColors:true,side:T.DoubleSide
   });
@@ -171,8 +220,8 @@ export async function garden(mobile){
     [-8,0,5.3,4.2,1.5,1],[-5,5,6.1,4.4,2.2,2],[4,8,7.5,4.7,-2.6,0],
     [8,2,5.9,4.5,-1.7,2]
   ];
-  crowns.generateMipmaps=true;crowns.minFilter=T.LinearMipmapLinearFilter;
-  const treeMat=new T.MeshBasicMaterial({map:crowns,transparent:true,alphaTest:.025,
+  crowns.anisotropy=4;crowns.generateMipmaps=true;crowns.minFilter=T.LinearMipmapLinearFilter;
+  const treeMat=new T.MeshBasicMaterial({map:crowns,transparent:true,alphaTest:0,
     depthWrite:false,premultipliedAlpha:true,side:T.DoubleSide,fog:true});
   treeMat.forceSinglePass=true;
   for(const [x,z,w,h,angle,tile] of trees){

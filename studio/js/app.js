@@ -25,11 +25,15 @@ async function start(){
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
   }
+  // Pair the display face with a sturdier wordmark at small header sizes.
+  if(!tema.pismoZnacky&&tema.pismoNadpis==='Cormorant'){
+    document.documentElement.style.setProperty('--pismoZnacky','Playfair');
+  }
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title+' · '+firma.nazov;
   el('load-logo').src=base+firma.logo;
   const progress=document.querySelector('progress');progress.value=2;progress.setAttribute('aria-label',t.loading);
-  el('brand').textContent=firma.nazov;el('logo').src=base+firma.logo;
+  el('brand').textContent=firma.nazov.normalize('NFC');el('logo').src=base+firma.logo;
   for(const node of document.querySelectorAll('[data-t]'))node.textContent=t[node.dataset.t];
   for(const node of document.querySelectorAll('[data-label],[data-view]')){
     node.setAttribute('aria-label',t[node.dataset.label??node.dataset.t]);
@@ -42,10 +46,7 @@ async function start(){
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
   let stoneId=katalog.kamene[0];
   function profiles(){
-    const plaque=katalog.dosky?.includes(product.value);
-    const items=katalog.tvary.filter(id=>!plaque||['rovny','obluk'].includes(id));
-    profile.fill(items);
-    el('cover-field').hidden=plaque;
+    profile.fill(katalog.tvary);
   }
   profiles();
   function describe(){
@@ -63,6 +64,7 @@ async function start(){
     tier=Math.max(0,Math.min(2,value));layout.dataset.sheet=tier;
     layout.classList.toggle('folded',tier===0);handle.setAttribute('aria-expanded',String(tier>0));
     el('sheet-content').inert=tier===0;
+    if(tier===0)handle.closest('aside').scrollTop=0;
     handle.title=t.sheetLevels[tier];handle.setAttribute('aria-label',handle.title);
   }
   handle.onclick=()=>{if(!dragged)sheet((tier+1)%3);dragged=false;};
