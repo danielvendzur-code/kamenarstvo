@@ -38,9 +38,9 @@ function outline(w,h,profile){
   const path=new T.Shape(),x=w/2;
   path.moveTo(-x,0);path.lineTo(x,0);
   if(profile==='obluk'){
-    path.lineTo(x,h*.76);path.bezierCurveTo(x*.68,h*1.08,-x*.68,h*1.08,-x,h*.76);
+    path.lineTo(x,h*.86);path.bezierCurveTo(x*.52,h*1.045,-x*.52,h*1.045,-x,h*.86);
   }else if(profile==='vlna'){
-    path.lineTo(x,h*.80);path.bezierCurveTo(x*.29,h*.66,-x*.24,h*1.10,-x,h*.94);
+    path.lineTo(x,h*.80);path.bezierCurveTo(x*.20,h*.65,-x*.19,h*1.10,-x,h*.94);
   }else{
     path.lineTo(x,h);path.lineTo(-x,h);
   }
@@ -58,10 +58,39 @@ function rectangle(x0,y0,x1,y1){
   return shape;
 }
 
-function flowerHole(w,d,extra=0){
-  const hole=new T.Path();
-  hole.absellipse(0,-d*.21,w*.286+extra,d*.138+extra,0,Math.PI*2,true);
-  return hole;
+function recess(w,d,grow=0){
+  const opening=rectangle(-w*.29-grow,-d*.35-grow,w*.29+grow,-d*.08+grow);
+  return opening;
+}
+
+// Subdivide the cap before bending it so highlights roll across each leaf.
+function bookSurface(geometry,width,sign){
+  const pos=geometry.attributes.position,norm=geometry.attributes.normal;
+  const xyz=[],directions=[],groups=[];
+  function emit(a,b,c,n,depth){
+    if(depth){
+      const ab=a.clone().lerp(b,.5),bc=b.clone().lerp(c,.5),ca=c.clone().lerp(a,.5);
+      emit(a,ab,ca,n,depth-1);emit(ab,b,bc,n,depth-1);emit(ca,bc,c,n,depth-1);emit(ab,bc,ca,n,depth-1);return;
+    }
+    for(const v of [a,b,c]){
+      const u=Math.max(0,Math.min(1,sign*v.x/width)),lift=.011*Math.sin(Math.PI*u);
+      const tangent=.011*Math.PI*sign*Math.cos(Math.PI*u)/width;
+      const normal=new T.Vector3(n.x-tangent*n.z,n.y,n.z).normalize();
+      xyz.push(v.x,v.y,v.z+lift);directions.push(normal.x,normal.y,normal.z);
+    }
+  }
+  for(const g of geometry.groups){
+    const first=xyz.length/3;
+    for(let i=g.start;i<g.start+g.count;i+=3){
+      const vertices=[0,1,2].map(k=>new T.Vector3().fromBufferAttribute(pos,i+k));
+      emit(...vertices,new T.Vector3().fromBufferAttribute(norm,i),3);
+    }
+    groups.push([first,xyz.length/3-first,g.materialIndex]);
+  }
+  const result=new T.BufferGeometry();
+  result.setAttribute('position',new T.Float32BufferAttribute(xyz,3));
+  result.setAttribute('normal',new T.Float32BufferAttribute(directions,3));
+  groups.forEach(g=>result.addGroup(...g));geometry.dispose();return result;
 }
 
 export function pomnik(model,polished,satin,makeCoverFace,selection={}){
@@ -74,7 +103,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     return mesh;
   }
   function block(width,height,depth,bottom,z,mat){
-    return add(blockGeometry(width,height,depth,.002,false),mat,0,bottom+height/2,z);
+    return add(blockGeometry(width,height,depth,.004,false),mat,0,bottom+height/2,z);
   }
   function profileFace(path,depth,base,z){
     const mesh=add(sheet(path,depth,.004),faces,0,base+.004,z-depth/2+.004);
@@ -97,46 +126,71 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     profileFace(outline(w-.008,h-.008,shape),.042,.105,-.012);
     return group;
   }
-  const bevel=.002, top=.243;
-  block(w-.06,.045,d-.06,0,0,satin);
-  if(cover==='kvety'){
-    const rail=rectangle(-w/2+.002,-d/2+.002,w/2-.002,d/2-.002);
-    rail.holes.push(flowerHole(w,d,.012));
-    const base=add(sheet(rail,.14,bevel),satin,0,.045+bevel,0);
-    base.rotation.x=-Math.PI/2;
-    const soil=new T.MeshStandardMaterial({color:0x3c3026,roughness:1});
-    block(w-.08,.035,d-.08,.045,0,soil);
-  }else block(w,.14,d,.045,0,satin);
-  const halfW=w/2+.005,halfD=d/2+.005;
+  const bevel=model.zrazenie, footing=.035, shoulder=footing+model.vyskaObruby;
+  const top=shoulder+model.hrubkaDosky;
+  block(w-.05,footing,d-.05,0,0,satin);
+  const ring=rectangle(-w/2+bevel,-d/2+bevel,w/2-bevel,d/2-bevel);
+  const rail=model.sirkaObruby;
+  ring.holes.push(rectangle(-w/2+rail,-d/2+rail,w/2-rail,d/2-rail));
+  add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0).rotation.x=-Math.PI/2;
+  const halfW=w/2+.005,halfD=d/2+.005,gap=.0025+bevel;
   const covers=cover==='delena'
-    ?[rectangle(-halfW,-halfD,-.006,halfD),rectangle(.006,-halfD,halfW,halfD)]
+    ?[rectangle(-halfW,-halfD,-gap,halfD),rectangle(gap,-halfD,halfW,halfD)]
     :[rectangle(-halfW,-halfD,halfW,halfD)];
-  if(cover==='kvety')covers[0].holes.push(flowerHole(w,d));
+  if(cover==='kvety'){
+    covers[0].holes.push(recess(w,d,bevel));
+    const lip=recess(w,d,.022);
+    lip.holes.push(recess(w,d,-bevel));
+    add(sheet(lip,.024,.003),polished,0,top+.003,0).rotation.x=-Math.PI/2;
+    const soil=new T.MeshStandardMaterial({color:0x362c21,roughness:1});
+    const bed=add(new T.ShapeGeometry(recess(w,d,.012)),soil,0,shoulder-.023,0);
+    bed.rotation.x=-Math.PI/2;
+    const gravel=new T.InstancedMesh(new T.IcosahedronGeometry(1,0),
+      new T.MeshStandardMaterial({roughness:.95}),Math.round(1100*w));
+    const pebble=new T.Object3D(),tone=new T.Color();
+    let seed=4711;
+    const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+    for(let i=0;i<gravel.count;i++){
+      const r=.004+random()*.007;
+      pebble.position.set((random()-.5)*w*.58,bed.position.y+.001,d*(.08+random()*.27));
+      pebble.rotation.set(random()*2,random()*3,random()*2);pebble.scale.set(r,r*.5,r*.85);
+      pebble.updateMatrix();gravel.setMatrixAt(i,pebble.matrix);
+      tone.setScalar(.045+random()*.11);gravel.setColorAt(i,tone);
+    }
+    gravel.receiveShadow=true;group.add(gravel);
+  }
   for(const path of covers){
-    const body=sheet(path,.058,bevel);
-    // The reflector is the only upward cap, including around the flower cut-out.
-    const normals=body.attributes.normal,indices=[];
-    for(let i=0;i<normals.count;i+=3)if(normals.getZ(i)<.999)indices.push(i,i+1,i+2);
-    body.clearGroups();body.setIndex(indices);
-    add(body,satin,0,.185+bevel,0).rotation.x=-Math.PI/2;
+    const body=sheet(path,model.hrubkaDosky,bevel),normals=body.attributes.normal,indices=[];
+    // Keep the vertical band in satin and its chamfer polished.
+    body.clearGroups();let slot=-1;
+    for(let i=0;i<normals.count;i+=3){
+      const nz=normals.getZ(i);
+      if(nz>.999)continue;
+      const next=Math.abs(nz)>.12?0:1;
+      if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
+      body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
+    }
+    body.setIndex(indices);add(body,faces,0,shoulder+bevel,0).rotation.x=-Math.PI/2;
   }
   const face=makeCoverFace(new T.ShapeGeometry(covers,28));
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
-  const z=-d/2+.195,sw=w*.78;
-  block(w*.89,.085,.32,top,z,polished);
+  const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
+  block(w*.89,baseHeight,.32,top,z,polished);
   if(shape==='kniha'){
     // Two carved leaves meet at the recessed spine. Their faces have distinct normals.
     for(const sign of [-1,1]){
       const leaf=new T.Shape(),width=sw*.494;
       leaf.moveTo(0,.03);leaf.quadraticCurveTo(sign*width*.48,.085,sign*width,.045);
-      leaf.lineTo(sign*width,h*.90);leaf.quadraticCurveTo(sign*width*.50,h*1.046,0,h*.89);
+      leaf.lineTo(sign*width,h*.86);leaf.quadraticCurveTo(sign*width,h*.90,sign*width*.95,h*.91);leaf.quadraticCurveTo(sign*width*.48,h*1.046,0,h*.89);
       leaf.closePath();
-      const mesh=profileFace(leaf,.095,top+.064,z+.012);
-      mesh.position.x=sign*.005;mesh.rotation.y=-sign*.12;
+      const mesh=profileFace(leaf,model.hrubkaStely,top+baseHeight-.03,z+.012);
+      mesh.geometry=bookSurface(mesh.geometry,width,sign);mesh.userData.face.curveWidth=width;
+      mesh.position.x=sign*.005;mesh.rotation.set(-.07,-sign*.095,0);
     }
-    block(.021,h*.84,.105,top+.085,z+.005,polished);
+    const spine=block(.018,h*.84,.084,top+baseHeight,z+.005-h*.42*Math.sin(.07),polished);
+    spine.rotation.x=-.07;
   }else{
-    const stela=profileFace(outline(sw-.008,h-.008,shape),.125,top+.085,z);
+    const stela=profileFace(outline(sw-.008,h-.008,shape),model.hrubkaStely,top+baseHeight,z);
     stela.rotation.x=-.065;
   }
   return group;

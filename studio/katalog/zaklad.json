@@ -3,12 +3,24 @@
     "jednohrob": {
       "sirka": 1,
       "dlzka": 2,
-      "vyskaStely": 0.81
+      "vyskaStely": 0.81,
+      "hrubkaStely": 0.1,
+      "vyskaPodstavca": 0.12,
+      "hrubkaDosky": 0.035,
+      "sirkaObruby": 0.12,
+      "vyskaObruby": 0.145,
+      "zrazenie": 0.004
     },
     "dvojhrob": {
       "sirka": 2,
       "dlzka": 2,
-      "vyskaStely": 0.89
+      "vyskaStely": 0.89,
+      "hrubkaStely": 0.1,
+      "vyskaPodstavca": 0.12,
+      "hrubkaDosky": 0.035,
+      "sirkaObruby": 0.12,
+      "vyskaObruby": 0.145,
+      "zrazenie": 0.004
     }
   },
   "tvary": {

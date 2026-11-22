@@ -86,7 +86,9 @@ function ovalPortrait(source){
   }
   const geom=new T.CircleGeometry(1,64),map=new T.CanvasTexture(canvas);
   map.colorSpace=T.SRGBColorSpace;
-  return new T.Mesh(geom,new T.MeshPhysicalMaterial({map,roughness:.26,clearcoat:.35}));
+  const oval=new T.Mesh(geom,new T.MeshPhysicalMaterial({map,roughness:.22,clearcoat:.45}));
+  const rim=new T.Mesh(new T.TorusGeometry(1,.035,8,80),new T.MeshStandardMaterial({color:0xb29866,metalness:.8,roughness:.34}));
+  rim.scale.z=.05;oval.add(rim);return oval;
 }
 
 function standingAccessory(id){
@@ -99,8 +101,9 @@ function standingAccessory(id){
     part(new T.LatheGeometry(points.map(([x,y])=>new T.Vector2(x,y)),48),bronze,0,0,0);
   }
   if(id==='vaza'){
-    turned([[0,0],[.055,0],[.055,.012],[.033,.025],[.029,.053],[.060,.116],[.052,.175],[.044,.197],[.049,.204],[.042,.207],[.037,.195],[.033,.15],[0,.10]]);
+    turned([[0,0],[.049,0],[.052,.006],[.05,.014],[.031,.023],[.031,.038],[.054,.181],[.058,.199],[.057,.204],[.051,.205],[.048,.195],[.026,.05],[0,.042]]);
   }else{
+    bronze.color.setHex(0xb49a60);bronze.roughness=.28;
     turned([[0,0],[.065,0],[.065,.015],[.054,.025],[0,.025]]);
     const glass=new T.MeshPhysicalMaterial({color:0xffebbf,transparent:true,opacity:.22,roughness:.17,depthWrite:false});
     part(new T.CylinderGeometry(.047,.047,.13,8),glass,0,.092,0);
@@ -134,7 +137,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
     if(index===0){
       if(state.extras.has('fotokeramika')){
         const photo=ovalPortrait(state.photo);photo.scale.set(height*.063,height*.083,1);
-        photo.position.set(left+width*.5,height*.73,z+.0003);surface.add(photo);
+        photo.position.set(left+width*.5,height*.76,z+.0008+(mesh.userData.face.curveWidth?.011:0));surface.add(photo);
       }
       const sign=state.extras.has('kriz'),rose=state.extras.has('ornament-ruza');
       if(sign||rose){
@@ -142,7 +145,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
         function wire(points,r){
           const curve=new T.CatmullRomCurve3(points.map(([x,y])=>new T.Vector3(x*height,y*height,0)));
           const line=new T.Mesh(new T.TubeGeometry(curve,Math.max(10,points.length*2),r*height,6,false),bronze);
-          line.position.set(left+width*(sign&&rose?.26:sign?.28:.72),height*.74,z+.002);surface.add(line);return line;
+          line.position.set(left+width*(sign&&rose?.26:sign?.28:.72),height*.77,z+.002+(mesh.userData.face.curveWidth?.011:0));surface.add(line);return line;
         }
         if(sign){wire([[0,-.052],[0,.055]],.004);wire([[-.031,.014],[.031,.014]],.004);}
         if(rose){
@@ -156,7 +159,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
   }
   for(const [id,side] of [['vaza',-1],['lampas',1]])if(state.extras.has(id)){
     const obj=standingAccessory(id),grave=!['urna','pamatna'].includes(selection.type);
-    obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.035),grave?.244:0,grave?-model.dlzka*.23:.075);
+    obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.035),grave?.035+model.vyskaObruby+model.hrubkaDosky:0,grave?-model.dlzka*.23:.075);
     if(!grave)obj.scale.setScalar(.66);group.add(obj);
   }
   return group;
