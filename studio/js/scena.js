@@ -260,7 +260,7 @@ export function scena(host,model,stone,onOrbit){
       camera.position.copy(controls.target).add(offset);controls.update();
     }
     previousAspect=aspect;camera.aspect=aspect;
-    const offset=host.clientWidth>760?(document.querySelector('aside').offsetWidth+28)*.48:0;
+    const offset=host.clientWidth>760?(document.querySelector('aside').offsetWidth+24)*.48:0;
     camera.setViewOffset(host.clientWidth,host.clientHeight,offset,0,host.clientWidth,host.clientHeight);
     camera.updateProjectionMatrix();
     renderer.setSize(host.clientWidth,host.clientHeight,false);invalidate();
