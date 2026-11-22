@@ -250,8 +250,16 @@ export function scena(host,model,stone,onOrbit){
     camera.position.copy(offset.setLength(T.MathUtils.clamp(offset.length()*factor,controls.minDistance,controls.maxDistance))).add(controls.target);
     controls.update();invalidate();
   }
+  let previousAspect;
   function resize(){
-    camera.aspect=host.clientWidth/host.clientHeight;
+    const aspect=host.clientWidth/host.clientHeight;
+    if(mobile&&previousAspect&&aspect!==previousAspect){
+      // Keep the stone's horizontal framing as the sheet changes the canvas height.
+      const offset=camera.position.clone().sub(controls.target);
+      offset.multiplyScalar(Math.min(previousAspect,1)/Math.min(aspect,1));
+      camera.position.copy(controls.target).add(offset);controls.update();
+    }
+    previousAspect=aspect;camera.aspect=aspect;
     const offset=host.clientWidth>760?(document.querySelector('aside').offsetWidth+28)*.48:0;
     camera.setViewOffset(host.clientWidth,host.clientHeight,offset,0,host.clientWidth,host.clientHeight);
     camera.updateProjectionMatrix();

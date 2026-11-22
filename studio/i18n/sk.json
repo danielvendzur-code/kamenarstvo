@@ -71,5 +71,11 @@
   "clearPhoto": "Obnoviť siluetu",
   "insertSample": "Vložiť vzorový nápis",
   "cierna": "Čierna",
-  "recommended": "odporúčané"
+  "recommended": "odporúčané",
+  "sampleName": "Anna",
+  "sheetLevels": [
+    "Otvoriť panel do polovice",
+    "Otvoriť celý panel",
+    "Zbaliť panel"
+  ]
 }

@@ -36,7 +36,6 @@ select{min-width:0;width:100%;height:38px;padding:0 6px;background:var(--paper);
 #samples img{width:100%;display:block;aspect-ratio:1;border-radius:50%}
 .stone{margin:0 0 14px}.stone small{font-size:12px}
 @media(max-width:760px){.choices{grid-template-columns:1fr 1fr;gap:7px 12px;padding:8px 0}.choices label{display:flex;flex-direction:column;align-items:start;gap:2px}.choices label:first-child{grid-column:1/-1;display:grid;grid-template-columns:85px 1fr}.material-field{padding-top:8px}aside{padding-bottom:18px}}
-@font-face{font-family:Cinzel;src:url('../fonts/Cinzel.ttf')}@font-face{font-family:Cormorant;src:url('../fonts/Cormorant.ttf')}@font-face{font-family:Playfair;src:url('../fonts/Playfair.ttf')}@font-face{font-family:GreatVibes;src:url('../fonts/GreatVibes.ttf')}
 aside details{border-top:1px solid var(--rule)}aside summary{cursor:pointer;padding:12px 0;font:18px var(--pismoNadpis),serif}
 .engrave-fields,.engrave-fields fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .engrave-fields{padding:4px 0 16px}.engrave-fields label,#extras label{font-size:13px}
@@ -45,3 +44,53 @@ aside details{border-top:1px solid var(--rule)}aside summary{cursor:pointer;padd
 #extras>label{display:flex;justify-content:space-between;align-items:center;min-height:42px;border-bottom:1px solid var(--rule)}#extras input[type=checkbox]{accent-color:var(--green);width:18px;height:18px}#extras input[type=file]{width:100%;margin:6px 0 10px}#extras{padding:0 0 12px}
 .example{grid-column:1/-1;justify-self:start;padding:0;text-decoration:underline;text-underline-offset:3px;font-size:13px}
 @media(max-width:760px){#handle{position:sticky;top:0;z-index:2;background:var(--paper)}aside summary{scroll-margin-top:32px}.engrave-fields input,.engrave-fields textarea{font-size:16px}}
+@font-face{font-family:Cormorant;src:url('../fonts/Cormorant.woff2') format('woff2');font-weight:300 700;font-display:swap}
+@font-face{font-family:Inter;src:url('../fonts/Inter.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:Cinzel;src:url('../fonts/Cinzel.woff2') format('woff2');font-weight:400 900;font-display:swap}
+@font-face{font-family:Playfair;src:url('../fonts/Playfair.woff2') format('woff2');font-weight:400 900;font-display:swap}
+@font-face{font-family:GreatVibes;src:url('../fonts/GreatVibes.woff2') format('woff2');font-display:swap}
+body{font-size:14px}.brand{font-size:28px;font-weight:600}.studio{font-size:12px}
+aside{padding:24px;width:min(352px,32vw);scrollbar-width:thin;scrollbar-color:#aca898 transparent;background:linear-gradient(var(--paper) 35%,transparent) top/100% 22px local no-repeat,linear-gradient(to top,var(--paper) 35%,transparent) bottom/100% 22px local no-repeat,linear-gradient(#322e2314,transparent) top/100% 8px scroll no-repeat,linear-gradient(to top,#322e2314,transparent) bottom/100% 8px scroll no-repeat,color-mix(in srgb,var(--paper) 96%,transparent)}
+.eyebrow{font-size:12px}h1{font-size:40px;line-height:1;margin:4px 0 16px;font-weight:600}
+.choices{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0}
+.choices fieldset,.letter-choice{min-width:0;border:0;padding:0;margin:0}
+.choices legend,.letter-choice legend,.material-field>span{font:500 12px/1.4 var(--pismoText);padding:0;margin:0 0 6px}
+.cards{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:4px}
+.cards label,.choices .cards label,.choices .cards label:first-child{position:relative;display:flex;grid-column:auto;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;padding:5px 2px;min-height:48px;background:#ffffff45;border:1px solid var(--rule);border-radius:3px;cursor:pointer;font:400 11px/1.15 var(--pismoText);transition:background .16s,border-color .16s}
+.cards input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.cards label:hover,#samples button:hover{border-color:var(--akcent);background:#fff9}
+.cards label:has(:checked),#samples button[aria-pressed=true]{border-color:var(--akcent);background:color-mix(in srgb,var(--akcent) 7%,var(--paper))}
+.cards label:has(:focus-visible){outline:2px solid var(--green);outline-offset:2px}
+.cards svg,.environments svg,.tools svg{display:block;width:35px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.engrave-fields .letter-choice{display:block;grid-column:1/-1;border:0;padding:0}
+.fonts i{font-style:normal;font-size:19px;line-height:1.2}.inks i{width:21px;height:21px;border-radius:50%;border:1px solid #0002}.inks label{min-width:0;font-size:10px}
+.inks label[data-recommended] i{outline:1px dotted var(--akcent);outline-offset:2px}
+#samples{gap:6px}#samples button{width:calc((100% - 30px)/6);padding:2px}
+aside details summary{font-weight:600;font-size:23px}aside details[open]>div{animation:unfold .22s ease-out}
+@keyframes unfold{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+#viewport canvas{cursor:grab}#viewport canvas:active{cursor:grabbing}
+.environments button,.tools button{display:flex;gap:5px;align-items:center;justify-content:center;font-size:11px;min-height:33px;padding:0 8px}
+.environments svg,.tools svg{width:18px;height:17px;stroke-width:2}
+.environments button:hover:not([aria-pressed=true]),.tools button:hover:not([aria-pressed=true]),.zoom button:hover{background:#d9d7cb}
+.zoom{right:calc(min(352px,32vw) + 58px)}#loader img{height:66px}#load-logo:not([src]){visibility:hidden}
+@media(max-width:760px){
+ header{height:48px}.brand{font-size:24px}.studio{font-size:10px}.layout{height:calc(100svh - 48px)}
+ .viewer{display:grid;grid-template:36px minmax(0,1fr) 36px / 1fr auto;height:55svh;gap:0;background:var(--paper)}
+ #viewport{grid-area:2/1/3/3;min-height:0}
+ .environments,.tools,.zoom{position:static;box-shadow:none;background:transparent;border:0;padding:0 4px;gap:2px}
+ .environments{grid-area:1/1/2/3}.tools{grid-area:3/1/4/2}.zoom{grid-area:3/2/4/3;flex-direction:row;padding-left:0}.zoom button{width:27px;min-height:32px;font-size:17px}
+ .tools button,.environments button{padding:0 4px;font-size:10px;min-height:29px;gap:3px}
+ .tools svg,.environments svg{width:14px;height:14px}
+ aside{width:100%;padding:0 16px 16px}.layout[data-sheet="2"] aside{top:8svh}.layout[data-sheet="2"] .viewer{height:55svh}
+ .choices{grid-template-columns:1fr;gap:12px}.choices .cards label{min-height:48px}.layout.folded .viewer{height:calc(100% - 35px)}
+ h1{font-size:32px}.engrave-fields select{min-width:0}
+}
+@media(max-width:380px){.tools button{font-size:9px}.tools svg{width:11px}}
+@media(prefers-reduced-motion:reduce){aside details[open]>div{animation:none}}
+
+.letter-choice small{margin-top:6px;font-size:11px;color:var(--green)}
+@supports (interpolate-size:allow-keywords){
+  aside details{interpolate-size:allow-keywords}
+  aside details::details-content{block-size:0;overflow:clip;transition:block-size .22s ease,content-visibility .22s allow-discrete}
+  aside details[open]::details-content{block-size:auto}
+}

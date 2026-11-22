@@ -1,31 +1,33 @@
-const fonts={cinzel:'Cinzel',cormorant:'Cormorant',playfair:'Playfair','great-vibes':'GreatVibes'};
+import {choiceSet,families as fonts} from './volby.js';
 const el=id=>document.getElementById(id);
-export function editor(config,t,product,viewer){
+export function editor(config,t,product,viewer,detail){
   const letters=el('letters'),extras=el('extras'),people=[],selected=new Set();
   let photo=null,photoVersion=0,version=0;
   function field(parent,key,input){
     const label=document.createElement('label'),caption=document.createElement('span');
     caption.textContent=t[key];label.append(caption,input);parent.append(label);return input;
   }
-  function select(key,ids){
-    const input=document.createElement('select');
-    for(const id of ids??[])input.add(new Option(t[id],id));
-    input.onchange=update;return field(letters,key,input);
+  function cards(key,ids,kind){
+    const group=document.createElement('fieldset'),legend=document.createElement('legend'),choices=document.createElement('div');
+    legend.textContent=t[key];choices.id='letter-'+key;group.className='letter-choice';
+    group.append(legend,choices);letters.append(group);
+    return choiceSet(choices,ids,t,kind);
   }
-  const font=select('font',config.pisma),finish=select('finish',config.farbyPisma);
+  const font=cards('font',config.pisma,'fonts'),finish=cards('finish',config.farbyPisma,'inks');
+  font.container.onchange=finish.container.onchange=()=>{detail();update();};
   const second=document.createElement('fieldset'),legend=document.createElement('legend');
   legend.textContent=t.second;second.append(legend);
   for(const parent of [letters,second]){
     const person={};people.push(person);
     for(const key of ['first','last','birth','death']){
       const input=document.createElement('input');input.maxLength=key==='first'||key==='last'?80:32;
-      field(parent,key,input);person[key]=input;input.oninput=update;
+      field(parent,key,input);person[key]=input;input.oninput=()=>{detail();update();};
     }
   }
   letters.append(second);
   const epitaph=field(letters,'epitaph',document.createElement('textarea'));
   epitaph.maxLength=240;epitaph.rows=2;
-  epitaph.oninput=()=>{epitaph.value=epitaph.value.split(/\r?\n/).slice(0,2).join('\n');update();};
+  epitaph.oninput=()=>{epitaph.value=epitaph.value.split(/\r?\n/).slice(0,2).join('\n');detail();update();};
   const example=document.createElement('button');
   example.type='button';example.className='example';example.textContent=t.insertSample;
   if(config.vzorNapisu){
@@ -33,9 +35,10 @@ export function editor(config,t,product,viewer){
     example.onclick=()=>{
       people.forEach((person,i)=>{
         if(i===1&&product.value!=='dvojhrob')return;
-        for(const [key,input] of Object.entries(person))input.value=config.vzorNapisu.osoby?.[i]?.[key]??'';
+        if(Object.values(person).every(input=>!input.value))
+          for(const [key,input] of Object.entries(person))input.value=config.vzorNapisu.osoby?.[i]?.[key]??'';
       });
-      epitaph.value=config.vzorNapisu.epitaf??'';update();
+      if(!epitaph.value)epitaph.value=config.vzorNapisu.epitaf??'';detail();update();
     };
   }
   const photoBox=document.createElement('div'),input=document.createElement('input'),reset=document.createElement('button'),error=document.createElement('small');
@@ -59,10 +62,14 @@ export function editor(config,t,product,viewer){
     check.onchange=()=>{if(check.checked)selected.add(id);else selected.delete(id);photoBox.hidden=!selected.has('fotokeramika');update();};
   }
   extras.append(photoBox);
-  el('letter-panel').hidden=!font.length||!finish.length;el('extra-panel').hidden=!config.doplnky?.length;
-  function sync(){second.hidden=product.value!=='dvojhrob';}
+  el('letter-panel').hidden=!font.value||!finish.value;el('extra-panel').hidden=!config.doplnky?.length;
+  function sampleVisibility(){
+    const activePeople=product.value==='dvojhrob'?people:people.slice(0,1);
+    example.hidden=activePeople.every(person=>Object.values(person).some(input=>input.value));
+  }
+  function sync(){second.hidden=product.value!=='dvojhrob';sampleVisibility();}
   async function update(){
-    example.hidden=Boolean(epitaph.value||people.some(person=>Object.values(person).some(input=>input.value)));
+    sampleVisibility();
     const id=++version,family=fonts[font.value]??'Cormorant';
     await document.fonts.load('24px '+family);
     await new Promise(requestAnimationFrame);if(id!==version)return;
@@ -70,10 +77,16 @@ export function editor(config,t,product,viewer){
       people:people.map(person=>Object.fromEntries(Object.entries(person).map(([k,input])=>[k,input.value.trim()])))});
   }
   let chosen=false;
-  finish.addEventListener('change',()=>{chosen=true;});
+  finish.container.addEventListener('change',()=>{chosen=true;});
+  const recommendation=document.createElement('small');
+  finish.container.after(recommendation);
   sync.recommend=id=>{
-    for(const o of finish.options)o.textContent=t[o.value]+(o.value===id?' · '+t.recommended:'');
-    if(!chosen&&Array.from(finish.options).some(o=>o.value===id)){finish.value=id;update();}
+    recommendation.textContent=config.farbyPisma?.includes(id)?t.recommended+' · '+t[id]:'';
+    for(const input of finish.container.querySelectorAll('input')){
+      input.parentElement.title=t[input.value]+(input.value===id?' · '+t.recommended:'');
+      input.parentElement.toggleAttribute('data-recommended',input.value===id);
+    }
+    if(!chosen&&config.farbyPisma?.includes(id)){finish.select(id);update();}
   };
   sync();return sync;
 }
