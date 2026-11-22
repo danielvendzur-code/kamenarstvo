@@ -1,8 +1,8 @@
 import * as T from 'three';
 
 const finishes={
-  zlata:[0xe2be79,.55,.33],strieborna:[0xd3d7d9,.60,.32],
-  biela:[0xe4dfd2,.03,.75],piesokovana:[0xb5ab98,0,.93]
+  zlata:[0xe9c98a,.46,.33],strieborna:[0xd3d7d9,.60,.32],
+  cierna:[0x161819,.05,.55],biela:[0xe4dfd2,.03,.75],piesokovana:[0xb5ab98,0,.93]
 };
 
 // Both canvases use the same glyph outlines. Successively narrower strokes
@@ -22,6 +22,7 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
     px*=Math.min(1,mask.width*.82*span/Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight,1));
     for(const c of [ctx,cut]){c.font=px+'px '+font;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';}
     const x=mask.width*center,baseline=(.20+y*.72)*mask.height;
+    ctx.strokeStyle='rgb(0,0,0)';ctx.lineWidth=5;ctx.strokeText(text,x,baseline);
     ctx.fillStyle='white';ctx.fillText(text,x,baseline);
     ctx.strokeStyle='white';ctx.lineWidth=2;ctx.strokeText(text,x,baseline);
     cut.fillStyle='#999';cut.fillText(text,x,baseline);
@@ -46,10 +47,12 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
     shader.fragmentShader='varying float faceNormalZ;uniform sampler2D inscription,cutDepth;uniform vec3 faceBox,letterColor;uniform float finishMetal,finishRough;\n'+shader.fragmentShader
       .replace('#include <roughnessmap_fragment>',`
         vec2 letterUV=vec2((vStone.x-faceBox.x)/faceBox.y,vStone.y/faceBox.z);
-        float ink=texture2D(inscription,letterUV).a*step(.99,faceNormalZ);
+        vec4 glyph=texture2D(inscription,letterUV);
+        float ink=glyph.a*step(.99,faceNormalZ);
         vec3 infill=finishRough>.90?mix(diffuseColor.rgb,letterColor,.66):letterColor;
         float stoneLight=smoothstep(.18,.55,dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)));
         float lip=smoothstep(.61,.89,texture2D(cutDepth,letterUV).r);
+        infill*=mix(.15,1.,glyph.r);
         infill*=1.0-stoneLight*(.39*finishMetal+.54*lip);
         diffuseColor.rgb=mix(diffuseColor.rgb,infill,ink);
         #include <roughnessmap_fragment>

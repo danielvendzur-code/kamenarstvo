@@ -69,5 +69,7 @@
   "portrait": "Fotografia z vášho zariadenia",
   "badPhoto": "Tento obrázok sa nepodarilo otvoriť. Vyberte fotografiu vo formáte JPEG, PNG alebo WebP.",
   "clearPhoto": "Obnoviť siluetu",
-  "insertSample": "Vložiť vzorový nápis"
+  "insertSample": "Vložiť vzorový nápis",
+  "cierna": "Čierna",
+  "recommended": "odporúčané"
 }

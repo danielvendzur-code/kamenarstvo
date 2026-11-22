@@ -69,5 +69,11 @@ export function editor(config,t,product,viewer){
     viewer.decorate({font:family,finish:finish.value,extras:selected,photo,epitaph:epitaph.value,
       people:people.map(person=>Object.fromEntries(Object.entries(person).map(([k,input])=>[k,input.value.trim()])))});
   }
+  let chosen=false;
+  finish.addEventListener('change',()=>{chosen=true;});
+  sync.recommend=id=>{
+    for(const o of finish.options)o.textContent=t[o.value]+(o.value===id?' · '+t.recommended:'');
+    if(!chosen&&Array.from(finish.options).some(o=>o.value===id)){finish.value=id;update();}
+  };
   sync();return sync;
 }

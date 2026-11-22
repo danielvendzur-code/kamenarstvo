@@ -2,7 +2,7 @@ import * as T from 'three';
 import {garden,parkSky} from './prostredie.js';
 import {Reflector} from '../vendor/Reflector.js';
 import {OrbitControls} from '../vendor/OrbitControls.js';
-import {vytvorZulu,vzorka} from './kamen.js';
+import {vytvorZulu} from './kamen.js';
 import {personalizuj,odstran} from './pismo.js';
 import {pomnik} from './tvary.js';
 
@@ -180,7 +180,7 @@ export function scena(host,model,stone,onOrbit){
   controls.enablePan=false;controls.minDistance=1.65;controls.maxDistance=7;
   controls.minPolarAngle=0.14;controls.maxPolarAngle=Math.PI*.49;
   const target=new T.Vector3(0,0.39,0.03);
-  const directions={angle:[1.65,1.13,2.22],front:[0,0.8,3],side:[3,0.8,0]};
+  const directions={angle:[1.65,1.13,2.22],front:[0,0.48,3],side:[3,0.8,0]};
   function distance(){
     const plaque=selection.type==='urna'||selection.type==='pamatna';
     const fit=plaque?(selection.type==='urna'?.34:.43):1+.30*(model.sirka-1);
@@ -395,5 +395,5 @@ export function scena(host,model,stone,onOrbit){
     }else return;
     event.preventDefault();
   });
-  return {view,zoom,canvas,environment,change,decorate,sample:stone=>vzorka(renderer,stone,studioEnv)};
+  return {view,zoom,canvas,environment,change,decorate};
 }

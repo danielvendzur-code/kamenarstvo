@@ -1,3 +1,4 @@
+import {loadStone,vzorka} from './kamen.js';
 import {editor} from './editor.js';
 import {scena} from './scena.js';
 
@@ -68,6 +69,7 @@ async function start(){
   handle.onpointerdown=e=>{y=e.clientY;handle.setPointerCapture(e.pointerId);};
   handle.onpointerup=e=>{if(Math.abs(e.clientY-y)>24){fold(e.clientY>y);handle.addEventListener('click',e=>e.stopImmediatePropagation(),{capture:true,once:true});}};
   matchMedia('(max-width:760px)').addEventListener('change',()=>fold(false));
+  await loadStone(catalog.kamene[stoneId]);
   const viewer=scena(el('viewport'),definition(product.value),catalog.kamene[stoneId],()=>mark(null));
   viewer.canvas.setAttribute('aria-label',t.canvas);
   for(const button of views)button.onclick=()=>{viewer.view(button.dataset.view);mark(button.dataset.view);};
@@ -103,13 +105,21 @@ async function start(){
   const syncEditor=editor(katalog,t,product,viewer);
   product.onchange=()=>{profiles();syncEditor();apply();mark('angle');};
   profile.onchange=cover.onchange=apply;
+  let materialRequest=0;
   for(const id of katalog.kamene){
     const button=document.createElement('button'),img=document.createElement('img');
     button.type='button';button.value=id;button.title=catalog.kamene[id].nazov;button.setAttribute('aria-label',button.title);
-    img.alt='';img.src=viewer.sample(catalog.kamene[id]);button.append(img);el('samples').append(button);
-    button.onclick=()=>{if(stoneId!==id){stoneId=id;apply();}};
+    img.alt='';img.src=vzorka(catalog.kamene[id]);button.append(img);el('samples').append(button);
+    button.onclick=async()=>{
+      const job=++materialRequest;
+      if(stoneId===id)return;
+      try{await loadStone(catalog.kamene[id]);}
+      catch(error){console.error(error);el('error').hidden=false;return;}
+      if(job!==materialRequest)return;
+      stoneId=id;syncEditor.recommend(catalog.kamene[id].odporucanePismo);apply();
+    };
   }
-  describe();progress.value=3;
+  syncEditor.recommend(catalog.kamene[stoneId].odporucanePismo);describe();progress.value=3;
   await choose(initial);
   if(product.value!=='jednohrob'||profile.value!=='rovny'||cover.value!=='cela')apply();
   progress.value=4;el('loader').hidden=true;
