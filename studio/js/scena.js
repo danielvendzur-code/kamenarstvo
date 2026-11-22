@@ -191,7 +191,7 @@ export function scena(host,model,stone,onOrbit){
     const detail=key==='detail', outside=active&&active!=='atelier';
     const plaque=['urna','pamatna'].includes(selection.type);
     const focus=detail&&!plaque?new T.Vector3(0,.68,-.805):target;
-    const direction=detail?[-.29,.03,1]:outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
+    const direction=detail?(selection.type==='urna'?[-.12,1.8,.86]:[-.18,.04,1]):outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
     const detailDistance=plaque?.97:Math.max(2.02,model.sirka*.78/((mobile?1.68:1.36)*camera.aspect*Math.tan(T.MathUtils.degToRad(camera.fov/2))));
     const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?detailDistance:distance()*(outside&&!mobile?.94:1));
     const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));

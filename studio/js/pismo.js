@@ -48,7 +48,7 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
       .replace('#include <roughnessmap_fragment>',`
         vec2 letterUV=vec2((vStone.x-faceBox.x)/faceBox.y,vStone.y/faceBox.z);
         vec4 glyph=texture2D(inscription,letterUV);
-        float ink=glyph.a*step(.99,faceNormalZ);
+        float ink=glyph.a*step(.95,faceNormalZ);
         vec3 infill=finishRough>.90?mix(diffuseColor.rgb,letterColor,.66):letterColor;
         float stoneLight=smoothstep(.18,.55,dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)));
         float lip=smoothstep(.61,.89,texture2D(cutDepth,letterUV).r);
@@ -98,14 +98,24 @@ function standingAccessory(id){
     const mesh=new T.Mesh(geo,mat);mesh.position.set(x,y,z);mesh.castShadow=true;g.add(mesh);return mesh;
   }
   function turned(points){
-    part(new T.LatheGeometry(points.map(([x,y])=>new T.Vector2(x,y)),48),bronze,0,0,0);
+    const profile=points.map(([x,y])=>new T.Vector2(x,y));
+    const geometry=new T.LatheGeometry(profile,48),colors=[];
+    for(let i=0;i<geometry.attributes.position.count;i++){
+      const row=i%points.length;
+      const recessed=row>0&&row<points.length-1&&points[row][0]<points[row-1][0];
+      const light=recessed?.68:.95+.05*Math.sin(Math.floor(i/points.length)*Math.PI/12);
+      colors.push(light,light*(recessed?1.09:1),light*(recessed?1.06:1));
+    }
+    geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+    const metal=bronze.clone();metal.vertexColors=true;
+    part(geometry,metal,0,0,0);
   }
   if(id==='vaza'){
     turned([[0,0],[.049,0],[.052,.006],[.05,.014],[.031,.023],[.031,.038],[.054,.181],[.058,.199],[.057,.204],[.051,.205],[.048,.195],[.026,.05],[0,.042]]);
   }else{
-    bronze.color.setHex(0xb49a60);bronze.roughness=.28;
+    bronze.color.setHex(0x95784e);bronze.roughness=.28;
     turned([[0,0],[.065,0],[.065,.015],[.054,.025],[0,.025]]);
-    const glass=new T.MeshPhysicalMaterial({color:0xffebbf,transparent:true,opacity:.22,roughness:.17,depthWrite:false});
+    const glass=new T.MeshPhysicalMaterial({color:0xffebbf,transparent:true,opacity:.28,roughness:.11,metalness:.08,clearcoat:.7,depthWrite:false});
     part(new T.CylinderGeometry(.047,.047,.13,8),glass,0,.092,0);
     for(const x of [-.035,.035])for(const z of [-.035,.035])part(new T.CylinderGeometry(.003,.003,.14,8),bronze,x,.094,z);
     part(new T.CylinderGeometry(.023,.024,.078,24),new T.MeshStandardMaterial({color:0xe4d6b8}),0,.065,0);
@@ -115,12 +125,13 @@ function standingAccessory(id){
 }
 
 export function personalizuj(monument,state,selection,model,aniso,resolution){
-  const faces=monument.children.filter(mesh=>mesh.userData.face);
+  const faces=[];monument.traverse(mesh=>{if(mesh.userData.face)faces.push(mesh);});
+  monument.updateMatrixWorld(true);
   const group=new T.Group();group.userData.release=[];monument.add(group);
   const double=selection.type==='dvojhrob',book=faces.length===2;
   for(const [index,mesh] of faces.entries()){
     const {left,right,height,z}=mesh.userData.face;
-    const surface=new T.Group();surface.position.copy(mesh.position);surface.quaternion.copy(mesh.quaternion);group.add(surface);
+    const surface=new T.Group();surface.applyMatrix4(monument.matrixWorld.clone().invert().multiply(mesh.matrixWorld));group.add(surface);
     const width=right-left,cols=double&&!book?2:1;
     const lettering=[];
     for(let col=0;col<cols;col++){
@@ -137,7 +148,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
     if(index===0){
       if(state.extras.has('fotokeramika')){
         const photo=ovalPortrait(state.photo);photo.scale.set(height*.063,height*.083,1);
-        photo.position.set(left+width*.5,height*.76,z+.0008+(mesh.userData.face.curveWidth?.011:0));surface.add(photo);
+        photo.position.set(left+width*.5,height*.76,z+.0008+(mesh.userData.face.curveWidth?.014:0));surface.add(photo);
       }
       const sign=state.extras.has('kriz'),rose=state.extras.has('ornament-ruza');
       if(sign||rose){
@@ -145,7 +156,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
         function wire(points,r){
           const curve=new T.CatmullRomCurve3(points.map(([x,y])=>new T.Vector3(x*height,y*height,0)));
           const line=new T.Mesh(new T.TubeGeometry(curve,Math.max(10,points.length*2),r*height,6,false),bronze);
-          line.position.set(left+width*(sign&&rose?.26:sign?.28:.72),height*.77,z+.002+(mesh.userData.face.curveWidth?.011:0));surface.add(line);return line;
+          line.position.set(left+width*(sign&&rose?.26:sign?.28:.72),height*.77,z+.002+(mesh.userData.face.curveWidth?.014:0));surface.add(line);return line;
         }
         if(sign){wire([[0,-.052],[0,.055]],.004);wire([[-.031,.014],[.031,.014]],.004);}
         if(rose){
@@ -159,8 +170,8 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
   }
   for(const [id,side] of [['vaza',-1],['lampas',1]])if(state.extras.has(id)){
     const obj=standingAccessory(id),grave=!['urna','pamatna'].includes(selection.type);
-    obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.035),grave?.035+model.vyskaObruby+model.hrubkaDosky:0,grave?-model.dlzka*.23:.075);
-    if(!grave)obj.scale.setScalar(.66);group.add(obj);
+    obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.038),grave?.035+model.vyskaObruby+model.hrubkaDosky:.058,grave?-model.dlzka*.23:.075);
+    if(!grave)obj.scale.setScalar(.58);group.add(obj);
   }
   return group;
 }

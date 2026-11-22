@@ -42,10 +42,7 @@ async function start(){
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
   let stoneId=katalog.kamene[0];
   function profiles(){
-    const plaque=katalog.dosky?.includes(product.value);
-    const items=katalog.tvary.filter(id=>!plaque||['rovny','obluk'].includes(id));
-    profile.fill(items);
-    el('cover-field').hidden=plaque;
+    profile.fill(katalog.tvary);
   }
   profiles();
   function describe(){
