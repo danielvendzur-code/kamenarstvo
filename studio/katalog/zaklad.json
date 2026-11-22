@@ -1,0 +1,107 @@
+{
+  "pomniky": {
+    "jednohrob": {
+      "sirka": 1,
+      "dlzka": 2,
+      "vyskaStely": 0.81,
+      "hrubkaStely": 0.1,
+      "vyskaPodstavca": 0.12,
+      "hrubkaDosky": 0.035,
+      "sirkaObruby": 0.12,
+      "vyskaObruby": 0.145,
+      "zrazenie": 0.004
+    },
+    "dvojhrob": {
+      "sirka": 2,
+      "dlzka": 2,
+      "vyskaStely": 0.89,
+      "hrubkaStely": 0.1,
+      "vyskaPodstavca": 0.12,
+      "hrubkaDosky": 0.035,
+      "sirkaObruby": 0.12,
+      "vyskaObruby": 0.145,
+      "zrazenie": 0.004
+    }
+  },
+  "tvary": {
+    "rovny": {},
+    "obluk": {},
+    "kniha": {},
+    "vlna": {}
+  },
+  "kamene": {
+    "absolute-black": {
+      "nazov": "Absolute Black",
+      "farba": "#0b0c0d",
+      "textura": "absolute-black",
+      "odporucanePismo": "zlata"
+    },
+    "impala": {
+      "nazov": "Impala",
+      "farba": "#36393b",
+      "textura": "impala",
+      "odporucanePismo": "zlata"
+    },
+    "aurora": {
+      "nazov": "Aurora",
+      "farba": "#804e46",
+      "textura": "aurora",
+      "odporucanePismo": "zlata"
+    },
+    "viscont-white": {
+      "nazov": "Viscont White",
+      "farba": "#c7c5bc",
+      "textura": "viscont-white",
+      "odporucanePismo": "cierna"
+    },
+    "tan-brown": {
+      "nazov": "Tan Brown",
+      "farba": "#32221f",
+      "textura": "tan-brown",
+      "odporucanePismo": "zlata"
+    },
+    "indian-juparana": {
+      "nazov": "Indian Juparana",
+      "farba": "#bd927c",
+      "textura": "indian-juparana",
+      "odporucanePismo": "cierna"
+    }
+  },
+  "dosky": {
+    "urna": {
+      "sirka": 0.4,
+      "dlzka": 0.4,
+      "vyskaStely": 0.4
+    },
+    "pamatna": {
+      "sirka": 0.6,
+      "dlzka": 0.04,
+      "vyskaStely": 0.4
+    }
+  },
+  "krycieDosky": {
+    "cela": {},
+    "delena": {},
+    "kvety": {}
+  },
+  "pisma": {
+    "cinzel": {},
+    "cormorant": {},
+    "playfair": {},
+    "great-vibes": {}
+  },
+  "farbyPisma": {
+    "zlata": {},
+    "strieborna": {},
+    "biela": {},
+    "piesokovana": {},
+    "cierna": {}
+  },
+  "doplnky": {
+    "vaza": {},
+    "lampas": {},
+    "fotokeramika": {},
+    "kriz": {},
+    "ornament-ruza": {}
+  }
+}
