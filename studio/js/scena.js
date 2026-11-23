@@ -12,61 +12,18 @@ function surface(w,h){
   return canvas.getContext('2d');
 }
 
-function landscape(random){
-  const ctx=surface(2048,1024);
-  const sky=ctx.createLinearGradient(0,0,0,1024);
-  for(const [stop,color] of [[0,'#aaaeb2'],[0.40,'#f2f3f4'],[0.49,'#ffffff'],
-                            [0.53,'#a3a4a5'],[0.65,'#424446'],[1,'#242526']]){
-    sky.addColorStop(stop,color);
+function studioReflection(){
+  const ctx=surface(1024,512);
+  const gradient=ctx.createLinearGradient(0,0,0,512);
+  for(const [position,color] of [[0,'#eee9dc'],[.42,'#c8c3b8'],[.59,'#777773'],[1,'#585853']])
+    gradient.addColorStop(position,color);
+  ctx.fillStyle=gradient;ctx.fillRect(0,0,1024,512);
+  // Long diffuse windows give each polished plane a different reflection.
+  for(const [x,y,w,h] of [[70,80,176,204],[612,36,248,164],[922,125,54,224]]){
+    ctx.filter='blur(14px)';ctx.fillStyle='#fffcf3';ctx.fillRect(x,y,w,h);
   }
-  ctx.fillStyle=sky;ctx.fillRect(0,0,2048,1024);
-  // Different heights and distances break the horizon into sky, crowns and trunks.
-  for(let i=0;i<56;i++){
-    const x=(i+0.2+0.6*random())*2048/56, foot=535+random()*85;
-    const height=186+random()*152;
-    const shade=Math.round(42+random()*63);
-    const tree=surface(230,300);
-    tree.lineCap='round';
-    function branch(px,py,length,angle,width,level){
-      const ex=px+length*Math.sin(angle),ey=py-length*Math.cos(angle);
-      tree.strokeStyle='rgb('+shade+' '+shade+' '+shade+')';
-      tree.lineWidth=width;
-      tree.beginPath();tree.moveTo(px,py);tree.lineTo(ex,ey);tree.stroke();
-      if(level>0){
-        for(const sign of [-1,1]){
-          branch(ex,ey,length*(0.58+random()*0.16),angle+sign*(0.18+random()*0.49),
-            width*0.61,level-1);
-        }
-      }else{
-        for(let k=0;k<22;k++){
-          const radius=1+random()*2.6,value=shade+Math.round(random()*34);
-          tree.fillStyle='rgb('+value+' '+value+' '+value+')';
-          tree.beginPath();tree.arc(ex+(random()-0.5)*20,ey+(random()-0.5)*15,radius,0,2*Math.PI);tree.fill();
-        }
-      }
-    }
-    branch(115,299,87,random()*0.14-0.07,7,6);
-    for(const dx of [-2048,0,2048]){
-      ctx.drawImage(tree.canvas,x+dx-height*0.38,foot-height,height*0.76,height);
-    }
-  }
-  const tex=new T.CanvasTexture(ctx.canvas);
-  tex.colorSpace=T.SRGBColorSpace; tex.mapping=T.EquirectangularReflectionMapping;
-  return tex;
-}
-
-function gravel(random){
-  const ctx=surface(512,512);
-  ctx.fillStyle='#c6bfac';ctx.fillRect(0,0,512,512);
-  for(let i=0;i<43000;i++){
-    const tone=Math.floor(144+random()*78);
-    ctx.fillStyle='rgb('+tone+','+(tone-4)+','+(tone-15)+')';
-    ctx.fillRect(random()*512,random()*512,1+random()*3,1+random()*2);
-  }
-  const tex=new T.CanvasTexture(ctx.canvas);
-  tex.colorSpace=T.SRGBColorSpace;tex.wrapS=tex.wrapT=T.RepeatWrapping;
-  tex.repeat.set(160,160);tex.anisotropy=4;
-  return tex;
+  const map=new T.CanvasTexture(ctx.canvas);
+  map.colorSpace=T.SRGBColorSpace;map.mapping=T.EquirectangularReflectionMapping;return map;
 }
 
 export function scena(host,model,stone,onOrbit){
@@ -79,14 +36,13 @@ export function scena(host,model,stone,onOrbit){
   renderer.toneMapping=T.ACESFilmicToneMapping;
   renderer.domElement.style.visibility='hidden';
   host.append(renderer.domElement);
-  let seed=2701;
-  const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
-  const scene=new T.Scene(), panorama=landscape(random);
+  const scene=new T.Scene(),panorama=studioReflection();
+  renderer.toneMappingExposure=1.17;
   const generator=new T.PMREMGenerator(renderer);
   scene.environment=generator.fromEquirectangular(panorama).texture;
   generator.dispose();
   scene.background=panorama;scene.backgroundBlurriness=0.17;
-  scene.fog=new T.FogExp2(0xd7d7d7,0.055);
+  scene.fog=new T.FogExp2(0xeee8dc,.12);
   let fastMotion=false;
   function coverFace(geometry){
     const size=mobile?192:1024;
@@ -117,7 +73,7 @@ export function scena(host,model,stone,onOrbit){
   let monument=pomnik(model,vytvorZulu(stone),vytvorZulu(stone,{satin:true}),coverFace);
   scene.add(monument);
   const ground=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshStandardMaterial({
-    map:gravel(random),roughness:1
+    color:0xe5dece,roughness:.94
   }));
   ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
   // A footprint-shaped falloff anchors the rails between directional shadows.
@@ -135,6 +91,8 @@ export function scena(host,model,stone,onOrbit){
   sun.shadow.normalBias=0.0012;
   sun.shadow.bias=-0.00007;
   scene.add(sun);
+  const fill=new T.DirectionalLight(0xfff8e9,1.35);
+  fill.position.set(-2,3.6,4.8);scene.add(fill);
   const rim=new T.DirectionalLight(0xffeed7,.48);
   rim.position.set(-2.4,2.8,-1.8);scene.add(rim);
   // Expand the PCF footprint with blocker distance for this orthographic light.
@@ -196,7 +154,7 @@ export function scena(host,model,stone,onOrbit){
     monument.traverse(mesh=>{if(mesh.userData.face)bounds.expandByObject(mesh);});
     const focus=detail?bounds.getCenter(new T.Vector3()):target;
     const size=bounds.getSize(new T.Vector3());
-    const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
+    const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.45,1.14,2.55]:directions[key];
     const available=Math.max(1,host.clientWidth-24);
     const tangent=Math.tan(T.MathUtils.degToRad(camera.fov/2));
     const detailDistance=.5*1.26*Math.max(size.x/(available/host.clientHeight),size.y,size.z)/tangent+size.z*.4;
@@ -305,16 +263,16 @@ export function scena(host,model,stone,onOrbit){
     const studio=name==='atelier', dusk=name==='podvecer';
     ground.visible=studio;
     if(grounds)grounds.visible=!studio;
-    scene.background=studio?panorama:skies.get(name);
+    scene.background=studio?new T.Color(0xeee8dc):skies.get(name);
     scene.backgroundBlurriness=studio?.17:0;
     scene.backgroundIntensity=studio?1:dusk?.93:1.12;
     scene.fog=studio?studioFog:new T.FogExp2(dusk?0xd9b99d:0xcbd5cd,dusk?.026:.020);
     hemi.color.set(studio?0xffffff:dusk?0xffe8d6:0xd7e7ff);
     hemi.groundColor.set(studio?0x909090:0x77786c);
-    hemi.intensity=studio?.72:1.15;
+    hemi.intensity=studio?1.16:1.48;
     sun.color.set(studio?0xffffff:dusk?0xffc08a:0xffe0ba);
     sun.intensity=studio?1.35:dusk?1.62:1.78;
-    if(studio)sun.position.set(-2,7,-1.4);
+    if(studio)sun.position.set(-3,6,3.5);
     else if(dusk)sun.position.set(-6.8,1.65,-4.6);
     else sun.position.set(5.5,3.4,-3.1);
     const extent=studio?2:6.8;
