@@ -83,7 +83,7 @@ export function resultPanel(t,settings,catalog){
     rows.push([t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none],[t.prostredia,t[state.environment]]);
     summary.replaceChildren(...rows.map(([key,value])=>{
       const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');
-      dt.textContent=key;dd.textContent=value;row.append(dt,dd);return row;
+      dt.textContent=key;dd.textContent=value;dd.title=value;row.append(dt,dd);return row;
     }));
     if(current?.url!==url){confirmation.textContent='';copy.textContent=t.copyLink;}
     const lines=rows.map(([k,v])=>k+' — '+v);
