@@ -104,7 +104,6 @@ async function start(){
   function state(){
     const inscription=syncEditor.state();
     if(product.value!=='dvojhrob')inscription.people=inscription.people.slice(0,1);
-    if(!inscription.extras.includes('fotokeramika')){inscription.portrait=null;inscription.photoName='';}
     return {v:1,type:product.value,shape:profile.value,cover:katalog.dosky?.includes(product.value)?null:cover.value,
       stone:stoneId,environment:environmentId,...inscription};
   }
@@ -196,7 +195,7 @@ async function start(){
   if(product.value!=='jednohrob'||profile.value!=='rovny'||cover.value!=='cela')apply();
   if(restored)await syncEditor.restore(restored);
   ready=true;
-  if(restored)go(5);
+  if(restored){history.replaceState(null,'',designLink(state()));go(5);}
   window.addEventListener('hashchange',()=>location.reload());
   progress.value=4;await document.fonts.ready;el('loader').hidden=true;
   mark(restored?'front':'angle');
