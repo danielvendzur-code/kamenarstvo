@@ -1,8 +1,8 @@
 import {choiceSet,families as fonts} from './volby.js';
 const el=id=>document.getElementById(id);
-export function editor(config,t,product,viewer,detail){
+export function editor(config,t,product,viewer,detail,changed){
   const letters=el('letters'),extras=el('extras'),people=[],selected=new Set();
-  let photo=null,photoVersion=0,version=0;
+  let portraitData=null,photo=null,photoVersion=0,version=0;
   function field(parent,key,input){
     const label=document.createElement('label'),caption=document.createElement('span');
     caption.textContent=t[key];label.append(caption,input);parent.append(label);return input;
@@ -49,18 +49,22 @@ export function editor(config,t,product,viewer,detail){
   input.tabIndex=-1;input.setAttribute('aria-label',t.portrait);
   filename.textContent=t.noPhoto;filename.setAttribute('role','status');photoBox.append(picker,input,filename);reset.type='button';reset.textContent=t.clearPhoto;reset.hidden=true;
   error.setAttribute('role','status');photoBox.append(reset,error);photoBox.hidden=true;
-  reset.onclick=()=>{photoVersion++;photo=null;input.value='';filename.textContent=t.noPhoto;reset.hidden=true;error.textContent='';update();};
-  input.onchange=async()=>{
+  reset.onclick=()=>{photoVersion++;photo=null;portraitData=null;input.value='';filename.textContent=t.noPhoto;reset.hidden=true;error.textContent='';update();};
+  let pendingPhoto;
+  async function loadPhoto(){
     const file=input.files[0],revision=++photoVersion;if(!file)return;
     try{
       const bitmap=await createImageBitmap(file);
       if(revision!==photoVersion){bitmap.close();return;}
-      const canvas=document.createElement('canvas'),ratio=Math.min(1,768/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas'),ratio=Math.min(1,192/Math.max(bitmap.width,bitmap.height));
       canvas.width=Math.max(1,Math.round(bitmap.width*ratio));canvas.height=Math.max(1,Math.round(bitmap.height*ratio));
       canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
-      photo=canvas;filename.textContent=file.name;reset.hidden=false;error.textContent='';update();
+      const data=canvas.toDataURL('image/jpeg',.72);
+      const image=new Image();image.src=data;await image.decode();if(revision!==photoVersion)return;
+      photo=image;portraitData=data;filename.textContent=file.name;reset.hidden=false;error.textContent='';update();
     }catch{if(revision===photoVersion){error.textContent=t.badPhoto;input.value='';}}
   };
+  input.onchange=()=>pendingPhoto=loadPhoto();
   for(const id of config.doplnky??[]){
     const check=document.createElement('input');check.type='checkbox';check.value=id;field(extras,id,check);
     check.onchange=()=>{if(check.checked)selected.add(id);else selected.delete(id);photoBox.hidden=!selected.has('fotokeramika');update();};
@@ -79,6 +83,7 @@ export function editor(config,t,product,viewer,detail){
     await new Promise(requestAnimationFrame);if(id!==version)return;
     viewer.decorate({font:family,finish:finish.value,extras:selected,photo,epitaph:epitaph.value.normalize('NFC'),
       people:people.map(person=>Object.fromEntries(Object.entries(person).map(([k,input])=>[k,input.value.trim().normalize('NFC')])))});
+    changed();
   }
   let chosen=false;
   finish.container.addEventListener('change',()=>{chosen=true;});
@@ -91,6 +96,31 @@ export function editor(config,t,product,viewer,detail){
       input.parentElement.toggleAttribute('data-recommended',input.value===id);
     }
     if(!chosen&&config.farbyPisma?.includes(id)){finish.select(id);update();}
+  };
+  sync.flush=async()=>{await pendingPhoto;await update();};
+  sync.state=()=>({
+    font:font.value,finish:finish.value,customFinish:chosen,
+    people:people.map(person=>Object.fromEntries(Object.entries(person).map(([key,e])=>[key,e.value]))),
+    epitaph:epitaph.value,extras:[...selected].sort(),portrait:portraitData,photoName:portraitData?filename.textContent:''
+  });
+  sync.restore=async d=>{
+    if(config.pisma.includes(d.font))font.select(d.font);
+    if(config.farbyPisma.includes(d.finish))finish.select(d.finish);
+    chosen=d.customFinish===true;
+    people.forEach((person,i)=>{for(const [key,e] of Object.entries(person)){
+      const value=d.people?.[i]?.[key];e.value=typeof value==='string'?value.slice(0,e.maxLength):'';
+    }});
+    epitaph.value=typeof d.epitaph==='string'?d.epitaph.slice(0,240).split(/\r?\n/).slice(0,2).join('\n'):'';
+    for(const check of extras.querySelectorAll('input[type=checkbox]')){
+      check.checked=Array.isArray(d.extras)&&d.extras.includes(check.value);
+      if(check.checked)selected.add(check.value);
+    }
+    photoBox.hidden=!selected.has('fotokeramika');
+    if(typeof d.portrait==='string'&&d.portrait.length<120000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(d.portrait)){
+      const image=new Image();image.src=d.portrait;
+      try{await image.decode();photo=image;portraitData=d.portrait;filename.textContent=String(d.photoName||t.portrait).slice(0,255);reset.hidden=false;}catch{}
+    }
+    sync();await update();
   };
   sync();return sync;
 }

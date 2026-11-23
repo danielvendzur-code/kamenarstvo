@@ -408,5 +408,25 @@ export function scena(host,model,stone,onOrbit){
     }else return;
     event.preventDefault();
   });
-  return {view,zoom,canvas,environment,change,decorate};
+  function frontImage(){
+    // An independent camera keeps the user's orbit and the canvas layout intact.
+    const bounds=new T.Box3().setFromObject(monument),center=bounds.getCenter(new T.Vector3());
+    const shot=camera.clone();shot.clearViewOffset();shot.aspect=1.4;shot.fov=32;
+    const facing=selection.type==='urna'?new T.Vector3(0,1.25,1):new T.Vector3(0,.30,1);
+    shot.position.copy(center).add(facing.normalize());shot.lookAt(center);shot.updateMatrixWorld();
+    const right=new T.Vector3().setFromMatrixColumn(shot.matrixWorld,0);
+    const up=new T.Vector3().setFromMatrixColumn(shot.matrixWorld,1),tan=Math.tan(T.MathUtils.degToRad(shot.fov/2));
+    let distance=0;
+    for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+      const point=new T.Vector3(x,y,z).sub(center);
+      distance=Math.max(distance,point.dot(facing)+1.13*Math.max(Math.abs(point.dot(right))/shot.aspect,Math.abs(point.dot(up)))/tan);
+    }
+    shot.position.copy(center).addScaledVector(facing,distance);shot.updateProjectionMatrix();
+    const size=renderer.getSize(new T.Vector2()),ratio=renderer.getPixelRatio();
+    try{
+      renderer.setPixelRatio(1);renderer.setSize(1400,1000,false);renderer.render(scene,shot);
+      return canvas.toDataURL('image/jpeg',.92);
+    }finally{renderer.setPixelRatio(ratio);renderer.setSize(size.x,size.y,false);invalidate();}
+  }
+  return {view,zoom,canvas,environment,change,decorate,frontImage};
 }

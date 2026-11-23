@@ -1,5 +1,6 @@
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
+import {readDesign,designLink,resultPanel} from './vysledok.js';
 import {editor} from './editor.js';
 import {scena} from './scena.js';
 
@@ -20,7 +21,7 @@ async function start(){
   const slug=new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
-  const {firma,tema,katalog,prostredia}=await json(base+'config.json');
+  const {firma,tema,katalog,prostredia,dopyt}=await json(base+'config.json');
   const catalog=await json('./katalog/'+encodeURIComponent(katalog.zaklad)+'.json');
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
@@ -45,12 +46,16 @@ async function start(){
   const product=choiceSet(el('product'),types,t,'profiles');
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
-  let stoneId=katalog.kamene[0];
+  const restored=readDesign();
+  if(types.includes(restored?.type))product.select(restored.type);
+  let stoneId=katalog.kamene.includes(restored?.stone)?restored.stone:katalog.kamene[0];
   function profiles(){
     profile.fill(katalog.tvary);
     el('cover-field').hidden=katalog.dosky?.includes(product.value);
   }
   profiles();
+  if(katalog.tvary.includes(restored?.shape))profile.select(restored.shape);
+  if(katalog.krycieDosky?.includes(restored?.cover))cover.select(restored.cover);
   function describe(){
     const m=definition(product.value);
 
@@ -85,33 +90,46 @@ async function start(){
   }
   for(const button of document.querySelectorAll('[data-action]'))button.onclick=()=>{
     if(button.dataset.action==='reset'){viewer.view('angle');mark('angle');}
-    else viewer.zoom(button.dataset.action==='plus'?1/1.18:1.18);
+    else{viewer.zoom(button.dataset.action==='plus'?1/1.18:1.18);mark(null);}
   };
   const supported=['rano','podvecer','atelier'];
   const allowed=[...new Set(prostredia?.povolene??['atelier'])].filter(id=>supported.includes(id));
   if(!allowed.length)allowed.push('atelier');
   const initial=allowed.includes(prostredia?.predvolene)?prostredia.predvolene:allowed[0];
   const group=el('environments');
-  let last=0;
+  let last=0,environmentId=initial,ready=false,pendingStone,pendingEnvironment;
+  const showResult=resultPanel(t,dopyt,catalog);
+  function state(){
+    const inscription=syncEditor.state();
+    if(product.value!=='dvojhrob')inscription.people=inscription.people.slice(0,1);
+    if(!inscription.extras.includes('fotokeramika')){inscription.portrait=null;inscription.photoName='';}
+    return {v:1,type:product.value,shape:profile.value,cover:katalog.dosky?.includes(product.value)?null:cover.value,
+      stone:stoneId,environment:environmentId,...inscription};
+  }
+  let saveTimer;
+  function persist(){
+    if(!ready)return;
+    clearTimeout(saveTimer);saveTimer=setTimeout(()=>{const url=designLink(state());if(url!==location.href)history.replaceState(null,'',url);},160);
+  }
   async function choose(id){
     const turn=++last;
     await viewer.environment(id);
     if(turn!==last)return;
-    el('error').hidden=true;
+    environmentId=id;persist();el('error').hidden=true;
     for(const button of group.children)button.setAttribute('aria-pressed',String(button.value===id));
   }
   for(const id of allowed){
     const button=document.createElement('button');
     button.type='button';button.value=id;button.textContent=t[id];button.setAttribute('aria-label',t[id]);
     button.title=t[id];
-    button.onclick=()=>choose(id).catch(error=>{console.error(error);el('error').hidden=false;});
+    button.onclick=()=>pendingEnvironment=choose(id).catch(error=>{console.error(error);el('error').hidden=false;});
     group.append(button);
   }
   function apply(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
-    describe();
+    describe();persist();
   }
-  const syncEditor=editor(katalog,t,product,viewer,detail);
+  const syncEditor=editor(katalog,t,product,viewer,detail,persist);
   product.container.onchange=()=>{profiles();syncEditor();apply();mark('angle');};
   profile.container.onchange=cover.container.onchange=apply;
   let materialRequest=0;
@@ -119,16 +137,25 @@ async function start(){
     const button=document.createElement('button'),img=document.createElement('img');
     button.type='button';button.value=id;button.title=catalog.kamene[id].nazov;button.setAttribute('aria-label',button.title);
     img.alt='';img.src=vzorka(catalog.kamene[id]);const name=document.createElement('span');name.textContent=button.title;button.append(img,name);el('samples').append(button);
-    button.onclick=async()=>{
+    async function selectStone(){
       const job=++materialRequest;
       if(stoneId===id)return;
       try{await loadStone(catalog.kamene[id]);}
       catch(error){console.error(error);el('error').hidden=false;return;}
       if(job!==materialRequest)return;
       stoneId=id;syncEditor.recommend(catalog.kamene[id].odporucanePismo);apply();
-    };
+    }
+    button.onclick=()=>pendingStone=selectStone();
   }
-  let step=0;
+  let step=0,resultVersion=0;
+  async function renderResult(){
+    const revision=++resultVersion;
+    await Promise.all([pendingStone,pendingEnvironment]);
+    await syncEditor.flush();
+    if(step!==5||revision!==resultVersion)return;
+    const design=state();showResult(design,designLink(design));
+    el('rendered').src=viewer.frontImage();el('print').hidden=false;
+  }
   const panels=[...document.querySelectorAll('[data-step]')];
   const stepViews=['angle','angle','detail','front','angle','front'];
   const dots=t.stepTitles.map((name,i)=>{
@@ -141,17 +168,25 @@ async function start(){
     dots.forEach((dot,j)=>{dot.classList.toggle('done',j<i);dot.setAttribute('aria-current',j===i?'step':'false');});
     el('step-title').textContent=t.stepTitles[i];el('intro').textContent=t.stepHints[i];
     el('counter').textContent=String(i+1).padStart(2,'0')+' / 06';
-    el('back').disabled=i===0;el('next').hidden=i===5;el('step-scroll').scrollTop=0;
+    el('to-inquiry').hidden=i!==5;el('back').disabled=i===0;el('next').hidden=i===5;el('step-scroll').scrollTop=0;
+    layout.classList.toggle('show-result',i===5);
+    if(i===5)renderResult().catch(()=>{el('error').hidden=false;});
+    else{resultVersion++;el('print').hidden=true;}
     if(move){viewer.view(stepViews[i]);mark(stepViews[i]);el('step-title').focus({preventScroll:true});}
   }
   el('back').onclick=()=>go(Math.max(0,step-1));el('next').onclick=()=>go(Math.min(5,step+1));
+  el('to-inquiry').onclick=()=>el('inquiry').elements.name.focus();
   go(0,false);
   syncEditor.recommend(catalog.kamene[stoneId].odporucanePismo);describe();progress.value=3;
-  try{await choose(initial);}catch{
+  try{await choose(allowed.includes(restored?.environment)?restored.environment:initial);}catch{
     await choose('atelier');el('error').textContent=t.retryEnv;el('error').hidden=false;
   }
   if(product.value!=='jednohrob'||profile.value!=='rovny'||cover.value!=='cela')apply();
+  if(restored)await syncEditor.restore(restored);
+  ready=true;
+  if(restored)go(5);
+  window.addEventListener('hashchange',()=>location.reload());
   progress.value=4;await document.fonts.ready;el('loader').hidden=true;
-  mark('angle');
+  mark(restored?'front':'angle');
 }
 start().catch(error=>{console.error(error);el('error').hidden=false;});

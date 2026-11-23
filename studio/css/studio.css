@@ -74,3 +74,14 @@ textarea{resize:vertical}.fonts label,.inks label{flex-direction:column}.fonts i
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 #step-title:focus{outline:0}
+#print{position:absolute;inset:0;margin:0;background:var(--paper);display:grid;place-items:center;overflow:hidden}
+#print img{display:block;width:100%;height:100%;object-fit:contain}
+.show-result .camera,.show-result #environments{visibility:hidden}
+#result h2{font:400 30px/1.2 var(--pismoNadpis,Cormorant),serif;margin-bottom:8px}
+#result #summary{margin:20px 0 32px}.link-label,#inquiry label span{font-size:12px;font-weight:600}
+#design-link{font-size:12px}#copy{width:100%;min-height:46px;background:var(--green);color:var(--paper);margin-top:8px;border-radius:2px}
+#inquiry{display:grid;gap:12px}#inquiry label{gap:4px}#inquiry .consent{display:flex;align-items:center;gap:8px}
+#inquiry button{min-height:46px;border-radius:2px}#confirmation:empty{display:none}#confirmation{color:var(--green);font-weight:600}#simulation{font-size:13px;color:#535b52}
+@media(max-width:760px){.show-result .viewer{display:block}#print img{object-fit:contain}}
+
+#to-inquiry{background:var(--green);color:var(--paper)}
