@@ -188,13 +188,26 @@ async function start(){
     });
     group.addEventListener('click',e=>{if(swiped&&e.isTrusted){e.preventDefault();e.stopImmediatePropagation();swiped=false;}},true);
   }
+  const frame=el('print');
+  let printAspect=0,resizeTimer;
+  function refreshPrint(){
+    el('rendered').src=viewer.frontImage();
+    printAspect=frame.parentElement.clientWidth/frame.parentElement.clientHeight;
+  }
+  new ResizeObserver(()=>{
+    clearTimeout(resizeTimer);
+    if(step!==5||frame.hidden)return;
+    resizeTimer=setTimeout(()=>{
+      if(step===5&&!frame.hidden&&printAspect!==frame.clientWidth/frame.clientHeight)refreshPrint();
+    },100);
+  }).observe(frame.parentElement);
   async function renderResult(){
     const revision=++resultVersion;
     await Promise.all([pendingStone,pendingEnvironment]);
     await syncEditor.flush();
     if(step!==5||revision!==resultVersion)return;
     const design=state();showResult(design,designLink(design));
-    el('rendered').src=viewer.frontImage();el('print').hidden=false;
+    refreshPrint();frame.hidden=false;
   }
   const panels=[...document.querySelectorAll('[data-step]')];
   const stepViews=['angle','angle','angle','angle','angle','front'];

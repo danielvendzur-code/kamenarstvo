@@ -58,6 +58,15 @@ export function resultPanel(t,settings,catalog,edit){
     summary.replaceChildren(...groups.map(([key,value],index)=>{
       const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd'),button=document.createElement('button');
       dt.textContent=key;dd.textContent=value;dd.title=value;button.textContent=t.edit;button.type='button';button.setAttribute('aria-label',t.edit+' · '+key);button.onclick=()=>edit(index);
+      if(index===3&&(names.length||state.epitaph)){
+        const details=document.createElement('details'),toggle=document.createElement('summary');
+        const preview=document.createElement('span'),full=document.createElement('p');
+        preview.textContent=inscription;toggle.append(preview);
+        full.textContent=[...names,state.epitaph].filter(Boolean).join('\n');
+        toggle.setAttribute('aria-label',t.fullInscription);
+        details.ontoggle=()=>{preview.textContent=details.open?t.collapseInscription:inscription;};
+        details.append(toggle,full);dd.replaceChildren(details);
+      }
       row.append(dt,dd,button);return row;
     }));
     if(current?.url!==url){confirmation.textContent='';copy.textContent=t.copyLink;}

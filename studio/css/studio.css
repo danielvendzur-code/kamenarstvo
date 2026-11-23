@@ -94,7 +94,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:32px;pa
 .layout{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}
 .viewer{position:relative;overflow:hidden;min-width:0;min-height:0;background:#ebe8df;isolation:isolate}
 #viewport,#viewport canvas{display:block;width:100%;height:100%}#viewport canvas{cursor:grab;touch-action:none}#viewport canvas:active{cursor:grabbing}
-.scene-fade,#print{position:absolute;inset:0;pointer-events:none}#print{margin:0}#print img{width:100%;height:100%;object-fit:contain}
+.scene-fade,#print{position:absolute;inset:0;pointer-events:none}#print{margin:0;background:var(--panel)}#print img{width:100%;height:100%;object-fit:cover}
 .camera,#environments{position:absolute;z-index:2;display:flex;align-items:center;gap:4px;background:#fbfaf5ef;border-radius:4px;padding:1px 7px;color:#364239;box-shadow:0 1px 8px #20291e12}
 .camera{left:20px;bottom:15px}.tools,.zoom{display:flex;align-items:center}.zoom{border-left:1px solid var(--line)}
 #environments{right:20px;top:15px}
@@ -183,3 +183,12 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
 @media(prefers-reduced-motion:reduce){*,*::after,*::before{animation:none!important;transition:none!important}}
 #summary dd{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow-wrap:anywhere}
 @media(hover:hover){.cards label:hover span,#samples button:hover span,#step-track button:hover{color:var(--accent)}}
+
+#summary dd:has(details){display:block;overflow:visible}
+#summary details summary{display:flex;gap:5px;align-items:baseline;cursor:pointer;list-style:none}
+#summary details summary::-webkit-details-marker{display:none}
+#summary details summary::after{content:"";flex:none;width:5px;height:5px;border:solid currentColor;border-width:0 1px 1px 0;transform:translateY(-3px) rotate(45deg)}
+#summary details[open] summary::after{transform:rotate(225deg)}
+#summary details:not([open]) span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+#summary details[open] summary{font:12px var(--sans);color:var(--muted)}
+#summary details p{margin:5px 0;white-space:pre-line}
