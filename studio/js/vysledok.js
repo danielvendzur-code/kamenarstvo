@@ -1,0 +1,77 @@
+const byId=id=>document.getElementById(id);
+
+export function readDesign(){
+  if(!location.hash.startsWith('#navrh='))return null;
+  try{
+    const payload=location.hash.slice(7);
+    if(payload.length>200000)return null;
+    const d=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0))));
+    return d?.v===1?d:null;
+  }catch{return null;}
+}
+
+export function designLink(state){
+  const bytes=new TextEncoder().encode(JSON.stringify(state));
+  let binary='';
+  for(const byte of bytes)binary+=String.fromCharCode(byte);
+  const url=new URL(location.href);
+  url.hash='navrh='+btoa(binary).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+  return url.href;
+}
+
+export function resultPanel(t,settings,catalog){
+  const summary=byId('summary'),link=byId('design-link'),form=byId('inquiry');
+  const confirmation=byId('confirmation'),copy=byId('copy'),policy=byId('policy');
+  let current;
+  if(settings?.gdprUrl&&settings.gdprUrl!=='#'){
+    const url=new URL(settings.gdprUrl,location.href);
+    if(['http:','https:'].includes(url.protocol)){policy.href=url.href;policy.hidden=false;}
+  }
+  if(!settings?.emailjs)byId('simulation').hidden=false;
+  function show(state,url){
+    const people=state.type==='dvojhrob'?state.people:state.people.slice(0,1);
+    const rows=[[t.product,t[state.type]],[t.profile,t[state.shape]]];
+    if(state.cover)rows.push([t.cover,t[state.cover]]);
+    rows.push([t.stone,catalog.kamene[state.stone].nazov],[t.font,t[state.font]],[t.finish,t[state.finish]]);
+    for(const p of people){
+      const name=[p.first,p.last].filter(Boolean).join(' ');
+      const dates=[p.birth&&'* '+p.birth,p.death&&'† '+p.death].filter(Boolean).join('   ');
+      if(name||dates)rows.push([t.person,[name,dates].filter(Boolean).join('\n')]);
+    }
+    if(state.epitaph)rows.push([t.epitaph,state.epitaph]);
+    rows.push([t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none],[t.prostredia,t[state.environment]]);
+    summary.replaceChildren(...rows.map(([key,value])=>{
+      const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');
+      dt.textContent=key;dd.textContent=value;row.append(dt,dd);return row;
+    }));
+    if(current?.url!==url){confirmation.textContent='';copy.textContent=t.copyLink;}
+    current={url,summary:rows.map(([k,v])=>k+' — '+v).join('\n')};
+    link.value=url;
+  }
+  copy.onclick=async()=>{
+    try{await navigator.clipboard.writeText(link.value);copy.textContent=t.copied;}
+    catch{link.focus();link.select();copy.textContent=document.execCommand('copy')?t.copied:t.copyManual;}
+  };
+  form.onsubmit=async event=>{
+    event.preventDefault();
+    const button=form.querySelector('button');
+    if(button.disabled||!current||!form.reportValidity())return;
+    button.disabled=true;confirmation.textContent='';
+    const payload={...Object.fromEntries(new FormData(form)),summary:current.summary,design_url:current.url};
+    try{
+      const cfg=settings?.emailjs;
+      if(cfg){
+        const {serviceId,templateId,publicKey}=cfg;
+        if(!serviceId||!templateId||!publicKey)throw Error();
+        const response=await fetch('https://api.emailjs.com/api/v1.0/email/send',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({service_id:serviceId,template_id:templateId,user_id:publicKey,template_params:payload})
+        });
+        if(!response.ok)throw Error();
+      }
+      confirmation.textContent=t.thanks;form.reset();
+    }catch{confirmation.textContent=t.sendError;}
+    finally{button.disabled=false;}
+  };
+  return show;
+}

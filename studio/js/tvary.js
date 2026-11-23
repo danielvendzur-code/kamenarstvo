@@ -152,19 +152,8 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     }
   }
   if(type==='urna'||type==='pamatna'){
-    const urn=type==='urna',width=w+.18,length=urn?.67:.39,baseZ=urn?.035:-.012;
-    block(width-.024,.026,length-.024,0,baseZ,satin);
-    const pan=rectangle(-width/2,-length/2,width/2,length/2);
-    const slabs=cover==='delena'?[rectangle(-width/2,-length/2,-.006,length/2),
-      rectangle(.006,-length/2,width/2,length/2)]:[pan];
-    if(cover==='kvety'){
-      const pocket=rectangle(-width*.32,-length*.46,width*.32,-length*.29);
-      pan.holes.push(pocket);
-      const earth=new T.MeshStandardMaterial({color:0x473c32,roughness:1});
-      add(new T.ShapeGeometry(pocket),earth,0,.028,baseZ).rotation.x=-Math.PI/2;
-    }
-    for(const slab of slabs)add(sheet(slab,.032,.003),faces,0,.029,baseZ).rotation.x=-Math.PI/2;
-    if(urn){
+    if(type==='urna'){
+      block(w+.15,.058,.58,0,0,faces);
       // The wedge supports the entire sloped face, including the book binding.
       const wedge=new T.Shape();
       wedge.moveTo(-.123,0);wedge.lineTo(.123,0);wedge.lineTo(.123,.118);
@@ -173,10 +162,14 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       support.rotation.y=Math.PI/2;
       addTablet(w,d,.042,.070,.172,-1.22);
     }else{
-      const backing=new T.MeshStandardMaterial({color:0xaaa59a,roughness:.92});
-      block(w+.07,h+.095,.095,.058,-.105,backing);
-      block(w*.69,h*.64,.029,.15,-.043,satin);
-      addTablet(w,h,.042,.11,-.011,0);
+      // Stacked courses and a projecting shelf form a columbarium pier.
+      const stonework=new T.MeshStandardMaterial({color:0xb8aa92,roughness:.88});
+      for(let row=0;row<5;row++)block(w+.24,.268,.40,row*.272,-.218,stonework);
+      block(w+.28,.055,.44,1.36,-.218,stonework);
+      block(w+.24,.045,.32,.710,-.014,faces);
+      block(w*.68,h*.70,.030,.82,-.008,satin);
+      addTablet(w,h,.042,.78,.020,0);
+
     }
     return group;
   }
@@ -238,6 +231,6 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);
-  addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,-.065);
+  addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
   return group;
 }
