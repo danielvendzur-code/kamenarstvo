@@ -135,11 +135,14 @@
     "first": "Text",
     "second": "Osoba 2",
     "epitaph": "Epitaf",
-    "style": "Písmo"
+    "style": "Písmo",
+    "color": "Farba"
   },
   "firstPerson": "Osoba 1",
   "summaryTitle": "Podrobnosti návrhu",
+  "nextPage": "Ďalšie údaje",
   "close": "Zavrieť",
   "manrope": "Manrope",
   "photoLater": "Fotokeramika – fotku pošlem dodatočne."
 }
+

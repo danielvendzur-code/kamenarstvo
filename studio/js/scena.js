@@ -180,6 +180,7 @@ export function scena(host,model,stone,onOrbit){
   const fullDpr=renderer.getPixelRatio();
   let moving=false, lastMove=0, slowFrames=0;
   let motionDpr=Math.min(.80,fullDpr);
+  let orbiting=false;
   function motionDetail(low){
     fastMotion=low;
     if(grounds){
@@ -188,7 +189,17 @@ export function scena(host,model,stone,onOrbit){
     }
   }
   function motion(){
-    if(!mobile)return;
+    if(!mobile){
+      if(!orbiting||selection.type!=='pamatna')return;
+      const now=performance.now();
+      if(lastMove&&now-lastMove>36)slowFrames++;
+      else slowFrames=0;
+      lastMove=now;
+      if(!moving&&slowFrames>=2){
+        moving=true;renderer.setPixelRatio(Math.min(1,fullDpr*.85));motionDetail(true);
+      }
+      return;
+    }
     const now=performance.now(),elapsed=now-lastMove;
     if(moving&&elapsed>32&&elapsed<250)slowFrames++;
     lastMove=now;
@@ -208,7 +219,11 @@ export function scena(host,model,stone,onOrbit){
     if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);});
   }
   controls.addEventListener('change',()=>{motion();invalidate();});
-  controls.addEventListener('start',()=>{cancelAnimationFrame(flight);onOrbit();});
+  controls.addEventListener('start',()=>{orbiting=true;lastMove=0;slowFrames=0;cancelAnimationFrame(flight);onOrbit();});
+  controls.addEventListener('end',()=>{
+    orbiting=false;
+    if(!mobile&&moving){moving=false;motionDetail(false);renderer.setPixelRatio(fullDpr);invalidate();}
+  });
   function zoom(factor){
     cancelAnimationFrame(flight);
     const offset=camera.position.clone().sub(controls.target);
@@ -388,3 +403,4 @@ export function scena(host,model,stone,onOrbit){
   }
   return {view,zoom,canvas,environment,change,decorate,frontImage};
 }
+

@@ -166,7 +166,10 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       const stonework=new T.MeshStandardMaterial({color:0xb8aa92,roughness:.88});
       for(let row=0;row<5;row++)block(w+.24,.268,.40,row*.272,-.218,stonework);
       block(w+.28,.055,.44,1.36,-.218,stonework);
-      block(w+.24,.045,.32,.710,-.014,faces);
+      // End the shelf at the pier's front face. The old block extended into
+      // the pier with coplanar side faces, which flickered during orbit.
+      const pierFront=-.218+.40/2, shelfFront=.146;
+      block(w+.24,.045,shelfFront-pierFront,.710,(pierFront+shelfFront)/2,faces);
       block(w*.68,h*.70,.030,.82,-.008,satin);
       addTablet(w,h,.042,.78,.020,0);
 
@@ -250,3 +253,4 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
   return group;
 }
+

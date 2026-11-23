@@ -38,7 +38,8 @@ export function editor(config,t,product,viewer,detail,changed){
     }
   }
   const epitaph=field(part('epitaph'),'epitaph',document.createElement('textarea'));
-  const style=part('style');style.append(font.container.closest('fieldset'),finish.container.closest('fieldset'));
+  part('style').append(font.container.closest('fieldset'));
+  part('color').append(finish.container.closest('fieldset'));
   open('first');
   epitaph.maxLength=240;epitaph.rows=2;
   epitaph.oninput=()=>{epitaph.value=epitaph.value.split(/\r?\n/).slice(0,2).join('\n');detail();update();};
@@ -97,8 +98,8 @@ export function editor(config,t,product,viewer,detail,changed){
   function refreshPreview(){
     sampleVisibility();
     const hasText=people.slice(0,product.value==='dvojhrob'?2:1).some(p=>Object.values(p).some(input=>input.value.trim()))||Boolean(epitaph.value.trim());
-    tabs.style.disabled=!hasText;
-    if(!hasText&&active==='style')open('first');
+    tabs.style.disabled=tabs.color.disabled=!hasText;
+    if(!hasText&&['style','color'].includes(active))open('first');
     const person=people.slice(0,product.value==='dvojhrob'?2:1).find(p=>p.first.value.trim()||p.last.value.trim());
     const dates=people.slice(0,product.value==='dvojhrob'?2:1).flatMap(p=>[p.birth.value,p.death.value]).filter(Boolean);
     const sample=person?[person.first.value,person.last.value].filter(Boolean).join(' '):epitaph.value.trim()||dates.join(' – ')||t.sampleName;
@@ -149,3 +150,4 @@ export function editor(config,t,product,viewer,detail,changed){
   };
   tabs.style.disabled=true;sync();return sync;
 }
+

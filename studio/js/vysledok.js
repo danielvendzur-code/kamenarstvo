@@ -32,6 +32,38 @@ export function resultPanel(t,settings,catalog){
   const summary=byId('summary'),link=byId('design-link'),form=byId('inquiry');
   const confirmation=byId('confirmation'),copy=byId('copy'),policy=byId('policy');
   let current;
+  const panel=byId('step-scroll'),pager=byId('summary-pages');
+  let pages=[],page=0;
+  function showPage(index){
+    page=index;
+    const visible=pages[index];
+    for(const row of summary.children)row.hidden=!visible.includes(row);
+    byId('summary-prev').disabled=index===0;
+    byId('summary-next').disabled=index===pages.length-1;
+    byId('summary-page').textContent=(index+1)+' / '+pages.length;
+  }
+  function fitSummary(){
+    if(!summary.getClientRects().length)return;
+    const rows=[...summary.children],previous=page;
+    for(const row of rows)row.hidden=false;
+    pager.hidden=true;
+    if(panel.scrollHeight<=panel.clientHeight){page=0;return;}
+    pager.hidden=false;
+    for(const row of rows)row.hidden=true;
+    pages=[[]];
+    for(const row of rows){
+      row.hidden=false;
+      const group=pages.at(-1);
+      if(group.length&&panel.scrollHeight>panel.clientHeight){
+        for(const prior of group)prior.hidden=true;
+        pages.push([row]);
+      }else group.push(row);
+    }
+    showPage(Math.min(previous,pages.length-1));
+  }
+  byId('summary-prev').onclick=()=>showPage(page-1);
+  byId('summary-next').onclick=()=>showPage(page+1);
+  new ResizeObserver(fitSummary).observe(panel);
   if(settings?.gdprUrl&&settings.gdprUrl!=='#'){
     const url=new URL(settings.gdprUrl,location.href);
     if(['http:','https:'].includes(url.protocol)){policy.href=url.href;policy.hidden=false;}
@@ -57,7 +89,7 @@ export function resultPanel(t,settings,catalog){
     const lines=rows.map(([k,v])=>k+' — '+v);
     if(state.extras.includes('fotokeramika'))lines.push(t.photoLater);
     current={url,summary:lines.join('\n')};
-    link.value=url;
+    link.value=url;page=0;fitSummary();
   }
   copy.onclick=async()=>{
     try{await navigator.clipboard.writeText(link.value);copy.textContent=t.copied;}
@@ -86,3 +118,4 @@ export function resultPanel(t,settings,catalog){
   };
   return show;
 }
+

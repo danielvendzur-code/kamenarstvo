@@ -37,6 +37,11 @@
           <section data-step="4" hidden><div id="extra-panel"><div id="extras"></div></div></section>
           <section data-step="5" id="result" hidden>
             <dl id="summary"></dl>
+            <nav id="summary-pages" data-label="summaryTitle" hidden>
+              <button type="button" id="summary-prev" data-t="back"></button>
+              <span id="summary-page" aria-live="polite"></span>
+              <button type="button" id="summary-next" data-t="nextPage"></button>
+            </nav>
             <label class="link-label" for="design-link" data-t="designLink"></label>
             <input id="design-link" type="url" readonly><button type="button" id="copy" data-t="copyLink"></button>
             <dialog id="inquiry-dialog" aria-labelledby="inquiry-title"><button id="close-inquiry" data-t="close"></button><h2 id="inquiry-title" data-t="inquiry"></h2><p id="simulation" data-t="simulation" hidden></p>
@@ -59,3 +64,4 @@
   <p id="error" role="alert" hidden></p><script type="module" src="./js/app.js"></script>
 </body>
 </html>
+

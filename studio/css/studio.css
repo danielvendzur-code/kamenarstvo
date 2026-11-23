@@ -380,3 +380,115 @@ body:has(#loader:not([hidden])) :is(header,main){visibility:hidden}
 }
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* Compact, fixed-height configurator: each step fits without panel scrolling. */
+#review{padding-inline:14px}
+#review:hover,#review:focus-visible{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.layout{min-height:0}
+#step-track{margin-top:clamp(8px,2vh,24px)}
+.scroll-panel{padding:clamp(10px,2.4vh,24px) var(--pad) 8px}
+.scroll-panel::before{display:none}
+h1{font-size:clamp(28px,4vh,44px);margin:0 0 6px;line-height:1.12}
+#step-hint{margin:0 0 clamp(8px,2vh,20px);line-height:1.4}
+.step-actions{padding:8px var(--pad) 12px}
+.step-actions button,#back{min-height:44px}
+#product{gap:10px}
+#product img{height:clamp(60px,13vh,134px);object-fit:contain}
+#product label{gap:5px}
+#profile,#cover,#extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#profile label,#cover label{min-height:48px;padding:6px 9px;border:1px solid var(--line);border-radius:var(--round);font-size:17px;gap:6px}
+:is(#profile,#cover) label:has(:checked){border-color:var(--accent)}
+.measure{margin:12px 0 0}
+dl div{padding:5px 0}
+#extras{gap:4px 16px}
+#extras>label,#extras>label:first-child{min-height:46px;border-top:0;gap:6px}
+#extras>label>span{font-size:16px}
+#extras>div{grid-column:1/-1;padding:6px 0;gap:6px}
+#extras>div button,#copy{min-height:36px;padding:6px 12px}
+#extras>div small:empty{display:none}
+.letter-part{gap:10px 12px;margin-top:6px}
+.letter-choice{margin:0}
+.letter-choice legend{margin-bottom:4px}
+.letter-choice small{margin-top:5px}
+#letter-tools{column-gap:clamp(7px,1vw,16px)}
+.fonts label{min-height:54px;padding:6px 8px;gap:3px}
+.fonts i{font-size:20px;-webkit-line-clamp:1}
+.inks i{width:24px;height:24px}
+.inks label{gap:4px}
+.letter-part input:not([type=file]),.letter-part textarea{min-height:36px;padding:3px 0}
+.letter-part textarea{resize:none}
+#summary{margin:0 0 8px}
+#summary dd{font:500 14px/1.25 var(--sans)}
+#result .link-label{margin:0}
+#design-link{min-height:32px;padding:4px 0}
+#copy{margin:4px 0 0}
+#summary-pages{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+#summary-pages button{min-height:30px;color:var(--accent);font-weight:600}
+#summary-page{font-variant-numeric:tabular-nums;font-size:12px}
+#summary:has(+ #summary-pages:not([hidden])) div{display:grid;grid-template-columns:minmax(70px,24%) 1fr;gap:6px}
+#summary:has(+ #summary-pages:not([hidden])) dt{white-space:normal}
+#inquiry{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}
+#inquiry :is(label:has(textarea),.consent,button,#policy){grid-column:1/-1}
+#inquiry input:not([type=checkbox]),#inquiry textarea{min-height:36px;padding:4px 0}
+#inquiry textarea{height:56px;resize:none}
+#inquiry label>span{margin:0}
+#confirmation{margin:8px 0 0;padding:8px 0 0;font-size:18px}
+dialog{padding:24px var(--pad)}
+dialog h2{margin:6px 0;font-size:30px}
+@media(max-width:760px){
+ :root{--pad:16px}
+ .layout,.layout[data-sheet="2"]{grid-template-rows:minmax(0,42%) minmax(0,1fr)}
+ .layout.show-result{grid-template-rows:minmax(0,30%) minmax(0,1fr)}
+ .layout[data-sheet="0"]{grid-template-rows:minmax(0,1fr) 32px}
+ #handle{height:14px}
+ #step-track{margin:0}
+ #step-track button{height:32px;font-size:9px;gap:3px;text-transform:none;letter-spacing:0;padding:0}
+ #step-track button span{font-size:12px}
+ .scroll-panel{padding:8px var(--pad) 4px}
+ h1{font-size:25px;margin:0 0 4px}
+ #step-hint{font-size:12px;line-height:1.35;margin:0 0 8px}
+ .step-actions{padding:4px var(--pad) max(5px,env(safe-area-inset-bottom))}
+ #product{gap:6px 10px}
+ #product img{height:clamp(48px,9vh,78px)}
+ #product label span{font-size:15px}
+ .subnav{gap:14px;margin:0}
+ .subnav button{font-size:10px;letter-spacing:.04em;min-height:32px}
+ .subnav button::after{bottom:3px}
+ #profile,#cover{gap:5px}
+ .measure div{font-size:12px}
+ .letter-part label>span,legend{margin:0 0 2px}
+ .fonts{gap:5px}.fonts label{min-height:40px}
+ .inks{gap:3px}.inks label{font-size:10px}
+ #summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+ #summary div{display:block;min-width:0;padding:3px 0}
+ #summary dt{font-size:9px;letter-spacing:.04em}
+ #summary dd{text-align:left;font-size:12px}
+ .camera{overflow:visible;gap:1px}.camera button{padding-inline:5px}
+}
+@media(max-width:760px) and (max-height:700px){
+ #step-hint{display:none}
+ .layout,.layout[data-sheet="2"]{grid-template-rows:minmax(0,40%) minmax(0,1fr)}
+ .layout.show-result{grid-template-rows:minmax(0,24%) minmax(0,1fr)}
+ .layout[data-sheet="0"]{grid-template-rows:minmax(0,1fr) 32px}
+}
+@media(max-width:760px) and (max-height:540px){
+ header{height:36px}#review{min-height:30px}
+ .layout{height:calc(100dvh - 36px)}
+ #handle{height:10px}
+ .layout:has(.letter-part :focus) h1{display:none}
+ .scroll-panel{padding-block:2px}
+ .scroll-panel h1{font-size:20px;margin:0}
+ .letter-part{gap:3px 12px;margin-top:0}
+ .letter-part input:not([type=file]){min-height:29px;font-size:16px}
+ .example{min-height:24px}
+ #profile label,#cover label{min-height:38px}
+ .measure{margin-top:4px}.measure div{padding:2px 0}
+ #extras>label,#extras>label:first-child{min-height:36px}
+ #summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .layout.show-result:not(.folded){grid-template-rows:minmax(0,21%) minmax(0,1fr)}
+ .step-actions button,#back{min-height:32px}
+ dialog{max-height:100dvh;padding:6px 14px}dialog h2{font-size:22px}
+ #simulation{margin:3px 0;font-size:12px}
+ #inquiry{gap:4px 12px}#inquiry button[type=submit]{min-height:38px}
+}
+
