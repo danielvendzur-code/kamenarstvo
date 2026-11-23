@@ -6,12 +6,21 @@ export function readDesign(){
     const payload=location.hash.slice(7);
     if(payload.length>200000)return null;
     const d=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0))));
-    return d?.v===1?d:null;
+    if(d?.v===1)return d;
+    if(d?.v!==2)return null;
+    return {type:d.t,shape:d.s,cover:d.c,stone:d.k,environment:d.e,font:d.f,
+      finish:d.i,customFinish:d.u===1,people:d.p,epitaph:d.n,extras:d.x};
   }catch{return null;}
 }
 
 export function designLink(state){
-  const bytes=new TextEncoder().encode(JSON.stringify(state));
+  const people=state.people.map(person=>Object.fromEntries(
+    ['first','last','birth','death'].filter(key=>person[key]).map(key=>[key,person[key]])));
+  const payload={v:2,t:state.type,s:state.shape,c:state.cover||undefined,k:state.stone,
+    e:state.environment,f:state.font,i:state.finish,u:state.customFinish?1:undefined,
+    p:people.some(person=>Object.keys(person).length)?people:undefined,
+    n:state.epitaph||undefined,x:state.extras.length?state.extras:undefined};
+  const bytes=new TextEncoder().encode(JSON.stringify(payload));
   let binary='';
   for(const byte of bytes)binary+=String.fromCharCode(byte);
   const url=new URL(location.href);
@@ -45,7 +54,9 @@ export function resultPanel(t,settings,catalog){
       dt.textContent=key;dd.textContent=value;row.append(dt,dd);return row;
     }));
     if(current?.url!==url){confirmation.textContent='';copy.textContent=t.copyLink;}
-    current={url,summary:rows.map(([k,v])=>k+' — '+v).join('\n')};
+    const lines=rows.map(([k,v])=>k+' — '+v);
+    if(state.extras.includes('fotokeramika'))lines.push(t.photoLater);
+    current={url,summary:lines.join('\n')};
     link.value=url;
   }
   copy.onclick=async()=>{

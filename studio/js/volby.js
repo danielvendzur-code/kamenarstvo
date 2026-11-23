@@ -1,6 +1,5 @@
-import {profileIcon} from './ikony.js';
 const inks={zlata:'#b18b49',strieborna:'#b4b9bb',biela:'#f5f2e9',cierna:'#202122',piesokovana:'#a59a8a'};
-export const families={cinzel:'Cinzel',cormorant:'Cormorant',playfair:'Playfair','great-vibes':'GreatVibes'};
+export const families={cinzel:'Cinzel',manrope:'Manrope',playfair:'Playfair','great-vibes':'GreatVibes'};
 
 export function choiceSet(container,ids,t,kind){
   const name=container.id;
@@ -11,7 +10,6 @@ export function choiceSet(container,ids,t,kind){
       const label=document.createElement('label'),input=document.createElement('input'),caption=document.createElement('span');
       input.type='radio';input.name=name;input.value=id;input.checked=values.includes(previous)?id===previous:i===0;
       caption.textContent=t[id];label.append(input);
-      if(name==='profile')label.append(profileIcon(id));
       if(name==='product'){
         const image=document.createElement('img');image.alt='';image.src=new URL('../assets/vyhotovenia/'+id+'.webp',import.meta.url).href;
         label.append(image);

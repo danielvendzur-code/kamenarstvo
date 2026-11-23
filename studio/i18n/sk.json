@@ -84,7 +84,7 @@
   "design": "Váš návrh",
   "steps": "Kroky návrhu",
   "back": "Späť",
-  "next": "Ďalej",
+  "next": "Pokračovať",
   "stepTitles": [
     "Vyhotovenie",
     "Tvar a rozmer",
@@ -123,11 +123,12 @@
   "toInquiry": "Prejsť na dopyt",
   "editAreas": "Časti návrhu",
   "editTabs": [
-    "Model",
-    "Profil",
+    "Typ",
+    "Tvar",
     "Kameň",
     "Nápis",
-    "Doplnky"
+    "Doplnky",
+    "Výsledok"
   ],
   "review": "Výsledok",
   "letterTabs": {
@@ -138,5 +139,7 @@
   },
   "firstPerson": "Osoba 1",
   "summaryTitle": "Podrobnosti návrhu",
-  "close": "Zavrieť"
+  "close": "Zavrieť",
+  "manrope": "Manrope",
+  "photoLater": "Fotokeramika – fotku pošlem dodatočne."
 }

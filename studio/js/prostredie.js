@@ -141,7 +141,7 @@ export async function garden(mobile){
   const random=randomSource();
   const [grass,gravel,cedar,crowns,limestone]=await Promise.all(['travnik','strk','tuja','koruny','mur'].map(texture));
   for(const map of [grass,gravel,cedar]){
-    map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=mobile?2:4;
+    map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=mobile?8:16;
   }
   const group=new T.Group();
   const lawn=new T.Mesh(new T.PlaneGeometry(72,72),lawnMaterial(grass));
@@ -205,7 +205,7 @@ export async function garden(mobile){
     stones.castShadow=stones.receiveShadow=true;group.add(stones);
   }
   const hedgeMat=new T.MeshStandardMaterial({
-    map:cedar,bumpMap:cedar,bumpScale:.009,roughness:1,vertexColors:true,side:T.DoubleSide
+    map:cedar,bumpMap:cedar,bumpScale:.016,roughness:1,vertexColors:true,side:T.DoubleSide
   });
   const hedge=instanced(hedgeGeometry(8.7,random),hedgeMat,[
     {position:[-.6,0,-3.85],scale:[1,1,1],angle:.045},

@@ -2,7 +2,7 @@ import {choiceSet,families as fonts} from './volby.js';
 const el=id=>document.getElementById(id);
 export function editor(config,t,product,viewer,detail,changed){
   const letters=el('letters'),extras=el('extras'),people=[],selected=new Set();
-  let portraitData=null,photo=null,photoVersion=0,version=0;
+  let photo=null,photoVersion=0,version=0;
   function field(parent,key,input){
     const label=document.createElement('label'),caption=document.createElement('span');
     caption.textContent=t[key];label.append(caption,input);parent.append(label);return input;
@@ -63,7 +63,7 @@ export function editor(config,t,product,viewer,detail,changed){
   input.tabIndex=-1;input.setAttribute('aria-label',t.portrait);
   filename.textContent=t.noPhoto;filename.setAttribute('role','status');photoBox.append(picker,input,filename);reset.type='button';reset.textContent=t.clearPhoto;reset.hidden=true;
   error.setAttribute('role','status');photoBox.append(reset,error);photoBox.hidden=true;
-  reset.onclick=()=>{photoVersion++;photo=null;portraitData=null;input.value='';filename.textContent=t.noPhoto;reset.hidden=true;error.textContent='';update();};
+  reset.onclick=()=>{photoVersion++;photo=null;input.value='';filename.textContent=t.noPhoto;reset.hidden=true;error.textContent='';update();};
   let pendingPhoto;
   async function loadPhoto(){
     const file=input.files[0],revision=++photoVersion;if(!file)return;
@@ -75,7 +75,7 @@ export function editor(config,t,product,viewer,detail,changed){
       canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
       const data=canvas.toDataURL('image/jpeg',.72);
       const image=new Image();image.src=data;await image.decode();if(revision!==photoVersion)return;
-      photo=image;portraitData=data;filename.textContent=file.name;reset.hidden=false;error.textContent='';update();
+      photo=image;filename.textContent=file.name;reset.hidden=false;error.textContent='';update();
     }catch{if(revision===photoVersion){error.textContent=t.badPhoto;input.value='';}}
   };
   input.onchange=()=>pendingPhoto=loadPhoto();
@@ -106,7 +106,7 @@ export function editor(config,t,product,viewer,detail,changed){
   }
   async function update(){
     refreshPreview();
-    const id=++version,family=fonts[font.value]??'Cormorant';
+    const id=++version,family=fonts[font.value]??'Playfair';
     await document.fonts.load('24px '+family);
     await new Promise(requestAnimationFrame);if(id!==version)return;
     viewer.decorate({font:family,finish:finish.value,extras:selected,photo,epitaph:epitaph.value.normalize('NFC'),
@@ -129,10 +129,11 @@ export function editor(config,t,product,viewer,detail,changed){
   sync.state=()=>({
     font:font.value,finish:finish.value,customFinish:chosen,
     people:people.map(person=>Object.fromEntries(Object.entries(person).map(([key,e])=>[key,e.value]))),
-    epitaph:epitaph.value,extras:[...selected].sort(),portrait:portraitData,photoName:portraitData?filename.textContent:''
+    epitaph:epitaph.value,extras:[...selected].sort()
   });
   sync.restore=async d=>{
-    if(config.pisma.includes(d.font))font.select(d.font);
+    const family=d.font==='cormorant'?'playfair':d.font;
+    if(config.pisma.includes(family))font.select(family);
     if(config.farbyPisma.includes(d.finish))finish.select(d.finish);
     chosen=d.customFinish===true;
     people.forEach((person,i)=>{for(const [key,e] of Object.entries(person)){
@@ -144,10 +145,6 @@ export function editor(config,t,product,viewer,detail,changed){
       if(check.checked)selected.add(check.value);
     }
     photoBox.hidden=!selected.has('fotokeramika');
-    if(typeof d.portrait==='string'&&d.portrait.length<120000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(d.portrait)){
-      const image=new Image();image.src=d.portrait;
-      try{await image.decode();photo=image;portraitData=d.portrait;filename.textContent=String(d.photoName||t.portrait).slice(0,255);reset.hidden=false;}catch{}
-    }
     sync();await update();
   };
   tabs.style.disabled=true;sync();return sync;

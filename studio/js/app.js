@@ -1,4 +1,3 @@
-import {icon} from './ikony.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -27,11 +26,6 @@ async function start(){
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
   }
-  // Pair the display face with a sturdier wordmark at small header sizes.
-  if(!tema.pismoZnacky&&tema.pismoNadpis==='Cormorant'){
-    document.documentElement.style.setProperty('--pismoZnacky','Playfair');
-  }
-  if(tema.pismoText==='Inter')document.documentElement.style.setProperty('--pismoText','Manrope');
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title+' · '+firma.nazov;
   el('load-logo').src=base+firma.logo;
@@ -70,8 +64,6 @@ async function start(){
     el('size').textContent=dims.map(x=>Math.round(x*100)).join(' × ')+' '+t.unit;
     el('edge').parentElement.hidden=m.zrazenie==null;
     el('edge').textContent=Math.round((m.zrazenie??0)*1000)+' '+t.unitEdge;
-    el('model-type').textContent=t[product.value];
-    el('model-finish').textContent=catalog.kamene[stoneId].nazov+' · '+el('size').textContent;
     for(const b of el('samples').children)b.setAttribute('aria-pressed',String(b.value===stoneId));
   }
   const handle=el('handle'),layout=document.querySelector('.layout');
@@ -112,7 +104,6 @@ async function start(){
   function state(){
     const inscription=syncEditor.state();
     if(product.value!=='dvojhrob')inscription.people=inscription.people.slice(0,1);
-    if(!inscription.extras.includes('fotokeramika')){inscription.portrait=null;inscription.photoName='';}
     return {v:1,type:product.value,shape:profile.value,cover:katalog.dosky?.includes(product.value)?null:cover.value,
       stone:stoneId,environment:environmentId,...inscription};
   }
@@ -157,7 +148,7 @@ async function start(){
     }
     button.onclick=()=>pendingStone=selectStone();
   }
-  let step=0,resultVersion=0,expandedForText=false;
+  let step=0,resultVersion=0;
   async function renderResult(){
     const revision=++resultVersion;
     await Promise.all([pendingStone,pendingEnvironment]);
@@ -168,23 +159,25 @@ async function start(){
   }
   const panels=[...document.querySelectorAll('[data-step]')];
   const stepViews=['angle','angle','angle','detail','angle','front'];
-  const areas=['model','profil','kamen','napis','doplnky'];
-  const tabs=areas.map((key,i)=>{
+  const tabs=t.editTabs.map((label,i)=>{
     const button=document.createElement('button');button.type='button';
-    button.append(icon(key),document.createTextNode(t.editTabs[i]));
+    const number=document.createElement('span');number.textContent=i+1;
+    button.append(number,document.createTextNode(label));
     button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
-  el('review').append(icon('vysledok'));el('review').onclick=()=>go(5);
+  el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
+  el('review').onclick=()=>go(5);
   function go(i,move=true){
     if(matchMedia('(max-width:760px)').matches){
       if(move&&tier===0)sheet(1);
-      if(i===3&&tier===1){sheet(2);expandedForText=true;}
-      if(i!==3&&expandedForText){if(tier===2)sheet(1);expandedForText=false;}
     }
     step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
     tabs.forEach((tab,j)=>tab.setAttribute('aria-pressed',String(j===i)));
     el('review').setAttribute('aria-pressed',String(i===5));
     el('step-title').textContent=t.stepTitles[i];
+    el('step-hint').textContent=t.stepHints[i];el('step-progress').value=i+1;
+    el('back').hidden=i===0;el('next').hidden=i===5;el('to-inquiry').hidden=i!==5;
+    tabs.forEach((tab,j)=>j===i?tab.setAttribute('aria-current','step'):tab.removeAttribute('aria-current'));
     el('step-scroll').scrollTop=0;
     layout.classList.toggle('show-result',i===5);
     if(i===5)renderResult().catch(()=>{el('error').hidden=false;});
@@ -202,7 +195,7 @@ async function start(){
   if(product.value!=='jednohrob'||profile.value!=='rovny'||cover.value!=='cela')apply();
   if(restored)await syncEditor.restore(restored);
   ready=true;
-  if(restored)go(5);
+  if(restored){history.replaceState(null,'',designLink(state()));go(5);}
   window.addEventListener('hashchange',()=>location.reload());
   progress.value=4;await document.fonts.ready;el('loader').hidden=true;
   mark(restored?'front':'angle');

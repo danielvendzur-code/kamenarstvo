@@ -214,20 +214,36 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     }
     return geometry;
   }
+  // The narrow chamfer often projects to less than one pixel in side view.
+  // A wider specular lobe keeps its highlight continuous across those pixels.
+  const chamfer=polished.clone();
+  chamfer.onBeforeCompile=polished.onBeforeCompile;
+  chamfer.customProgramCacheKey=polished.customProgramCacheKey;
+  chamfer.roughness=.24;chamfer.clearcoatRoughness=.22;
+  const capPositions=[];
   for(const path of covers){
     const body=sheet(path,model.hrubkaDosky,bevel),normals=body.attributes.normal,indices=[];
     // Keep the vertical band in satin and its chamfer polished.
+    const positions=body.attributes.position;
     body.clearGroups();let slot=-1;
     for(let i=0;i<normals.count;i+=3){
       const nz=normals.getZ(i);
-      if(nz>.999)continue;
+      if(nz>.999 && normals.getZ(i+1)>.999 && normals.getZ(i+2)>.999){
+        for(let j=i;j<i+3;j++)capPositions.push(positions.getX(j),positions.getY(j),0);
+        continue;
+      }
       const next=Math.abs(nz)>.12?0:1;
       if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
       body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
     }
-    body.setIndex(indices);add(markSlabs(body),faces,0,shoulder+bevel,0).rotation.x=-Math.PI/2;
+    body.setIndex(indices);add(markSlabs(body),[chamfer,satin],0,shoulder+bevel,0).rotation.x=-Math.PI/2;
   }
-  const face=makeCoverFace(markSlabs(new T.ShapeGeometry(covers,28)));
+  // Reuse the body's cap triangles so even the curved flower opening shares
+  // the exact boundary vertices of the bevel and a single reflective plane.
+  const cap=new T.BufferGeometry();
+  cap.setAttribute('position',new T.Float32BufferAttribute(capPositions,3));
+  cap.computeVertexNormals();
+  const face=makeCoverFace(markSlabs(cap));
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);
