@@ -136,7 +136,7 @@ export function scena(host,model,stone,onOrbit){
   });
   softShadows(receivers);
   const camera=new T.PerspectiveCamera(33,1,0.05,180);
-  const controls=new OrbitControls(camera,renderer.domElement);
+  const controls=new OrbitControls(camera,host);
   controls.enablePan=false;controls.minDistance=1.65;controls.maxDistance=7;
   controls.minPolarAngle=0.14;controls.maxPolarAngle=Math.PI*.49;
   const target=new T.Vector3(0,0.39,0.03);
@@ -148,13 +148,13 @@ export function scena(host,model,stone,onOrbit){
   }
   let flight=0;
   function view(key,duration=640){
-    const detail=key==='detail', outside=active&&active!=='atelier';
+    const slab=key==='slab',detail=key==='detail'||slab, outside=active&&active!=='atelier';
     const plaque=['urna','pamatna'].includes(selection.type);
     const bounds=new T.Box3();
-    monument.traverse(mesh=>{if(mesh.userData.face)bounds.expandByObject(mesh);});
+    monument.traverse(mesh=>{if(slab?mesh.userData.coverField:mesh.userData.face)bounds.expandByObject(mesh);});
     const focus=detail?bounds.getCenter(new T.Vector3()):target;
     const size=bounds.getSize(new T.Vector3());
-    const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.57,.54,2.55]:directions[key];
+    const direction=slab?[0,2.5,1]:detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.57,.54,2.55]:directions[key];
     const available=Math.max(1,host.clientWidth-24);
     const tangent=Math.tan(T.MathUtils.degToRad(camera.fov/2));
     const detailDistance=.5*1.26*Math.max(size.x/(available/host.clientHeight),size.y,size.z)/tangent+size.z*.4;
@@ -180,6 +180,7 @@ export function scena(host,model,stone,onOrbit){
   const fullDpr=renderer.getPixelRatio();
   let moving=false, lastMove=0, slowFrames=0;
   let motionDpr=Math.min(.80,fullDpr);
+  let orbiting=false;
   function motionDetail(low){
     fastMotion=low;
     if(grounds){
@@ -188,7 +189,17 @@ export function scena(host,model,stone,onOrbit){
     }
   }
   function motion(){
-    if(!mobile)return;
+    if(!mobile){
+      if(!orbiting||selection.type!=='pamatna')return;
+      const now=performance.now();
+      if(lastMove&&now-lastMove>36)slowFrames++;
+      else slowFrames=0;
+      lastMove=now;
+      if(!moving&&slowFrames>=2){
+        moving=true;renderer.setPixelRatio(Math.min(1,fullDpr*.85));motionDetail(true);
+      }
+      return;
+    }
     const now=performance.now(),elapsed=now-lastMove;
     if(moving&&elapsed>32&&elapsed<250)slowFrames++;
     lastMove=now;
@@ -208,7 +219,11 @@ export function scena(host,model,stone,onOrbit){
     if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);});
   }
   controls.addEventListener('change',()=>{motion();invalidate();});
-  controls.addEventListener('start',()=>{cancelAnimationFrame(flight);onOrbit();});
+  controls.addEventListener('start',()=>{orbiting=true;lastMove=0;slowFrames=0;cancelAnimationFrame(flight);onOrbit();});
+  controls.addEventListener('end',()=>{
+    orbiting=false;
+    if(!mobile&&moving){moving=false;motionDetail(false);renderer.setPixelRatio(fullDpr);invalidate();}
+  });
   function zoom(factor){
     cancelAnimationFrame(flight);
     const offset=camera.position.clone().sub(controls.target);
@@ -370,7 +385,8 @@ export function scena(host,model,stone,onOrbit){
     // An independent camera keeps the user's orbit and the canvas layout intact.
     const bounds=new T.Box3().setFromObject(monument),center=bounds.getCenter(new T.Vector3());
     const shot=camera.clone();shot.clearViewOffset();shot.aspect=host.parentElement.clientWidth/host.parentElement.clientHeight;shot.fov=32;
-    const facing=selection.type==='urna'?new T.Vector3(0,1.25,1):new T.Vector3(0,.30,1);
+    const coverText=(design?.nameAt==='slab'&&design.people.some(p=>Object.values(p).some(Boolean)))||(design?.verseAt==='slab'&&design.epitaph);
+    const facing=coverText?new T.Vector3(0,1.15,1):selection.type==='urna'?new T.Vector3(0,1.25,1):new T.Vector3(0,.30,1);
     shot.position.copy(center).add(facing.normalize());shot.lookAt(center);shot.updateMatrixWorld();
     const right=new T.Vector3().setFromMatrixColumn(shot.matrixWorld,0);
     const up=new T.Vector3().setFromMatrixColumn(shot.matrixWorld,1),tan=Math.tan(T.MathUtils.degToRad(shot.fov/2));

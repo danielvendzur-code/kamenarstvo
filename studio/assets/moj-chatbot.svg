@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533 100" role="img" aria-label="Môj Chatbot" xmlns:c2pa="http://c2pa.org/manifest"><title>Môj Chatbot</title><style>
+.top{animation:join-top 2s cubic-bezier(.37,0,.63,1) infinite}
+.bottom{animation:join-bottom 2s cubic-bezier(.37,0,.63,1) infinite}
+.join{opacity:0;animation:bridge 2s linear infinite}
+@keyframes join-top{0%,15%,85%,100%{transform:none}40%,60%{transform:translate(15px,4.4px)}}
+@keyframes join-bottom{0%,15%,85%,100%{transform:none}40%,60%{transform:translate(-15px,-4.4px)}}
+@keyframes bridge{0%,39%,61%,100%{opacity:0}40%,60%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.top,.bottom,.join{animation:none}}
+</style><rect class="join" x="21.5" y="49.4" width="57" height="1.2" fill="#1C1612"/><path class="top" fill="#1C1612" d="M6 46.5A29 29 0 0 1 64 46.5Z"></path><path class="bottom" fill="#1C1612" d="M36 53.5H94A29 29 0 0 1 93.01 61C91.7 65.8 92.34 67.76 93.43 72.64L96.1 84.6L84.14 81.93C79.26 80.84 77.34 80.21 72.51 81.51A29 29 0 0 1 36 53.5Z"></path><text x="122" y="78" fill="#1C1612" font-family="Geist, system-ui, sans-serif" font-weight="600" font-size="74" letter-spacing="-2.59">Môj Chatbot</text></svg>

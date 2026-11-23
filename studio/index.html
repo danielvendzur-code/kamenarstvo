@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content">
   <meta name="robots" content="noindex,nofollow">
-  <title>Studio</title>
+  <title>Konfigurátor kamenárstvo</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./css/studio.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
 </head>
 <body>
-  <div id="loader" role="status"><img id="load-logo" alt=""><progress max="4" value="0"></progress></div>
-  <header><div class="brand"><img id="logo" alt=""><span id="brand"></span></div><span class="studio" data-t="studio"></span><button id="review" class="primary" data-t="review"></button></header>
+  <div id="loader" role="status"><img id="load-logo" src="./assets/moj-chatbot.svg" alt="Môj Chatbot"><progress max="4" value="0"></progress></div>
+  <header><div class="brand"><span id="brand" data-t="title"></span></div><nav id="step-track" data-label="editAreas"></nav></header>
   <main class="layout">
     <section class="viewer" data-label="scene">
       <div id="viewport"></div><figure id="print" hidden><img id="rendered" data-label="frontImage" alt=""></figure>
@@ -22,12 +22,9 @@
       </div><div class="zoom"><button data-action="minus" data-label="minus">−</button><button data-action="plus" data-label="plus">+</button></div></div>
     </section>
     <aside>
-      <button id="handle" aria-controls="sheet-content" data-label="sheet"><i></i></button>
       <div id="sheet-content">
-        <nav id="step-track" data-label="editAreas"></nav>
-        <progress id="step-progress" max="6" value="1" data-label="steps"></progress>
         <div class="scroll-panel" id="step-scroll">
-          <h1 id="step-title" tabindex="-1"></h1><p id="step-hint"></p>
+          <h1 id="step-title" tabindex="-1"></h1>
           <section data-step="0"><div id="product"></div></section>
           <section data-step="1" hidden><div class="subnav" id="shape-tools"><button data-shape-part="profile" data-t="profile"></button><button data-shape-part="cover" data-t="cover"></button></div><fieldset id="profile-field"><legend data-t="profile"></legend><div id="profile"></div></fieldset>
             <fieldset id="cover-field"><legend data-t="cover"></legend><div id="cover"></div></fieldset>
@@ -37,8 +34,8 @@
           <section data-step="4" hidden><div id="extra-panel"><div id="extras"></div></div></section>
           <section data-step="5" id="result" hidden>
             <dl id="summary"></dl>
-            <label class="link-label" for="design-link" data-t="designLink"></label>
-            <input id="design-link" type="url" readonly><button type="button" id="copy" data-t="copyLink"></button>
+            <input id="design-link" type="url" readonly hidden data-label="designLink">
+            <div class="result-actions"><button type="button" id="to-inquiry" class="primary" data-t="toInquiry"></button><button type="button" id="copy" data-t="copyLink"></button></div>
             <dialog id="inquiry-dialog" aria-labelledby="inquiry-title"><button id="close-inquiry" data-t="close"></button><h2 id="inquiry-title" data-t="inquiry"></h2><p id="simulation" data-t="simulation" hidden></p>
             <form id="inquiry">
               <label><span data-t="contactName"></span><input required name="name" autocomplete="name" maxlength="120"></label>
@@ -52,10 +49,11 @@
             </form><p id="confirmation" role="status"></p></dialog>
           </section>
         </div>
-        <footer class="step-actions"><button id="back" data-t="back"></button><button id="next" class="primary" data-t="next"></button><button id="to-inquiry" class="primary" hidden data-t="toInquiry"></button></footer>
+        <footer class="step-actions"><button id="back" data-t="back"></button><button id="next" class="primary" data-t="next"></button></footer>
       </div>
     </aside>
   </main>
   <p id="error" role="alert" hidden></p><script type="module" src="./js/app.js"></script>
 </body>
 </html>
+

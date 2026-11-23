@@ -44,6 +44,11 @@ function outline(w,h,profile){
   path.moveTo(-x,0);path.lineTo(x,0);
   if(profile==='obluk'){
     path.lineTo(x,h*.86);path.bezierCurveTo(x*.52,h*1.045,-x*.52,h*1.045,-x,h*.86);
+  }else if(profile==='ramena'){
+    path.lineTo(x,h*.78);path.quadraticCurveTo(x*.78,h*.78,x*.63,h*.86);
+    path.quadraticCurveTo(0,h*1.14,-x*.63,h*.86);path.quadraticCurveTo(-x*.78,h*.78,-x,h*.78);
+  }else if(profile==='stit'){
+    path.lineTo(x,h*.79);path.lineTo(0,h);path.lineTo(-x,h*.79);
   }else if(profile==='vlna'){
     path.lineTo(x,h*.80);path.bezierCurveTo(x*.20,h*.65,-x*.19,h*1.10,-x,h*.94);
   }else{
@@ -121,7 +126,9 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     return mesh;
   }
   function block(width,height,depth,bottom,z,mat){
-    return add(blockGeometry(width,height,depth,.004,false),mat,0,bottom+height/2,z);
+    const mesh=add(blockGeometry(width,height,depth,.004,false),mat,0,bottom+height/2,z);
+    if(mat===faces||mat===satin||mat===polished)mesh.userData.part='stone';
+    return mesh;
   }
   function profileFace(path,depth,base,z){
     const mesh=add(sheet(path,depth,.004),faces,0,base+.004,z-depth/2+.004);
@@ -166,7 +173,10 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       const stonework=new T.MeshStandardMaterial({color:0xb8aa92,roughness:.88});
       for(let row=0;row<5;row++)block(w+.24,.268,.40,row*.272,-.218,stonework);
       block(w+.28,.055,.44,1.36,-.218,stonework);
-      block(w+.24,.045,.32,.710,-.014,faces);
+      // End the shelf at the pier's front face. The old block extended into
+      // the pier with coplanar side faces, which flickered during orbit.
+      const pierFront=-.218+.40/2, shelfFront=.146;
+      block(w+.24,.045,shelfFront-pierFront,.710,(pierFront+shelfFront)/2,faces);
       block(w*.68,h*.70,.030,.82,-.008,satin);
       addTablet(w,h,.042,.78,.020,0);
 
@@ -179,7 +189,8 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const ring=rectangle(-w/2+bevel,-d/2+bevel,w/2-bevel,d/2-bevel);
   const rail=model.sirkaObruby;
   ring.holes.push(rectangle(-w/2+rail,-d/2+rail,w/2-rail,d/2-rail));
-  add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0).rotation.x=-Math.PI/2;
+  const railMesh=add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0);
+  railMesh.rotation.x=-Math.PI/2;railMesh.userData.part='stone';
   const halfW=w/2+.005,halfD=d/2+.005,gap=.0025+bevel;
   const covers=cover==='delena'
     ?[rectangle(-halfW,-halfD,-gap,halfD),rectangle(gap,-halfD,halfW,halfD)]
@@ -236,7 +247,8 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
       body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
     }
-    body.setIndex(indices);add(markSlabs(body),[chamfer,satin],0,shoulder+bevel,0).rotation.x=-Math.PI/2;
+    body.setIndex(indices);const edge=add(markSlabs(body),[chamfer,satin],0,shoulder+bevel,0);
+    edge.rotation.x=-Math.PI/2;edge.userData.part='cover';
   }
   // Reuse the body's cap triangles so even the curved flower opening shares
   // the exact boundary vertices of the bevel and a single reflective plane.
@@ -244,9 +256,15 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   cap.setAttribute('position',new T.Float32BufferAttribute(capPositions,3));
   cap.computeVertexNormals();
   const face=makeCoverFace(markSlabs(cap));
+  face.userData.part='cover';
+  // Reserve a continuous engraving field away from the split, flower bed and footing.
+  const fieldWidth=w*(cover==='delena'?.44:.82),cx=cover==='delena'?-w*.25:0;
+  const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:0;
+  face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);
   addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
   return group;
 }
+
