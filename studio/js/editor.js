@@ -15,23 +15,37 @@ export function editor(config,t,product,viewer,detail,changed){
   }
   const font=cards('font',config.pisma,'fonts'),finish=cards('finish',config.farbyPisma,'inks');
   font.container.onchange=finish.container.onchange=()=>{update();};
-  const second=document.createElement('fieldset'),legend=document.createElement('legend');
-  legend.textContent=t.second;second.append(legend);
-  for(const parent of [letters,second]){
+  const parts={},tabs={},toolbar=el('letter-tools');
+  let active='first';
+  function part(key){
+    const panel=document.createElement('div'),button=document.createElement('button');
+    panel.className='letter-part';letters.append(panel);parts[key]=panel;
+    button.type='button';button.textContent=t.letterTabs[key];button.onclick=()=>open(key);toolbar.append(button);tabs[key]=button;
+    return panel;
+  }
+  function open(key){
+    active=key;
+    for(const id of Object.keys(parts)){
+      parts[id].hidden=id!==key;tabs[id].setAttribute('aria-pressed',String(id===key));
+    }
+  }
+  const first=part('first'),second=part('second');
+  for(const parent of [first,second]){
     const person={};people.push(person);
     for(const key of ['first','last','birth','death']){
       const input=document.createElement('input');input.maxLength=key==='first'||key==='last'?80:32;
       field(parent,key,input);person[key]=input;input.oninput=()=>{detail();update();};
     }
   }
-  letters.append(second);
-  const epitaph=field(letters,'epitaph',document.createElement('textarea'));
+  const epitaph=field(part('epitaph'),'epitaph',document.createElement('textarea'));
+  const style=part('style');style.append(font.container.closest('fieldset'),finish.container.closest('fieldset'));
+  open('first');
   epitaph.maxLength=240;epitaph.rows=2;
   epitaph.oninput=()=>{epitaph.value=epitaph.value.split(/\r?\n/).slice(0,2).join('\n');detail();update();};
   const example=document.createElement('button');
   example.type='button';example.className='example';example.textContent=t.insertSample;
   if(config.vzorNapisu){
-    letters.prepend(example);
+    first.append(example);
     example.onclick=()=>{
       people.forEach((person,i)=>{
         if(i===1&&product.value!=='dvojhrob')return;
@@ -75,9 +89,23 @@ export function editor(config,t,product,viewer,detail,changed){
     const activePeople=product.value==='dvojhrob'?people:people.slice(0,1);
     example.hidden=activePeople.every(person=>Object.values(person).some(input=>input.value));
   }
-  function sync(){second.hidden=product.value!=='dvojhrob';sampleVisibility();}
-  async function update(){
+  function sync(){
+    const double=product.value==='dvojhrob';tabs.second.hidden=!double;
+    tabs.first.textContent=double?t.firstPerson:t.letterTabs.first;
+    if(!double&&active==='second')open('first');refreshPreview();
+  }
+  function refreshPreview(){
     sampleVisibility();
+    const hasText=people.slice(0,product.value==='dvojhrob'?2:1).some(p=>Object.values(p).some(input=>input.value.trim()))||Boolean(epitaph.value.trim());
+    tabs.style.disabled=!hasText;
+    if(!hasText&&active==='style')open('first');
+    const person=people.slice(0,product.value==='dvojhrob'?2:1).find(p=>p.first.value.trim()||p.last.value.trim());
+    const dates=people.slice(0,product.value==='dvojhrob'?2:1).flatMap(p=>[p.birth.value,p.death.value]).filter(Boolean);
+    const sample=person?[person.first.value,person.last.value].filter(Boolean).join(' '):epitaph.value.trim()||dates.join(' – ')||t.sampleName;
+    for(const demo of font.container.querySelectorAll('i')){demo.textContent=sample;demo.title=sample;}
+  }
+  async function update(){
+    refreshPreview();
     const id=++version,family=fonts[font.value]??'Cormorant';
     await document.fonts.load('24px '+family);
     await new Promise(requestAnimationFrame);if(id!==version)return;
@@ -122,5 +150,5 @@ export function editor(config,t,product,viewer,detail,changed){
     }
     sync();await update();
   };
-  sync();return sync;
+  tabs.style.disabled=true;sync();return sync;
 }

@@ -120,5 +120,23 @@
   "thanks": "Ďakujeme, ozveme sa",
   "simulation": "V tejto ukážke si môžete odoslanie dopytu vyskúšať.",
   "sendError": "Dopyt sa nepodarilo odoslať. Skúste to znova.",
-  "toInquiry": "Prejsť na dopyt"
+  "toInquiry": "Prejsť na dopyt",
+  "editAreas": "Časti návrhu",
+  "editTabs": [
+    "Model",
+    "Profil",
+    "Kameň",
+    "Nápis",
+    "Doplnky"
+  ],
+  "review": "Výsledok",
+  "letterTabs": {
+    "first": "Text",
+    "second": "Osoba 2",
+    "epitaph": "Epitaf",
+    "style": "Písmo"
+  },
+  "firstPerson": "Osoba 1",
+  "summaryTitle": "Podrobnosti návrhu",
+  "close": "Zavrieť"
 }

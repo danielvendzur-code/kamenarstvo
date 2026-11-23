@@ -1,3 +1,4 @@
+import {icon} from './ikony.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -49,9 +50,15 @@ async function start(){
   const restored=readDesign();
   if(types.includes(restored?.type))product.select(restored.type);
   let stoneId=katalog.kamene.includes(restored?.stone)?restored.stone:katalog.kamene[0];
+  function showShapePart(part){
+    el('profile-field').hidden=part!=='profile';el('cover-field').hidden=part!=='cover';
+    for(const button of el('shape-tools').children)button.setAttribute('aria-pressed',String(button.dataset.shapePart===part));
+  }
+  for(const button of el('shape-tools').children)button.onclick=()=>showShapePart(button.dataset.shapePart);
   function profiles(){
     profile.fill(katalog.tvary);
-    el('cover-field').hidden=katalog.dosky?.includes(product.value);
+    showShapePart('profile');
+    el('shape-tools').hidden=katalog.dosky?.includes(product.value);
   }
   profiles();
   if(katalog.tvary.includes(restored?.shape))profile.select(restored.shape);
@@ -63,6 +70,8 @@ async function start(){
     el('size').textContent=dims.map(x=>Math.round(x*100)).join(' × ')+' '+t.unit;
     el('edge').parentElement.hidden=m.zrazenie==null;
     el('edge').textContent=Math.round((m.zrazenie??0)*1000)+' '+t.unitEdge;
+    el('model-type').textContent=t[product.value];
+    el('model-finish').textContent=catalog.kamene[stoneId].nazov+' · '+el('size').textContent;
     for(const b of el('samples').children)b.setAttribute('aria-pressed',String(b.value===stoneId));
   }
   const handle=el('handle'),layout=document.querySelector('.layout');
@@ -95,7 +104,8 @@ async function start(){
   const supported=['rano','podvecer','atelier'];
   const allowed=[...new Set(prostredia?.povolene??['atelier'])].filter(id=>supported.includes(id));
   if(!allowed.length)allowed.push('atelier');
-  const initial=allowed.includes(prostredia?.predvolene)?prostredia.predvolene:allowed[0];
+  const requested=new URLSearchParams(location.search).get('svetlo')??prostredia?.predvolene;
+  const initial=allowed.includes(requested)?requested:allowed[0];
   const group=el('environments');
   let last=0,environmentId=initial,ready=false,pendingStone,pendingEnvironment;
   const showResult=resultPanel(t,dopyt,catalog);
@@ -147,7 +157,7 @@ async function start(){
     }
     button.onclick=()=>pendingStone=selectStone();
   }
-  let step=0,resultVersion=0;
+  let step=0,resultVersion=0,expandedForText=false;
   async function renderResult(){
     const revision=++resultVersion;
     await Promise.all([pendingStone,pendingEnvironment]);
@@ -157,25 +167,33 @@ async function start(){
     el('rendered').src=viewer.frontImage();el('print').hidden=false;
   }
   const panels=[...document.querySelectorAll('[data-step]')];
-  const stepViews=['angle','angle','detail','front','angle','front'];
-  const dots=t.stepTitles.map((name,i)=>{
-    const button=document.createElement('button');button.type='button';button.title=name;
-    button.setAttribute('aria-label',(i+1)+' · '+name);button.onclick=()=>go(i);
-    el('step-track').append(button);return button;
+  const stepViews=['angle','angle','angle','detail','angle','front'];
+  const areas=['model','profil','kamen','napis','doplnky'];
+  const tabs=areas.map((key,i)=>{
+    const button=document.createElement('button');button.type='button';
+    button.append(icon(key),document.createTextNode(t.editTabs[i]));
+    button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
+  el('review').append(icon('vysledok'));el('review').onclick=()=>go(5);
   function go(i,move=true){
+    if(matchMedia('(max-width:760px)').matches){
+      if(move&&tier===0)sheet(1);
+      if(i===3&&tier===1){sheet(2);expandedForText=true;}
+      if(i!==3&&expandedForText){if(tier===2)sheet(1);expandedForText=false;}
+    }
     step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
-    dots.forEach((dot,j)=>{dot.classList.toggle('done',j<i);dot.setAttribute('aria-current',j===i?'step':'false');});
-    el('step-title').textContent=t.stepTitles[i];el('intro').textContent=t.stepHints[i];
-    el('counter').textContent=String(i+1).padStart(2,'0')+' / 06';
-    el('to-inquiry').hidden=i!==5;el('back').disabled=i===0;el('next').hidden=i===5;el('step-scroll').scrollTop=0;
+    tabs.forEach((tab,j)=>tab.setAttribute('aria-pressed',String(j===i)));
+    el('review').setAttribute('aria-pressed',String(i===5));
+    el('step-title').textContent=t.stepTitles[i];
+    el('step-scroll').scrollTop=0;
     layout.classList.toggle('show-result',i===5);
     if(i===5)renderResult().catch(()=>{el('error').hidden=false;});
     else{resultVersion++;el('print').hidden=true;}
-    if(move){viewer.view(stepViews[i]);mark(stepViews[i]);el('step-title').focus({preventScroll:true});}
+    if(move){viewer.view(stepViews[i]);mark(stepViews[i]);}
   }
-  el('back').onclick=()=>go(Math.max(0,step-1));el('next').onclick=()=>go(Math.min(5,step+1));
-  el('to-inquiry').onclick=()=>el('inquiry').elements.name.focus();
+  const inquiryDialog=el('inquiry-dialog');
+  el('to-inquiry').onclick=()=>{inquiryDialog.showModal();el('inquiry').elements.name.focus();};
+  el('close-inquiry').onclick=()=>inquiryDialog.close();
   go(0,false);
   syncEditor.recommend(catalog.kamene[stoneId].odporucanePismo);describe();progress.value=3;
   try{await choose(allowed.includes(restored?.environment)?restored.environment:initial);}catch{
