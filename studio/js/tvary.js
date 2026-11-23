@@ -252,6 +252,10 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   cap.setAttribute('position',new T.Float32BufferAttribute(capPositions,3));
   cap.computeVertexNormals();
   const face=makeCoverFace(markSlabs(cap));
+  // Reserve a continuous engraving field away from the split, flower bed and footing.
+  const fieldWidth=w*(cover==='delena'?.44:.82),cx=cover==='delena'?-w*.25:0;
+  const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:0;
+  face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);

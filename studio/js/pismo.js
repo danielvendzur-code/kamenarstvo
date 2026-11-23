@@ -8,7 +8,7 @@ const finishes={
 // Both canvases use the same glyph outlines. Successively narrower strokes
 // lower the middle of each cut, leaving a sloping polished lip.
 function engraving(mesh,lines,font,finish,anisotropy,resolution){
-  const {left,right,height:h}=mesh.userData.face,w=right-left;
+  const {left,right,height:h}=(mesh.userData.coverField??mesh.userData.face),w=right-left;
   const mask=document.createElement('canvas'),height=document.createElement('canvas');
   mask.width=height.width=Math.max(256,Math.round(resolution*Math.min(1,w/h)));
   mask.height=height.height=Math.max(256,Math.round(resolution*Math.min(1,h/w)));
@@ -34,19 +34,19 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
     const map=new T.CanvasTexture(canvas);map.anisotropy=anisotropy;return map;
   }
   const [color,metalness,roughness]=finishes[finish]??finishes.zlata;
-  const original=mesh.material,base=original[0],material=base.clone();
+  const original=mesh.material,base=Array.isArray(original)?original[0]:original,material=base.clone();
   const maps=[texture(mask),texture(height)];
   material.customProgramCacheKey=()=>base.customProgramCacheKey()+'-engraved';
   material.onBeforeCompile=(shader,renderer)=>{
     base.onBeforeCompile(shader,renderer);
     Object.assign(shader.uniforms,{
       inscription:{value:maps[0]},cutDepth:{value:maps[1]},letterColor:{value:new T.Color(color)},
-      faceBox:{value:new T.Vector3(left,w,h)},finishMetal:{value:metalness},finishRough:{value:roughness}
+      faceBox:{value:new T.Vector4(left,w,h,mesh.userData.coverField?.bottom??0)},finishMetal:{value:metalness},finishRough:{value:roughness}
     });
     shader.vertexShader='varying float faceNormalZ;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nfaceNormalZ=normal.z;');
-    shader.fragmentShader='varying float faceNormalZ;uniform sampler2D inscription,cutDepth;uniform vec3 faceBox,letterColor;uniform float finishMetal,finishRough;\n'+shader.fragmentShader
+    shader.fragmentShader='varying float faceNormalZ;uniform sampler2D inscription,cutDepth;uniform vec4 faceBox;uniform vec3 letterColor;uniform float finishMetal,finishRough;\n'+shader.fragmentShader
       .replace('#include <roughnessmap_fragment>',`
-        vec2 letterUV=vec2((vStone.x-faceBox.x)/faceBox.y,vStone.y/faceBox.z);
+        vec2 letterUV=vec2((vStone.x-faceBox.x)/faceBox.y,(vStone.y-faceBox.w)/faceBox.z);
         vec4 glyph=texture2D(inscription,letterUV);
         float ink=glyph.a*step(.95,faceNormalZ);
         vec3 infill=finishRough>.90?mix(diffuseColor.rgb,letterColor,.66):letterColor;
@@ -66,7 +66,7 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
         float determinant=dot(sx,r1);
         normal=normalize(normal-sign(determinant)*(dFdx(depth)*r1+dFdy(depth)*r2)*ink/max(abs(determinant),1e-12));`);
   };
-  mesh.material=[material,original[1]];
+  mesh.material=Array.isArray(original)?[material,original[1]]:material;
   return ()=>{mesh.material=original;maps.forEach(map=>map.dispose());material.dispose();};
 }
 
@@ -129,25 +129,42 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
   monument.updateMatrixWorld(true);
   const group=new T.Group();group.userData.release=[];monument.add(group);
   const double=selection.type==='dvojhrob',book=faces.length===2;
+  let cover;monument.traverse(mesh=>{if(mesh.userData.coverField)cover=mesh;});
+  const nameAt=state.nameAt??'face',verseAt=state.verseAt??'face';
+  function onLeaf(place,index,defaultIndex){
+    if(place==='slab'&&cover)return false;
+    if(!book||double)return true;
+    return index===(place==='rightPage'?1:place==='leftPage'?0:defaultIndex);
+  }
+  const people=(double?state.people:state.people.slice(0,1)).filter(p=>Object.values(p).some(Boolean));
+  const datesOf=p=>[p.birth&&'* '+p.birth,p.death&&'† '+p.death].filter(Boolean).join('    ');
+  if(cover){
+    const lines=[];
+    if(nameAt==='slab')people.forEach((p,i)=>{
+      const center=(i+.5)/people.length,span=1/people.length;
+      lines.push([p.first,.15,.15,center,span],[p.last,.35,.16,center,span],[datesOf(p),.54,.085,center,span]);
+    });
+    if(verseAt==='slab')state.epitaph.split(/\r?\n/).forEach((s,i)=>lines.push([s,(nameAt==='slab'?.73:.40)+i*.12,.10,.5,1]));
+    if(lines.some(([s])=>s))group.userData.release.push(engraving(cover,lines,state.font,state.finish,aniso,resolution));
+  }
   for(const [index,mesh] of faces.entries()){
     const {left,right,height,z}=mesh.userData.face;
     const surface=new T.Group();surface.applyMatrix4(monument.matrixWorld.clone().invert().multiply(mesh.matrixWorld));group.add(surface);
     const width=right-left,lettering=[];
-    const people=(double?state.people:state.people.slice(0,1)).filter(p=>Object.values(p).some(Boolean));
     // A shared line on a carved book spans two adjacent engraving canvases.
     const sharedCenter=book?1-index:.5,sharedSpan=book?2:1;
     people.forEach((person,i)=>{
-      if(book&&((people.length===2&&i!==index)||(!double&&index===1)))return;
+      if(!onLeaf(nameAt,index,0)||(book&&people.length===2&&i!==index))return;
       const shared=double&&people.length===1;
       const center=shared?sharedCenter:book?.5:(i+.5)/people.length;
       const span=shared?sharedSpan:book?1:1/people.length;
-      const dates=[person.birth&&'* '+person.birth,person.death&&'† '+person.death].filter(Boolean).join('    ');
+      const dates=datesOf(person);
       lettering.push([person.first,.30,.15,center,span],[person.last,.47,.16,center,span],[dates,.64,.082,center,span]);
     });
-    if(double||!book||index===1){
+    if(onLeaf(verseAt,index,1)){
       const soloLeaf=book&&!double;
       state.epitaph.split(/\r?\n/).slice(0,2).forEach((line,i)=>lettering.push(
-        [line,soloLeaf?.44+i*.14:.78+i*.10,soloLeaf?.12:.084,soloLeaf?.5:sharedCenter,soloLeaf?1:sharedSpan]));
+        [line,soloLeaf&&!onLeaf(nameAt,index,0)?.44+i*.14:.78+i*.10,soloLeaf?.12:.084,soloLeaf?.5:sharedCenter,soloLeaf?1:sharedSpan]));
     }
     if(lettering.some(([value])=>value))group.userData.release.push(engraving(mesh,lettering,state.font,state.finish,aniso,resolution));
     if(index===0){

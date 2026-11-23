@@ -9,7 +9,7 @@ export function readDesign(){
     if(d?.v===1)return d;
     if(d?.v!==2)return null;
     return {type:d.t,shape:d.s,cover:d.c,stone:d.k,environment:d.e,font:d.f,
-      finish:d.i,customFinish:d.u===1,people:d.p,epitaph:d.n,extras:d.x};
+      finish:d.i,customFinish:d.u===1,people:d.p,epitaph:d.n,extras:d.x,nameAt:d.a,verseAt:d.b};
   }catch{return null;}
 }
 
@@ -19,7 +19,7 @@ export function designLink(state){
   const payload={v:2,t:state.type,s:state.shape,c:state.cover||undefined,k:state.stone,
     e:state.environment,f:state.font,i:state.finish,u:state.customFinish?1:undefined,
     p:people.some(person=>Object.keys(person).length)?people:undefined,
-    n:state.epitaph||undefined,x:state.extras.length?state.extras:undefined};
+    a:state.nameAt,b:state.verseAt,n:state.epitaph||undefined,x:state.extras.length?state.extras:undefined};
   const bytes=new TextEncoder().encode(JSON.stringify(payload));
   let binary='';
   for(const byte of bytes)binary+=String.fromCharCode(byte);
@@ -79,6 +79,8 @@ export function resultPanel(t,settings,catalog){
       const dates=[p.birth&&'* '+p.birth,p.death&&'† '+p.death].filter(Boolean).join('   ');
       if(name||dates)rows.push([t.person,[name,dates].filter(Boolean).join('\n')]);
     }
+    if(state.people.some(p=>Object.values(p).some(Boolean)))rows.push([t.locationName,t[state.nameAt]]);
+    if(state.epitaph)rows.push([t.surface,t[state.verseAt]]);
     if(state.epitaph)rows.push([t.epitaph,state.epitaph]);
     rows.push([t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none],[t.prostredia,t[state.environment]]);
     summary.replaceChildren(...rows.map(([key,value])=>{

@@ -87,7 +87,7 @@ async function start(){
   const viewer=scena(el('viewport'),definition(product.value),catalog.kamene[stoneId],()=>mark(null));
   viewer.canvas.setAttribute('aria-label',t.canvas);
   let typed=false;
-  function detail(){if(!typed){typed=true;viewer.view('detail');mark('detail');}}
+  function detail(place,force=false){if(force||!typed){typed=true;viewer.view(place==='slab'?'slab':'detail');mark(place==='slab'?null:'detail');}}
   for(const button of views){
     button.title=t[button.dataset.t];
     button.onclick=()=>{viewer.view(button.dataset.view);mark(button.dataset.view);};
@@ -133,9 +133,11 @@ async function start(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
     describe();persist();
   }
-  const syncEditor=editor(katalog,t,product,viewer,detail,persist);
-  product.container.onchange=()=>{profiles();syncEditor();apply();mark('angle');};
-  profile.container.onchange=cover.container.onchange=apply;
+  const syncEditor=editor(katalog,t,product,viewer,detail,persist,()=>profile.value);
+  viewer.onPick(place=>{if(step===3)syncEditor.pick(place);});
+  product.container.onchange=()=>{profiles();syncEditor();apply();syncEditor.flush();mark('angle');};
+  profile.container.onchange=()=>{syncEditor();apply();syncEditor.flush();};
+  cover.container.onchange=apply;
   let materialRequest=0;
   for(const id of katalog.kamene){
     const button=document.createElement('button'),img=document.createElement('img');
@@ -184,7 +186,7 @@ async function start(){
     layout.classList.toggle('show-result',i===5);
     if(i===5)renderResult().catch(()=>{el('error').hidden=false;});
     else{resultVersion++;el('print').hidden=true;}
-    if(move){viewer.view(stepViews[i]);mark(stepViews[i]);}
+    if(move){const view=i===3&&syncEditor.focus()==='slab'?'slab':stepViews[i];viewer.view(view);mark(view);}
   }
   const inquiryDialog=el('inquiry-dialog');
   el('to-inquiry').onclick=()=>{inquiryDialog.showModal();el('inquiry').elements.name.focus();};
