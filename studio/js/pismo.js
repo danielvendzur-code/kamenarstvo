@@ -5,6 +5,24 @@ const finishes={
   cierna:[0x161819,.05,.55],biela:[0xe4dfd2,.03,.75],piesokovana:[0xb5ab98,0,.93]
 };
 
+// Intersect the lettering column with the flat stone at the top and bottom
+// of the glyph band, including every change of direction between those heights.
+function fitColumn(contour,low,high,left,right){
+  let start=left,end=right;
+  const levels=[low,high,...contour.map(p=>p.y).filter(y=>y>low&&y<high)];
+  for(const y of levels){
+    let min=Infinity,max=-Infinity;
+    for(let i=1;i<contour.length;i++){
+      const a=contour[i-1],b=contour[i];
+      if(a.y===b.y||y<Math.min(a.y,b.y)||y>Math.max(a.y,b.y))continue;
+      const x=a.x+(y-a.y)*(b.x-a.x)/(b.y-a.y);
+      min=Math.min(min,x);max=Math.max(max,x);
+    }
+    start=Math.max(start,min);end=Math.min(end,max);
+  }
+  return [start,end];
+}
+
 // Both canvases use the same glyph outlines. Successively narrower strokes
 // lower the middle of each cut, leaving a sloping polished lip.
 function engraving(mesh,lines,font,finish,anisotropy,resolution){
@@ -19,9 +37,18 @@ function engraving(mesh,lines,font,finish,anisotropy,resolution){
     let px=size*.72*mask.height;
     ctx.font=px+'px '+font;
     const metrics=ctx.measureText(text);
-    px*=Math.min(1,mask.width*.82*span/Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight,1));
+    let x=mask.width*center,available=mask.width*span;
+    if(mesh.userData.face?.contour){
+      const middle=(1-.20-y*.72)*h,halfBand=(px*.66+3)*h/mask.height;
+      const [a,b]=fitColumn(mesh.userData.face.contour,middle-halfBand,middle+halfBand,
+        left+w*(center-span/2),left+w*(center+span/2));
+      available=(b-a)*mask.width/w;
+      if(available<=0)continue;
+      x=((a+b)/2-left)*mask.width/w;
+    }
+    px*=Math.min(1,available*.82/Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight,1));
     for(const c of [ctx,cut]){c.font=px+'px '+font;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';}
-    const x=mask.width*center,baseline=(.20+y*.72)*mask.height;
+    const baseline=(.20+y*.72)*mask.height;
     ctx.strokeStyle='rgb(0,0,0)';ctx.lineWidth=6;ctx.strokeText(text,x,baseline);
     ctx.fillStyle='white';ctx.fillText(text,x,baseline);
     ctx.strokeStyle='white';ctx.lineWidth=2.8;ctx.strokeText(text,x,baseline);
@@ -150,7 +177,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
   for(const [index,mesh] of faces.entries()){
     const {left,right,height,z}=mesh.userData.face;
     const surface=new T.Group();surface.applyMatrix4(monument.matrixWorld.clone().invert().multiply(mesh.matrixWorld));group.add(surface);
-    const width=right-left,lettering=[];
+    const lettering=[];
     // A shared line on a carved book spans two adjacent engraving canvases.
     const sharedCenter=book?1-index:.5,sharedSpan=book?2:1;
     people.forEach((person,i)=>{
@@ -168,9 +195,12 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
     }
     if(lettering.some(([value])=>value))group.userData.release.push(engraving(mesh,lettering,state.font,state.finish,aniso,resolution));
     if(index===0){
+      const contour=mesh.userData.face.contour;
+      const [decorLeft,decorRight]=contour?fitColumn(contour,height*.67,height*.85,left,right):[left,right];
+      const decorWidth=decorRight-decorLeft;
       if(state.extras.has('fotokeramika')){
         const photo=ovalPortrait(state.photo);photo.scale.set(height*.063,height*.083,1);
-        photo.position.set(left+width*.5,height*.76,z+.0008+(mesh.userData.face.curveWidth?.014:0));surface.add(photo);
+        photo.position.set(decorLeft+decorWidth*.5,height*.76,z+.0008+(mesh.userData.face.curveWidth?.014:0));surface.add(photo);
       }
       const sign=state.extras.has('kriz'),rose=state.extras.has('ornament-ruza');
       if(sign||rose){
@@ -178,11 +208,11 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
         function wire(points,r){
           const curve=new T.CatmullRomCurve3(points.map(([x,y])=>new T.Vector3(x*height,y*height,0)));
           const line=new T.Mesh(new T.TubeGeometry(curve,Math.max(10,points.length*2),r*height,6,false),bronze);
-          line.position.set(left+width*(sign&&rose?.26:sign?.28:.72),height*.77,z+.002+(mesh.userData.face.curveWidth?.014:0));surface.add(line);return line;
+          line.position.set(decorLeft+decorWidth*(sign&&rose?.26:sign?.28:.72),height*.77,z+.002+(mesh.userData.face.curveWidth?.014:0));surface.add(line);return line;
         }
         if(sign){wire([[0,-.052],[0,.055]],.004);wire([[-.031,.014],[.031,.014]],.004);}
         if(rose){
-          const offset=sign?width*.48:0;
+          const offset=sign?decorWidth*.48:0;
           const twig=pts=>{wire(pts,.0023).position.x+=offset;};
           twig([[-.018,-.052],[0,-.02],[.011,.016]]);twig([[-.005,-.029],[-.028,-.010],[-.012,-.013],[-.005,-.029]]);
           const petals=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*4,r=.004+.017*i/96+.003*Math.sin(5*a);petals.push([.012+r*Math.cos(a),.030+r*Math.sin(a)]);}twig(petals);

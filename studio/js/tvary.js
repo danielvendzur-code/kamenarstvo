@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {outline,tabletSize,bookLeaf} from './profily.js';
 
 // A single closed perimeter avoids coincident end faces and seams at the corners.
 function blockGeometry(w, h, d, bevel, openTop) {
@@ -37,24 +38,6 @@ function blockGeometry(w, h, d, bevel, openTop) {
   groups.forEach(g=>geometry.addGroup(...g));
   geometry.computeVertexNormals();
   return geometry;
-}
-
-function outline(w,h,profile){
-  const path=new T.Shape(),x=w/2;
-  path.moveTo(-x,0);path.lineTo(x,0);
-  if(profile==='obluk'){
-    path.lineTo(x,h*.86);path.bezierCurveTo(x*.52,h*1.045,-x*.52,h*1.045,-x,h*.86);
-  }else if(profile==='ramena'){
-    path.lineTo(x,h*.78);path.quadraticCurveTo(x*.78,h*.78,x*.63,h*.86);
-    path.quadraticCurveTo(0,h*1.14,-x*.63,h*.86);path.quadraticCurveTo(-x*.78,h*.78,-x,h*.78);
-  }else if(profile==='stit'){
-    path.lineTo(x,h*.79);path.lineTo(0,h);path.lineTo(-x,h*.79);
-  }else if(profile==='vlna'){
-    path.lineTo(x,h*.80);path.bezierCurveTo(x*.20,h*.65,-x*.19,h*1.10,-x,h*.94);
-  }else{
-    path.lineTo(x,h);path.lineTo(-x,h);
-  }
-  path.closePath();return path;
 }
 
 function sheet(shape,depth,b){
@@ -137,16 +120,13 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     mesh.userData.face={left:Math.min(...xs),right:Math.max(...xs),height:Math.max(...ys),z:depth-.004};
     return mesh;
   }
-  function addTablet(sw,h,depth,bottom,z,tilt){
+  function addTablet(depth,bottom,z,tilt){
+    const {width:sw,height:h}=tabletSize(model,type);
     if(shape==='kniha'){
       // Two carved leaves meet at the recessed spine. Their faces have distinct normals.
       const pivot=new T.Group();pivot.position.set(0,bottom,z);pivot.rotation.x=tilt;group.add(pivot);
       for(const sign of [-1,1]){
-        const leaf=new T.Shape(),width=sw*.494;
-        leaf.moveTo(0,.03);leaf.quadraticCurveTo(sign*width*.48,.072,sign*width*.95,.045);
-        leaf.quadraticCurveTo(sign*width,.043,sign*width,.062);
-        leaf.lineTo(sign*width,h*.86);leaf.quadraticCurveTo(sign*width,h*.90,sign*width*.95,h*.91);leaf.quadraticCurveTo(sign*width*.48,h*1.046,0,h*.89);
-        leaf.closePath();
+        const width=sw*.494,leaf=bookLeaf(width,h,sign);
         const mesh=profileFace(leaf,depth,-.03,0);
         mesh.geometry=bookSurface(mesh.geometry,width,sign);mesh.userData.face.curveWidth=width;
         mesh.position.x=sign*.005;mesh.rotation.y=-sign*.095;pivot.add(mesh);
@@ -154,7 +134,9 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       const spine=block(.024,h*.85,depth*.88,0,0,polished);
       pivot.add(spine);
     }else{
-      const stela=profileFace(outline(sw-.008,h-.008,shape),depth,bottom,z);
+      const path=outline(sw-.008,h-.008,shape);
+      const stela=profileFace(path,depth,bottom,z);
+      stela.userData.face.contour=path.getPoints(40);
       stela.rotation.x=tilt;
     }
   }
@@ -167,7 +149,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       wedge.lineTo(-.123,.028);wedge.closePath();
       const support=add(sheet(wedge,w*.68,.003),faces,-w*.34+.003,.061,-.015);
       support.rotation.y=Math.PI/2;
-      addTablet(w,d,.042,.070,.172,-1.22);
+      addTablet(.042,.070,.172,-1.22);
     }else{
       // Stacked courses and a projecting shelf form a columbarium pier.
       const stonework=new T.MeshStandardMaterial({color:0xb8aa92,roughness:.88});
@@ -178,7 +160,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       const pierFront=-.218+.40/2, shelfFront=.146;
       block(w+.24,.045,shelfFront-pierFront,.710,(pierFront+shelfFront)/2,faces);
       block(w*.68,h*.70,.030,.82,-.008,satin);
-      addTablet(w,h,.042,.78,.020,0);
+      addTablet(.042,.78,.020,0);
 
     }
     return group;
@@ -262,9 +244,9 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:0;
   face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
-  const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
+  const z=-d/2+.195,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);
-  addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
+  addTablet(model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
   return group;
 }
 

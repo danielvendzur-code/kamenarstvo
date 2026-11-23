@@ -5,13 +5,13 @@ export const families={cinzel:'Cinzel',manrope:'Manrope',playfair:'Playfair','gr
 export function choiceSet(container,ids,t,kind){
   const name=container.id;
   container.classList.add('cards',kind);
-  function fill(values){
+  function fill(values,dimensions){
     const previous=container.querySelector(':checked')?.value;
     container.replaceChildren(...values.map((id,i)=>{
       const label=document.createElement('label'),input=document.createElement('input'),caption=document.createElement('span');
       input.type='radio';input.name=name;input.value=id;input.checked=values.includes(previous)?id===previous:i===0;
       caption.textContent=t[id];label.append(input);
-      if(name==='profile')label.append(profileIcon(id));
+      if(name==='profile')label.append(profileIcon(id,dimensions));
       if(name==='product'||name==='cover'){
         const folder=name==='product'?'vyhotovenia':'dosky';
         const image=document.createElement('img');image.alt='';image.src=new URL('../assets/'+folder+'/'+id+'.webp',import.meta.url).href;

@@ -1,3 +1,4 @@
+import {tabletSize} from './profily.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -60,7 +61,7 @@ async function start(){
   }
   for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
   function profiles(){
-    profile.fill(katalog.tvary);
+    profile.fill(katalog.tvary,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
     el('shape-tools').hidden=katalog.dosky?.includes(product.value);
   }

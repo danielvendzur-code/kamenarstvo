@@ -1,3 +1,4 @@
+import {outline,bookLeaf} from './profily.js';
 // Monoline symbols for the five editing tools. Visible labels carry their meaning.
 const strokes={
   model:'M4 19h16M6 16h12v3H6zM8 16V8a4 4 0 0 1 8 0v8',
@@ -13,20 +14,17 @@ export function icon(key){
   svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('class','symbol');
   path.setAttribute('d',strokes[key]);svg.append(path);return svg;
 }
-const profiles={
-  ramena:'M5 38V16Q15 16 19 12Q40 -3 61 12Q65 16 75 16V38Z',
-  stit:'M5 38V18L40 4L75 18V38Z',
-  rovny:'M5 38V7Q5 5 7 5H73Q75 5 75 7V38Z',
-  obluk:'M5 38V16Q40 -5 75 16V38Z',
-  vlna:'M5 38V11C29 -4 47 23 75 11V38Z',
-  kniha:'M4 38V9Q21 2 40 11Q58 2 76 9V38Q58 31 40 38Q20 32 4 38Z'
-};
-export function profileIcon(id){
-  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),path=document.createElementNS(ns,'path');
-  svg.setAttribute('viewBox','0 0 80 42');svg.setAttribute('aria-hidden','true');svg.setAttribute('class','silhouette');
-  path.setAttribute('d',profiles[id]??profiles.rovny);svg.append(path);
-  if(id==='kniha'){
-    const line=document.createElementNS(ns,'path');line.setAttribute('d','M40 11v26');line.setAttribute('class','spine');svg.append(line);
+export function profileIcon(id,{width,height}){
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('aria-hidden','true');svg.setAttribute('class','silhouette');
+  svg.setAttribute('viewBox',[-width/2,-height,width,height].join(' '));
+  function add(shape,dx=0,scaleX=1,dy=0){
+    const path=document.createElementNS(ns,'path');
+    const coords=shape.getPoints(32).map(p=>(dx+p.x*scaleX)+','+(dy-p.y));
+    path.setAttribute('d','M'+coords.join(' L')+' Z');svg.append(path);
   }
+  if(id==='kniha'){
+    for(const sign of [-1,1])add(bookLeaf(width*.494,height,sign),sign*.005,Math.cos(.095),.03);
+  }else add(outline(width-.008,height-.008,id));
   return svg;
 }
