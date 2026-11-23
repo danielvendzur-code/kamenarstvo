@@ -12,8 +12,9 @@ export function choiceSet(container,ids,t,kind){
       input.type='radio';input.name=name;input.value=id;input.checked=values.includes(previous)?id===previous:i===0;
       caption.textContent=t[id];label.append(input);
       if(name==='profile')label.append(profileIcon(id));
-      if(name==='product'){
-        const image=document.createElement('img');image.alt='';image.src=new URL('../assets/vyhotovenia/'+id+'.webp',import.meta.url).href;
+      if(name==='product'||name==='cover'){
+        const folder=name==='product'?'vyhotovenia':'dosky';
+        const image=document.createElement('img');image.alt='';image.src=new URL('../assets/'+folder+'/'+id+'.webp',import.meta.url).href;
         label.append(image);
       }
       if(kind==='fonts'){

@@ -11,9 +11,9 @@
 </head>
 <body>
   <div id="loader" role="status"><img id="load-logo" src="./assets/moj-chatbot.svg" alt="Môj Chatbot"><progress max="4" value="0"></progress></div>
-  <header><div class="brand"><span id="brand" data-t="title"></span></div><nav id="step-track" data-label="editAreas"></nav></header>
   <main class="layout">
     <section class="viewer" data-label="scene">
+      <header class="scene-header"><div class="brand"><img id="logo" alt=""><span id="brand"></span></div><span class="studio" data-t="studio"></span><button id="review" data-t="review"></button></header>
       <div id="viewport"></div><figure id="print" hidden><img id="rendered" data-label="frontImage" alt=""></figure>
       <div id="environments" role="group" data-label="prostredia"></div>
       <div class="camera"><div class="tools" role="group" data-label="views">
@@ -22,6 +22,7 @@
       </div><div class="zoom"><button data-action="minus" data-label="minus">−</button><button data-action="plus" data-label="plus">+</button></div></div>
     </section>
     <aside>
+      <nav id="step-track" data-label="editAreas"></nav>
       <div id="sheet-content">
         <div class="scroll-panel" id="step-scroll">
           <h1 id="step-title" tabindex="-1"></h1>

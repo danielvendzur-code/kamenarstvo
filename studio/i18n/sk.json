@@ -16,7 +16,7 @@
   "plus": "Priblížiť",
   "minus": "Oddialiť",
   "reset": "Obnoviť pohľad",
-  "hint": "Kliknite na diel pre výber variantu · potiahnutím otočíte pomník",
+  "hint": "Potiahnutím otočíte pomník",
   "canvas": "Trojrozmerný návrh. Ťahaním alebo šípkami ho otočíte, plusom a mínusom priblížite.",
   "error": "Náhľad sa nepodarilo načítať.",
   "unit": "cm",
@@ -86,7 +86,7 @@
   "back": "Späť",
   "next": "Pokračovať",
   "stepTitles": [
-    "Vyhotovenie",
+    "Typ pomníka",
     "Silueta pomníka",
     "Výber žuly",
     "Váš nápis",

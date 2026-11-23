@@ -21,13 +21,16 @@ async function start(){
   const slug=new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
-  const {tema,katalog,prostredia,dopyt}=await json(base+'config.json');
+  const {firma,tema,katalog,prostredia,dopyt}=await json(base+'config.json');
   const catalog=await json('./katalog/'+encodeURIComponent(katalog.zaklad)+'.json');
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
   }
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title;
+  el('brand').textContent=firma.nazov;
+  if(firma.logo)el('logo').src=base+firma.logo;
+  else el('logo').hidden=true;
   const progress=document.querySelector('progress');progress.value=2;progress.setAttribute('aria-label',t.loading);
   for(const node of document.querySelectorAll('[data-t]'))node.textContent=t[node.dataset.t];
   for(const node of document.querySelectorAll('[data-label],[data-view]')){
@@ -193,6 +196,7 @@ async function start(){
     button.textContent=label;
     button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
+  el('review').onclick=()=>go(5);
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
   function go(i,move=true){
     el('step-track').style.setProperty('--step',i);
