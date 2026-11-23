@@ -29,8 +29,8 @@ function studioReflection(){
 export function scena(host,model,stone,onOrbit){
   let selection={type:'jednohrob',shape:'rovny',cover:'cela'};
   const mobile=matchMedia('(max-width:760px)').matches;
-  const renderer=new T.WebGLRenderer({antialias:!mobile,powerPreference:mobile?'low-power':'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:2));
+  const renderer=new T.WebGLRenderer({antialias:true,powerPreference:mobile?'low-power':'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.5:2));
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   renderer.toneMapping=T.ACESFilmicToneMapping;
@@ -45,7 +45,7 @@ export function scena(host,model,stone,onOrbit){
   scene.fog=new T.FogExp2(0xeee8dc,.12);
   let fastMotion=false;
   function coverFace(geometry){
-    const size=mobile?192:1024;
+    const size=mobile?512:1024;
     const face=new Reflector(geometry,{
       textureWidth:size,textureHeight:size,clipBias:0,multisample:0
     });
@@ -61,8 +61,8 @@ export function scena(host,model,stone,onOrbit){
       if(fastMotion && now-lastCapture<180)return;
       lastCapture=now;
       const backgroundBlur=scene.backgroundBlurriness, originalSky=scene.background;
-      const baked=mobile && grounds?.visible && probes.get(active);
-      if(baked){grounds.visible=false;scene.background=baked.texture;}
+      const baked=fastMotion && grounds?.visible && skies.get(active);
+      if(baked){grounds.visible=false;scene.background=baked;}
       scene.backgroundBlurriness=0;
       try{capture(renderer,scene,camera);}
       finally{scene.backgroundBlurriness=backgroundBlur;scene.background=originalSky;if(baked)grounds.visible=true;}
@@ -80,7 +80,7 @@ export function scena(host,model,stone,onOrbit){
   const ctx=surface(256,512);
   ctx.filter='blur(11px)';ctx.fillStyle='rgba(31,29,25,.54)';ctx.fillRect(24,29,208,454);
   const contact=new T.Mesh(new T.PlaneGeometry(model.sirka*1.28,model.dlzka*1.20),
-    new T.MeshBasicMaterial({color:0x000000,map:new T.CanvasTexture(ctx.canvas),transparent:true,opacity:.48,depthWrite:false,fog:false,toneMapped:false}));
+    new T.MeshBasicMaterial({color:0x000000,map:new T.CanvasTexture(ctx.canvas),transparent:true,opacity:.36,depthWrite:false,fog:false,toneMapped:false}));
   contact.renderOrder=1;contact.rotation.x=-Math.PI/2;contact.position.y=0.001;scene.add(contact);
   const hemi=new T.HemisphereLight(0xffffff,0x909090,0.6);
   scene.add(hemi);
@@ -93,7 +93,7 @@ export function scena(host,model,stone,onOrbit){
   scene.add(sun);
   const fill=new T.DirectionalLight(0xfff8e9,1.35);
   fill.position.set(-2,3.6,4.8);scene.add(fill);
-  const rim=new T.DirectionalLight(0xffeed7,.48);
+  const rim=new T.DirectionalLight(0xffeed7,.64);
   rim.position.set(-2.4,2.8,-1.8);scene.add(rim);
   // Expand the PCF footprint with blocker distance for this orthographic light.
   // Near the contact line keep the built-in sub-texel PCFSoft filter.
@@ -144,7 +144,7 @@ export function scena(host,model,stone,onOrbit){
   function distance(){
     const plaque=selection.type==='urna'||selection.type==='pamatna';
     const fit=plaque?(selection.type==='urna'?.34:.43):1+.30*(model.sirka-1);
-    return Math.max(4.35,4.48/camera.aspect)*fit;
+    return Math.max(4.72,4.74/camera.aspect)*fit;
   }
   let flight=0;
   function view(key,duration=640){
@@ -158,7 +158,7 @@ export function scena(host,model,stone,onOrbit){
     const available=Math.max(1,host.clientWidth-24);
     const tangent=Math.tan(T.MathUtils.degToRad(camera.fov/2));
     const detailDistance=.5*1.26*Math.max(size.x/(available/host.clientHeight),size.y,size.z)/tangent+size.z*.4;
-    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?detailDistance:distance()*(outside&&!mobile?.94:1));
+    const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?detailDistance:distance());
     const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));
     const to=new T.Spherical().setFromVector3(end);
     const delta=Math.atan2(Math.sin(to.theta-from.theta),Math.cos(to.theta-from.theta));
@@ -265,11 +265,11 @@ export function scena(host,model,stone,onOrbit){
     if(grounds)grounds.visible=!studio;
     scene.background=studio?new T.Color(0xeee8dc):skies.get(name);
     scene.backgroundBlurriness=studio?.17:0;
-    scene.backgroundIntensity=studio?1:dusk?.93:1.12;
+    scene.backgroundIntensity=studio?1:dusk?.98:1.16;
     scene.fog=studio?studioFog:new T.FogExp2(dusk?0xd9b99d:0xcbd5cd,dusk?.026:.020);
     hemi.color.set(studio?0xffffff:dusk?0xffe8d6:0xd7e7ff);
     hemi.groundColor.set(studio?0x909090:0x77786c);
-    hemi.intensity=studio?1.16:1.48;
+    hemi.intensity=studio?1.22:1.55;
     sun.color.set(studio?0xffffff:dusk?0xffc08a:0xffe0ba);
     sun.intensity=studio?1.35:dusk?1.62:1.78;
     if(studio)sun.position.set(-3,6,3.5);

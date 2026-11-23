@@ -220,7 +220,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     body.clearGroups();let slot=-1;
     for(let i=0;i<normals.count;i+=3){
       const nz=normals.getZ(i);
-      if(nz>.999)continue;
+      if(nz>.999 && normals.getZ(i+1)>.999 && normals.getZ(i+2)>.999)continue;
       const next=Math.abs(nz)>.12?0:1;
       if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
       body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
