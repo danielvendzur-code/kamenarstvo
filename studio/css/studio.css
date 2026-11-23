@@ -418,7 +418,7 @@ dl div{padding:5px 0}
 .letter-part input:not([type=file]),.letter-part textarea{min-height:36px;padding:3px 0}
 .letter-part textarea{resize:none}
 #summary{margin:0 0 8px}
-#summary dd{font:500 14px/1.25 var(--sans)}
+#summary dd{display:-webkit-box;overflow:hidden;font:500 14px/1.25 var(--sans);-webkit-box-orient:vertical;-webkit-line-clamp:2}
 #result .link-label{margin:0}
 #design-link{min-height:32px;padding:4px 0}
 #copy{margin:4px 0 0}
