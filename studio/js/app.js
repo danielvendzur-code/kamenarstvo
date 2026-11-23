@@ -1,4 +1,3 @@
-import {icon} from './ikony.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -50,14 +49,14 @@ async function start(){
   function shapeHeading(){
     const isCover=el('profile-field').hidden;
     el('step-title').textContent=isCover?t.cover:t.stepTitles[1];
-    el('step-hint').textContent=isCover?t.coverHint:t.stepHints[1];
   }
   function showShapePart(part){
+    el('markers').dataset.selected=part;
     el('profile-field').hidden=part!=='profile';el('cover-field').hidden=part!=='cover';
     if(!el('shape-tools').closest('[data-step]').hidden)shapeHeading();
     for(const button of el('shape-tools').children)button.setAttribute('aria-pressed',String(button.dataset.shapePart===part));
   }
-  for(const button of el('shape-tools').children)button.onclick=()=>{closePicker();showShapePart(button.dataset.shapePart);};
+  for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
   function profiles(){
     profile.fill(katalog.tvary);
     showShapePart('profile');
@@ -75,20 +74,7 @@ async function start(){
     el('edge').textContent=Math.round((m.zrazenie??0)*1000)+' '+t.unitEdge;
     for(const b of el('samples').children)b.setAttribute('aria-pressed',String(b.value===stoneId));
   }
-  const handle=el('handle'),layout=document.querySelector('.layout');
-  let tier=1,startY,dragged=false;
-  function sheet(value){
-    tier=Math.max(0,Math.min(2,value));layout.dataset.sheet=tier;
-    layout.classList.toggle('folded',tier===0);handle.setAttribute('aria-expanded',String(tier>0));
-    el('sheet-content').inert=tier===0;
-    if(tier===0)handle.closest('aside').scrollTop=0;
-    handle.title=t.sheetLevels[tier];handle.setAttribute('aria-label',handle.title);
-  }
-  handle.onclick=()=>{if(!dragged)sheet((tier+1)%3);dragged=false;};
-  handle.onpointerdown=e=>{dragged=false;startY=e.clientY;handle.setPointerCapture(e.pointerId);};
-  handle.onpointerup=e=>{const dy=e.clientY-startY;if(Math.abs(dy)>24){dragged=true;sheet(tier-Math.sign(dy));}};
-  handle.onkeydown=e=>{if(['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();sheet(tier+(e.key==='ArrowUp'?1:-1));}};
-  matchMedia('(max-width:760px)').addEventListener('change',()=>sheet(1));sheet(1);
+  const layout=document.querySelector('.layout');
   await loadStone(catalog.kamene[stoneId]);
   const viewer=scena(el('viewport'),definition(product.value),catalog.kamene[stoneId],()=>mark(null));
   viewer.canvas.setAttribute('aria-label',t.canvas);
@@ -109,7 +95,7 @@ async function start(){
   const initial=allowed.includes(requested)?requested:allowed[0];
   const group=el('environments');
   let last=0,environmentId=initial,ready=false,pendingStone,pendingEnvironment;
-  const showResult=resultPanel(t,dopyt,catalog);
+  const showResult=resultPanel(t,dopyt,catalog,i=>go(i));
   function state(){
     const inscription=syncEditor.state();
     if(product.value!=='dvojhrob')inscription.people=inscription.people.slice(0,1);
@@ -137,7 +123,7 @@ async function start(){
   }
   function apply(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
-    describe();persist();refreshPicker();
+    describe();persist();
   }
   const syncEditor=editor(katalog,t,product,viewer,detail,persist,()=>profile.value);
 
@@ -154,57 +140,49 @@ async function start(){
       const job=++materialRequest;
       if(stoneId===id)return;
       try{await loadStone(catalog.kamene[id]);}
-      catch(error){if(job===materialRequest){requestedStone=stoneId;refreshPicker();console.error(error);el('error').hidden=false;}return;}
+      catch(error){if(job===materialRequest){requestedStone=stoneId;console.error(error);el('error').hidden=false;}return;}
       if(job!==materialRequest)return;
       stoneId=id;syncEditor.recommend(catalog.kamene[id].odporucanePismo);apply();
     }
     button.onclick=()=>pendingStone=selectStone();
   }
-  let step=0,resultVersion=0,picked=null;
-  const picker=el('part-picker'),swipe=el('variant-swipe');
-  function partOptions(){
-    if(picked==='stone')return [...el('samples').children];
-    return [...(picked==='cover'?cover:profile).container.querySelectorAll('input')];
-  }
-  function refreshPicker(){
-    if(!picked)return;
-    const options=partOptions(),index=options.findIndex(o=>picked==='stone'?o.value===stoneId:o.checked);
-    if(index<0){closePicker();return;}
-    el('variant-kind').textContent=t[picked]+' · '+(index+1)+' / '+options.length;
-    el('variant-value').textContent=picked==='stone'?options[index].title:t[options[index].value];
-    el('variant-prev').disabled=el('variant-next').disabled=options.length<2;
-  }
-  function closePicker(){
-    picked=null;picker.hidden=true;
-  }
-  function cycle(direction){
-    if(!picked)return;
-    const options=partOptions(),index=options.findIndex(o=>picked==='stone'?o.value===requestedStone:o.checked);
-    options[(index+direction+options.length)%options.length]?.click();
-  }
-  el('variant-prev').onclick=()=>cycle(-1);el('variant-next').onclick=()=>cycle(1);
-  function dismiss(){closePicker();chapterButton.focus({preventScroll:true});}
-  el('variant-close').onclick=dismiss;
-  picker.onkeydown=e=>{
-    if(e.key==='Escape'){dismiss();e.preventDefault();}
-    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){cycle(e.key==='ArrowLeft'?-1:1);e.preventDefault();}
-  };
-  let swipeStart;
-  swipe.onpointerdown=e=>{if(e.isPrimary&&e.button===0){swipeStart=e.clientX;swipe.setPointerCapture(e.pointerId);}};
-  swipe.onpointercancel=()=>{swipeStart=null;};
-  swipe.onpointerup=e=>{
-    if(swipeStart==null)return;
-    const dx=e.clientX-swipeStart;swipeStart=null;if(Math.abs(dx)>24)cycle(dx<0?1:-1);
-  };
-  viewer.onPick((part,place)=>{
-    if(!ready||step===5)return;
+  let step=0,resultVersion=0;
+  const markers=el('markers'),pins=[...markers.children];
+  function selectPart(part,place){
+    if(!ready||!part||step===5)return;
+    viewer.highlight(part);
     if(step===3&&place){syncEditor.pick(place);return;}
-    if(!part){closePicker();return;}
     go(part==='stone'?2:1,false);
     if(part!=='stone')showShapePart(part);
-    picked=part;picker.hidden=false;refreshPicker();
-    el('variant-next').focus({preventScroll:true});
+    const target=part==='stone'?el('samples').querySelector('[aria-pressed=true]'):el(part).querySelector(':checked');
+    target?.focus({preventScroll:true});
+  }
+  viewer.onPick(selectPart);
+  viewer.onAnchors(points=>{
+    for(const pin of pins){
+      const point=points[pin.dataset.part];
+      pin.hidden=!point;
+      if(!point)continue;
+      pin.style.left=point.x+'px';pin.style.top=point.y+'px';
+      const left=pin.dataset.part==='profile'?point.x>pin.offsetWidth+24:point.x>viewer.canvas.clientWidth-pin.offsetWidth-24;
+      pin.dataset.side=left?'left':'right';
+      pin.onclick=()=>selectPart(pin.dataset.part,point.place);
+    }
   });
+  for(const [group,options] of [[el('profile'),profile],[el('cover'),cover],[el('samples'),null]]){
+    let start,swiped=false;
+    group.addEventListener('pointerdown',e=>{start=e.isPrimary?[e.clientX,e.clientY]:null;swiped=false;});
+    group.addEventListener('pointercancel',()=>{start=null;});
+    group.addEventListener('pointerup',e=>{
+      if(!start)return;
+      const dx=e.clientX-start[0],dy=e.clientY-start[1];start=null;
+      if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)*1.4)return;
+      const items=[...group.querySelectorAll(options?'input':'button')];
+      const index=items.findIndex(item=>item.value===(options?options.value:requestedStone));
+      items[(index+(dx<0?1:-1)+items.length)%items.length].click();swiped=true;
+    });
+    group.addEventListener('click',e=>{if(swiped&&e.isTrusted){e.preventDefault();e.stopImmediatePropagation();swiped=false;}},true);
+  }
   async function renderResult(){
     const revision=++resultVersion;
     await Promise.all([pendingStone,pendingEnvironment]);
@@ -214,31 +192,23 @@ async function start(){
     el('rendered').src=viewer.frontImage();el('print').hidden=false;
   }
   const panels=[...document.querySelectorAll('[data-step]')];
-  const stepViews=['angle','angle','angle','detail','angle','front'];
-  const chapters=el('chapters'),chapterButton=chapters.querySelector('summary');
-  chapters.onkeydown=e=>{if(e.key==='Escape'){chapters.open=false;chapterButton.focus();}};
-  document.addEventListener('pointerdown',e=>{if(!chapters.contains(e.target))chapters.open=false;});
+  const stepViews=['angle','angle','angle','angle','angle','front'];
   const tabs=t.editTabs.map((label,i)=>{
     const button=document.createElement('button');button.type='button';
-    button.append(icon(['model','profil','kamen','napis','doplnky','vysledok'][i]),document.createTextNode(label));
-    button.onclick=()=>{go(i);chapterButton.focus({preventScroll:true});};el('step-track').append(button);return button;
+    button.textContent=label;
+    button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
-  el('review').onclick=()=>go(5);
   function go(i,move=true){
-    closePicker();
-    if(matchMedia('(max-width:760px)').matches){
-      if(move&&tier===0)sheet(1);
-    }
-    chapters.open=false;el('chapter-name').textContent=t.editTabs[i];
-    el('chapter-count').textContent=String(i+1).padStart(2,'0')+' / '+String(t.editTabs.length).padStart(2,'0');
+    el('step-track').style.setProperty('--step',i);
+    markers.hidden=i===5;
+    for(const pin of pins)pin.textContent=t[(i===3?'write':'pick')+(pin.dataset.part==='profile'?'Face':'Cover')];
+    markers.dataset.selected='';
     step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
     tabs.forEach((tab,j)=>tab.setAttribute('aria-pressed',String(j===i)));
-    el('review').setAttribute('aria-pressed',String(i===5));
     el('step-title').textContent=t.stepTitles[i];
-    el('step-hint').textContent=t.stepHints[i];el('step-progress').value=i+1;
     if(i===1)shapeHeading();
-    el('back').hidden=i===0;el('next').hidden=i===5;el('to-inquiry').hidden=i!==5;
+    el('back').hidden=i===0;el('next').hidden=i===5;document.querySelector('.step-actions').hidden=i===5;
     tabs.forEach((tab,j)=>j===i?tab.setAttribute('aria-current','step'):tab.removeAttribute('aria-current'));
     el('step-scroll').scrollTop=0;
     layout.classList.toggle('show-result',i===5);

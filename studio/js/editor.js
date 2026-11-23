@@ -171,7 +171,7 @@ export function editor(config,t,product,viewer,detail,changed,shape){
     await update();
   };
   sync.pick=place=>{
-    if(!['first','second','epitaph'].includes(active))return;
+    if(!['first','second','epitaph'].includes(active))open('first');
     const {select}=locations[active==='epitaph'?'verseAt':'nameAt'];
     if(![...select.options].some(o=>o.value===place)||select.value===place)return;
     select.value=place;select.dispatchEvent(new Event('change'));

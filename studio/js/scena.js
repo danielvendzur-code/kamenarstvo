@@ -176,7 +176,44 @@ export function scena(host,model,stone,onOrbit){
     }
     step(start);
   }
-  let frame=0,settleTimer;
+  let frame=0,settleTimer,anchorsChanged,anchorModel,anchors=[];
+  let sheenFrame=0,clearSheen;
+  function highlight(part){
+    clearSheen?.();
+    if(!part||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+    const material=new T.MeshBasicMaterial({color:0xe7d6a7,transparent:true,opacity:.23,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-1});
+    const meshes=[];
+    monument.traverse(m=>{if(m.isMesh&&(part==='profile'?m.userData.face:m.userData.part===part))meshes.push(m);});
+    const overlays=meshes.map(mesh=>{
+      const overlay=new T.Mesh(mesh.geometry,material);overlay.raycast=()=>{};overlay.renderOrder=2;mesh.add(overlay);return overlay;
+    });
+    clearSheen=()=>{cancelAnimationFrame(sheenFrame);overlays.forEach(o=>o.removeFromParent());material.dispose();clearSheen=null;invalidate();};
+    const start=performance.now();
+    function fade(now){
+      const progress=Math.min(1,(now-start)/430);
+      material.opacity=.23*(1-progress);invalidate();
+      if(progress<1)sheenFrame=requestAnimationFrame(fade);else clearSheen();
+    }
+    sheenFrame=requestAnimationFrame(fade);
+  }
+  function updateAnchors(){
+    if(!anchorsChanged)return;
+    if(anchorModel!==monument){
+      anchorModel=monument;anchors=[];
+      monument.traverse(mesh=>{
+        const f=mesh.userData.face,c=mesh.userData.coverField;
+        if(f&&!anchors.some(a=>a.key==='profile'))anchors.push({key:'profile',mesh,point:new T.Vector3(f.right*.55+f.left*.45,f.height*.70,f.z),place:f.curveWidth&&selection.type!=='dvojhrob'?'leftPage':'face'});
+        if(c)anchors.push({key:'cover',mesh,point:new T.Vector3((c.left+c.right)/2,c.bottom+c.height*.4,0),place:'slab'});
+      });
+    }
+    const points={};
+    for(const a of anchors){
+      const v=a.mesh.localToWorld(a.point.clone()).project(camera);
+      const x=(v.x+1)*host.clientWidth/2,y=(1-v.y)*host.clientHeight/2;
+      if(v.z>-1&&v.z<1&&x>=12&&x<=host.clientWidth-12&&y>=12&&y<=host.clientHeight-12)points[a.key]={x,y,place:a.place};
+    }
+    anchorsChanged(points);
+  }
   const fullDpr=renderer.getPixelRatio();
   let moving=false, lastMove=0, slowFrames=0;
   let motionDpr=Math.min(.80,fullDpr);
@@ -216,7 +253,7 @@ export function scena(host,model,stone,onOrbit){
     },200);
   }
   function invalidate(){
-    if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);});
+    if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);updateAnchors();});
   }
   controls.addEventListener('change',()=>{motion();invalidate();});
   controls.addEventListener('start',()=>{orbiting=true;lastMove=0;slowFrames=0;cancelAnimationFrame(flight);onOrbit();});
@@ -334,7 +371,7 @@ export function scena(host,model,stone,onOrbit){
     shadowExtras=extras;invalidate();
   }
   function change(next,newModel,newStone){
-    snapshot();
+    clearSheen?.();snapshot();
     const typeChanged=selection.type!==next.type;
     selection={...next};model=newModel;stone=newStone;
     odstran(decoration);decoration=null;
@@ -382,6 +419,7 @@ export function scena(host,model,stone,onOrbit){
     event.preventDefault();
   });
   function frontImage(){
+    clearSheen?.();
     // An independent camera keeps the user's orbit and the canvas layout intact.
     const bounds=new T.Box3().setFromObject(monument),center=bounds.getCenter(new T.Vector3());
     const shot=camera.clone();shot.clearViewOffset();shot.aspect=host.parentElement.clientWidth/host.parentElement.clientHeight;shot.fov=32;
@@ -421,6 +459,6 @@ export function scena(host,model,stone,onOrbit){
       else callback(null,null);
     });
   }
-  return {view,zoom,canvas,environment,change,decorate,frontImage,onPick};
+  return {view,zoom,canvas,environment,change,decorate,frontImage,highlight,onPick,onAnchors(callback){anchorsChanged=callback;invalidate();}};
 }
 

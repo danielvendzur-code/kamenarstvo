@@ -120,7 +120,7 @@
   "thanks": "Ďakujeme, ozveme sa do 24 hodín.",
   "simulation": "Toto je ukážka – odoslanie si môžete vyskúšať, nikam sa neodošle.",
   "sendError": "Dopyt sa nepodarilo odoslať. Skúste to znova.",
-  "toInquiry": "Poslať nezáväzný dopyt",
+  "toInquiry": "Požiadať o ponuku",
   "editAreas": "Časti návrhu",
   "editTabs": [
     "Typ",
@@ -156,5 +156,11 @@
   "coverHint": "Vyberte povrch hrobu alebo ponechajte miesto na kvety.",
   "previousVariant": "Predchádzajúci variant",
   "nextVariant": "Ďalší variant",
-  "variant": "Variant dielu"
+  "variant": "Variant dielu",
+  "pickFace": "Stela",
+  "pickCover": "Krycia doska",
+  "writeFace": "Nápis na stele",
+  "writeCover": "Nápis na doske",
+  "edit": "Upraviť",
+  "emptyInscription": "Bez nápisu"
 }
