@@ -492,3 +492,46 @@ dialog h2{margin:6px 0;font-size:30px}
  #inquiry{gap:4px 12px}#inquiry button[type=submit]{min-height:38px}
 }
 
+
+/* Tool rail and selection gallery */
+#loader img{width:min(220px,52vw);height:auto;background:none;border-radius:0;padding:0;animation:none}
+#step-track{margin:clamp(12px,3vh,32px) var(--pad) 0;padding:4px;gap:2px;background:#eeece5;border-radius:18px}
+#step-track button{align-items:center;justify-content:center;flex-direction:column;gap:5px;height:56px;padding:4px 0;border-radius:14px;font:600 11px/1.15 var(--sans);text-transform:none;letter-spacing:0;color:#57584f}
+#step-track button:hover{background:#e4e2d9}
+#step-track button[aria-current=step]{color:white;background:#34473d}
+#step-track .symbol{width:20px;height:20px;stroke:currentColor;stroke-width:1.45;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#step-progress{display:none}
+#product{gap:12px}
+#product label{display:grid;grid-template-rows:auto auto auto;gap:4px;padding:7px 7px 14px;border:1px solid #d8d5c9;border-radius:18px;background:#faf9f5;overflow:hidden}
+#product label img,#product label:has(:checked) img{width:100%;height:clamp(82px,13vh,145px);border-radius:12px;object-fit:contain;background:#efede6;outline:0;box-shadow:none}
+#product label span,#product label small{padding:0 8px}
+#product label span{margin-top:4px;font:500 clamp(16px,1.35vw,22px)/1.18 var(--serif)}
+#product label small{font:500 11px/1.2 var(--sans);color:#65655d}
+#product label::before{border-radius:50%;width:12px;height:12px;top:13px;right:13px;background:#385344;border:2px solid #fff}
+#product label:has(:checked){border-color:#536856;background:#f0f3eb;box-shadow:0 0 0 1px #536856 inset}
+#product label:has(:focus-visible){outline:2px solid #776142;outline-offset:2px}
+#product label:hover{border-color:#758777}
+#profile{grid-template-columns:repeat(3,minmax(0,1fr))}
+#profile label{flex-direction:column;justify-content:center;text-align:center;border-radius:13px;min-height:74px;font:500 13px/1.15 var(--sans)}
+#profile label::after{display:none}
+#profile .silhouette{width:56px;height:31px;fill:#cac6ba}
+#profile .spine{fill:none;stroke:#fff;stroke-width:2}
+#profile label:has(:checked){background:#edf1e9;border-color:#49634e}
+#profile label:has(:checked) svg{fill:#405648}
+#letters input:not([type=radio]),#letters textarea,#inquiry input:not([type=checkbox]),#inquiry textarea,.placement select{border:1px solid #cecfc4;border-radius:9px;background:#fbfbf7;color:var(--ink);padding:7px 10px;min-height:40px;font:500 15px/1.25 var(--sans)}
+#letters .placement{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin:0}
+#letters .placement span{margin:0;letter-spacing:.06em}
+#letters .placement select{min-width:0;max-width:66%;flex:1}
+#next,#back,#to-inquiry,#review{border-radius:999px}
+@media(max-width:760px){
+ #step-track{margin:0 var(--pad) 2px}
+ #step-track button{height:42px;gap:2px;font-size:10px}
+ #step-track .symbol{width:16px;height:16px}
+ #product{gap:8px}#product label{padding:4px 4px 7px;gap:1px;border-radius:13px}
+ #product label img,#product label:has(:checked) img{height:clamp(44px,7.5vh,68px)}
+ #product label span{font-size:15px}
+ #product label small{font-size:10px}
+ #profile label{min-height:50px;gap:2px;font-size:11px}#profile .silhouette{height:22px}
+ #letters input:not([type=radio]),#letters textarea,.placement select{font-size:16px;min-height:35px;padding-block:4px}
+}
+@media(max-height:540px) and (max-width:760px){#step-track button{height:31px;flex-direction:row}#step-track .symbol{display:none}#letters .placement select{min-height:29px}#letters input:not([type=radio]){min-height:29px}}

@@ -14,6 +14,8 @@ export function icon(key){
   path.setAttribute('d',strokes[key]);svg.append(path);return svg;
 }
 const profiles={
+  ramena:'M5 38V16Q15 16 19 12Q40 -3 61 12Q65 16 75 16V38Z',
+  stit:'M5 38V18L40 4L75 18V38Z',
   rovny:'M5 38V7Q5 5 7 5H73Q75 5 75 7V38Z',
   obluk:'M5 38V16Q40 -5 75 16V38Z',
   vlna:'M5 38V11C29 -4 47 23 75 11V38Z',

@@ -1,6 +1,6 @@
 {
   "studio": "Návrh pomníka online",
-  "title": "Návrh pomníka",
+  "title": "Konfigurátor kamenárstvo",
   "scene": "3D náhľad",
   "spec": "Váš návrh",
   "jednohrob": "Jednohrob",
@@ -86,20 +86,20 @@
   "back": "Späť",
   "next": "Pokračovať",
   "stepTitles": [
-    "Typ pomníka",
-    "Tvar a rozmery",
-    "Kameň",
-    "Nápis",
+    "Vyhotovenie",
+    "Silueta pomníka",
+    "Výber žuly",
+    "Váš nápis",
     "Doplnky",
     "Váš návrh"
   ],
   "stepHints": [
-    "Vyberte, pre aké miesto návrh pripravujete. Všetko ostatné môžete neskôr zmeniť.",
-    "Určte siluetu stely a kryciu dosku. Presné rozmery overíme pri obhliadke hrobového miesta.",
-    "Každá žula má inú kresbu a odlesk. Otočte pomník a pozrite si ju vo svetle.",
-    "Vpíšte mená a dátumy. Riadky sa na čele zarovnajú a zmenšia samy.",
-    "Doplňte predmety, ktoré k miestu patria. Každý môžete kedykoľvek odobrať.",
-    "Skontrolujte návrh, uložte si odkaz alebo pošlite nezáväzný dopyt."
+    "Zvoľte vyhotovenie pre svoje hrobové miesto.",
+    "Vyberte obrys kameňa.",
+    "Porovnajte kresbu žuly priamo na pomníku.",
+    "Zadajte text a vyberte, kam ho vytesať.",
+    "Vyberte doplnky k pomníku.",
+    "Uložte návrh alebo pošlite nezáväzný dopyt."
   ],
   "inquiry": "Nezáväzný dopyt",
   "designLink": "Odkaz na tento návrh",
@@ -143,6 +143,14 @@
   "nextPage": "Ďalšie údaje",
   "close": "Zavrieť",
   "manrope": "Manrope",
-  "photoLater": "Fotokeramika – fotku pošlem dodatočne."
+  "photoLater": "Fotokeramika – fotku pošlem dodatočne.",
+  "ramena": "Oblúk s ramenami",
+  "stit": "Sedlový štít",
+  "surface": "Umiestnenie nápisu",
+  "face": "Na stele",
+  "slab": "Na krycej doske",
+  "leftPage": "Ľavá strana knihy",
+  "rightPage": "Pravá strana knihy",
+  "locationName": "Meno a dátumy",
+  "locationVerse": "Epitaf"
 }
-

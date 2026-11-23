@@ -44,6 +44,11 @@ function outline(w,h,profile){
   path.moveTo(-x,0);path.lineTo(x,0);
   if(profile==='obluk'){
     path.lineTo(x,h*.86);path.bezierCurveTo(x*.52,h*1.045,-x*.52,h*1.045,-x,h*.86);
+  }else if(profile==='ramena'){
+    path.lineTo(x,h*.78);path.quadraticCurveTo(x*.78,h*.78,x*.63,h*.86);
+    path.quadraticCurveTo(0,h*1.14,-x*.63,h*.86);path.quadraticCurveTo(-x*.78,h*.78,-x,h*.78);
+  }else if(profile==='stit'){
+    path.lineTo(x,h*.79);path.lineTo(0,h);path.lineTo(-x,h*.79);
   }else if(profile==='vlna'){
     path.lineTo(x,h*.80);path.bezierCurveTo(x*.20,h*.65,-x*.19,h*1.10,-x,h*.94);
   }else{

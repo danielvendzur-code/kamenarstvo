@@ -1,3 +1,4 @@
+import {icon} from './ikony.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -21,16 +22,14 @@ async function start(){
   const slug=new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
-  const {firma,tema,katalog,prostredia,dopyt}=await json(base+'config.json');
+  const {tema,katalog,prostredia,dopyt}=await json(base+'config.json');
   const catalog=await json('./katalog/'+encodeURIComponent(katalog.zaklad)+'.json');
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
   }
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
-  document.title=t.title+' · '+firma.nazov;
-  el('load-logo').src=base+firma.logo;
+  document.title=t.title;
   const progress=document.querySelector('progress');progress.value=2;progress.setAttribute('aria-label',t.loading);
-  el('brand').textContent=firma.nazov.normalize('NFC');el('logo').src=base+firma.logo;
   for(const node of document.querySelectorAll('[data-t]'))node.textContent=t[node.dataset.t];
   for(const node of document.querySelectorAll('[data-label],[data-view]')){
     node.setAttribute('aria-label',t[node.dataset.label??node.dataset.t]);
@@ -39,6 +38,10 @@ async function start(){
   const types=[...katalog.pomniky,...(katalog.dosky??[])];
   const definition=id=>catalog.pomniky[id]??catalog.dosky[id];
   const product=choiceSet(el('product'),types,t,'profiles');
+  for(const label of product.container.children){
+    const model=definition(label.querySelector('input').value),dim=document.createElement('small');
+    dim.textContent=[model.sirka,label.querySelector('input').value==='pamatna'?model.vyskaStely:model.dlzka].map(v=>Math.round(v*100)).join(' × ')+' '+t.unit;label.append(dim);
+  }
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
   const restored=readDesign();
@@ -161,8 +164,7 @@ async function start(){
   const stepViews=['angle','angle','angle','detail','angle','front'];
   const tabs=t.editTabs.map((label,i)=>{
     const button=document.createElement('button');button.type='button';
-    const number=document.createElement('span');number.textContent=i+1;
-    button.append(number,document.createTextNode(label));
+    button.append(icon(['model','profil','kamen','napis','doplnky','vysledok'][i]),document.createTextNode(label));
     button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
