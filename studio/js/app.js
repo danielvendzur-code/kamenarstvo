@@ -151,7 +151,7 @@ async function start(){
   function selectPart(part,place){
     if(!ready||!part||step===5)return;
     viewer.highlight(part);
-    if(step===3&&place){syncEditor.pick(place);return;}
+    if(step===3){if(place)syncEditor.pick(place);return;}
     go(part==='stone'?2:1,false);
     if(part!=='stone')showShapePart(part);
     const target=part==='stone'?el('samples').querySelector('[aria-pressed=true]'):el(part).querySelector(':checked');
@@ -166,7 +166,7 @@ async function start(){
       pin.style.left=point.x+'px';pin.style.top=point.y+'px';
       const left=pin.dataset.part==='profile'?point.x>pin.offsetWidth+24:point.x>viewer.canvas.clientWidth-pin.offsetWidth-24;
       pin.dataset.side=left?'left':'right';
-      pin.onclick=()=>selectPart(pin.dataset.part,point.place);
+      pin.onclick=event=>{if(event.detail===0)selectPart(pin.dataset.part,point.place);};
     }
   });
   for(const [group,options] of [[el('profile'),profile],[el('cover'),cover],[el('samples'),null]]){

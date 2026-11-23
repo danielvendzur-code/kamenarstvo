@@ -136,7 +136,7 @@ export function scena(host,model,stone,onOrbit){
   });
   softShadows(receivers);
   const camera=new T.PerspectiveCamera(33,1,0.05,180);
-  const controls=new OrbitControls(camera,renderer.domElement);
+  const controls=new OrbitControls(camera,host);
   controls.enablePan=false;controls.minDistance=1.65;controls.maxDistance=7;
   controls.minPolarAngle=0.14;controls.maxPolarAngle=Math.PI*.49;
   const target=new T.Vector3(0,0.39,0.03);
@@ -442,12 +442,13 @@ export function scena(host,model,stone,onOrbit){
   }
   function onPick(callback){
     const ray=new T.Raycaster();let down;
-    canvas.addEventListener('pointerdown',e=>{down=e.isPrimary?[e.clientX,e.clientY]:null;});
-    canvas.addEventListener('pointermove',e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)down=null;});
-    canvas.addEventListener('pointercancel',()=>{down=null;});
-    canvas.addEventListener('pointerup',e=>{
+    host.addEventListener('pointerdown',e=>{down=e.isPrimary?[e.clientX,e.clientY,e.target.closest('[data-part]')]:null;});
+    host.addEventListener('pointermove',e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)down=null;});
+    host.addEventListener('pointercancel',()=>{down=null;});
+    host.addEventListener('pointerup',e=>{
       const start=down;down=null;
       if(!start||!e.isPrimary||e.button!==0||Math.hypot(e.clientX-start[0],e.clientY-start[1])>5)return;
+      if(start[2]){start[2].click();return;}
       const rect=canvas.getBoundingClientRect();
       ray.setFromCamera(new T.Vector2(2*(e.clientX-rect.left)/rect.width-1,1-2*(e.clientY-rect.top)/rect.height),camera);
       const hit=ray.intersectObject(monument,true)[0];
