@@ -106,7 +106,7 @@ export function editor(config,t,product,viewer,detail,changed){
   }
   async function update(){
     refreshPreview();
-    const id=++version,family=fonts[font.value]??'Cormorant';
+    const id=++version,family=fonts[font.value]??'Playfair';
     await document.fonts.load('24px '+family);
     await new Promise(requestAnimationFrame);if(id!==version)return;
     viewer.decorate({font:family,finish:finish.value,extras:selected,photo,epitaph:epitaph.value.normalize('NFC'),
@@ -132,7 +132,8 @@ export function editor(config,t,product,viewer,detail,changed){
     epitaph:epitaph.value,extras:[...selected].sort(),portrait:portraitData,photoName:portraitData?filename.textContent:''
   });
   sync.restore=async d=>{
-    if(config.pisma.includes(d.font))font.select(d.font);
+    const family=d.font==='cormorant'?'playfair':d.font;
+    if(config.pisma.includes(family))font.select(family);
     if(config.farbyPisma.includes(d.finish))finish.select(d.finish);
     chosen=d.customFinish===true;
     people.forEach((person,i)=>{for(const [key,e] of Object.entries(person)){

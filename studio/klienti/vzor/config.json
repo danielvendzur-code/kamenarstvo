@@ -13,9 +13,9 @@
     "text": "#262c26",
     "akcent": "#795b38",
     "akcent2": "#314439",
-    "pismoNadpis": "Cormorant",
-    "pismoText": "Inter",
-    "zaoblenie": 14
+    "pismoNadpis": "Playfair",
+    "pismoText": "Manrope",
+    "zaoblenie": 3
   },
   "katalog": {
     "zaklad": "zaklad",
@@ -43,7 +43,7 @@
     ],
     "pisma": [
       "cinzel",
-      "cormorant",
+      "manrope",
       "playfair",
       "great-vibes"
     ],

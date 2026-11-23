@@ -37,7 +37,7 @@ export function scena(host,model,stone,onOrbit){
   renderer.domElement.style.visibility='hidden';
   host.append(renderer.domElement);
   const scene=new T.Scene(),panorama=studioReflection();
-  renderer.toneMappingExposure=1.17;
+  renderer.toneMappingExposure=1.09;
   const generator=new T.PMREMGenerator(renderer);
   scene.environment=generator.fromEquirectangular(panorama).texture;
   generator.dispose();
@@ -91,7 +91,7 @@ export function scena(host,model,stone,onOrbit){
   sun.shadow.normalBias=0.0012;
   sun.shadow.bias=-0.00007;
   scene.add(sun);
-  const fill=new T.DirectionalLight(0xfff8e9,1.35);
+  const fill=new T.DirectionalLight(0xfffaf2,.55);
   fill.position.set(-2,3.6,4.8);scene.add(fill);
   const rim=new T.DirectionalLight(0xffeed7,.64);
   rim.position.set(-2.4,2.8,-1.8);scene.add(rim);
@@ -154,7 +154,7 @@ export function scena(host,model,stone,onOrbit){
     monument.traverse(mesh=>{if(mesh.userData.face)bounds.expandByObject(mesh);});
     const focus=detail?bounds.getCenter(new T.Vector3()):target;
     const size=bounds.getSize(new T.Vector3());
-    const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.45,1.14,2.55]:directions[key];
+    const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.57,.54,2.55]:directions[key];
     const available=Math.max(1,host.clientWidth-24);
     const tangent=Math.tan(T.MathUtils.degToRad(camera.fov/2));
     const detailDistance=.5*1.26*Math.max(size.x/(available/host.clientHeight),size.y,size.z)/tangent+size.z*.4;
@@ -269,7 +269,7 @@ export function scena(host,model,stone,onOrbit){
     scene.fog=studio?studioFog:new T.FogExp2(dusk?0xd9b99d:0xcbd5cd,dusk?.026:.020);
     hemi.color.set(studio?0xffffff:dusk?0xffe8d6:0xd7e7ff);
     hemi.groundColor.set(studio?0x909090:0x77786c);
-    hemi.intensity=studio?1.22:1.55;
+    hemi.intensity=studio?1.16:1.05;
     sun.color.set(studio?0xffffff:dusk?0xffc08a:0xffe0ba);
     sun.intensity=studio?1.35:dusk?1.62:1.78;
     if(studio)sun.position.set(-3,6,3.5);
@@ -369,7 +369,7 @@ export function scena(host,model,stone,onOrbit){
   function frontImage(){
     // An independent camera keeps the user's orbit and the canvas layout intact.
     const bounds=new T.Box3().setFromObject(monument),center=bounds.getCenter(new T.Vector3());
-    const shot=camera.clone();shot.clearViewOffset();shot.aspect=1.4;shot.fov=32;
+    const shot=camera.clone();shot.clearViewOffset();shot.aspect=host.parentElement.clientWidth/host.parentElement.clientHeight;shot.fov=32;
     const facing=selection.type==='urna'?new T.Vector3(0,1.25,1):new T.Vector3(0,.30,1);
     shot.position.copy(center).add(facing.normalize());shot.lookAt(center);shot.updateMatrixWorld();
     const right=new T.Vector3().setFromMatrixColumn(shot.matrixWorld,0);
@@ -382,7 +382,7 @@ export function scena(host,model,stone,onOrbit){
     shot.position.copy(center).addScaledVector(facing,distance);shot.updateProjectionMatrix();
     const size=renderer.getSize(new T.Vector2()),ratio=renderer.getPixelRatio();
     try{
-      renderer.setPixelRatio(1);renderer.setSize(1400,1000,false);renderer.render(scene,shot);
+      renderer.setPixelRatio(1);renderer.setSize(Math.round(1280*Math.min(1,shot.aspect)),Math.round(1280*Math.min(1,1/shot.aspect)),false);renderer.render(scene,shot);
       return canvas.toDataURL('image/jpeg',.92);
     }finally{renderer.setPixelRatio(ratio);renderer.setSize(size.x,size.y,false);invalidate();}
   }
