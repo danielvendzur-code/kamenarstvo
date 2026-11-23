@@ -51,7 +51,7 @@ async function start(){
     el('profile-field').hidden=part!=='profile';el('cover-field').hidden=part!=='cover';
     for(const button of el('shape-tools').children)button.setAttribute('aria-pressed',String(button.dataset.shapePart===part));
   }
-  for(const button of el('shape-tools').children)button.onclick=()=>showShapePart(button.dataset.shapePart);
+  for(const button of el('shape-tools').children)button.onclick=()=>{closePicker();showShapePart(button.dataset.shapePart);};
   function profiles(){
     profile.fill(katalog.tvary);
     showShapePart('profile');
@@ -131,29 +131,74 @@ async function start(){
   }
   function apply(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
-    describe();persist();
+    describe();persist();refreshPicker();
   }
   const syncEditor=editor(katalog,t,product,viewer,detail,persist,()=>profile.value);
-  viewer.onPick(place=>{if(step===3)syncEditor.pick(place);});
+
   product.container.onchange=()=>{profiles();syncEditor();apply();syncEditor.flush();mark('angle');};
   profile.container.onchange=()=>{syncEditor();apply();syncEditor.flush();};
   cover.container.onchange=apply;
-  let materialRequest=0;
+  let materialRequest=0,requestedStone=stoneId;
   for(const id of katalog.kamene){
     const button=document.createElement('button'),img=document.createElement('img');
     button.type='button';button.value=id;button.title=catalog.kamene[id].nazov;button.setAttribute('aria-label',button.title);
     img.alt='';img.src=vzorka(catalog.kamene[id]);const name=document.createElement('span');name.textContent=button.title;button.append(img,name);el('samples').append(button);
     async function selectStone(){
+      requestedStone=id;
       const job=++materialRequest;
       if(stoneId===id)return;
       try{await loadStone(catalog.kamene[id]);}
-      catch(error){console.error(error);el('error').hidden=false;return;}
+      catch(error){if(job===materialRequest){requestedStone=stoneId;refreshPicker();console.error(error);el('error').hidden=false;}return;}
       if(job!==materialRequest)return;
       stoneId=id;syncEditor.recommend(catalog.kamene[id].odporucanePismo);apply();
     }
     button.onclick=()=>pendingStone=selectStone();
   }
-  let step=0,resultVersion=0;
+  let step=0,resultVersion=0,picked=null;
+  const picker=el('part-picker'),swipe=el('variant-swipe');
+  function partOptions(){
+    if(picked==='stone')return [...el('samples').children];
+    return [...(picked==='cover'?cover:profile).container.querySelectorAll('input')];
+  }
+  function refreshPicker(){
+    if(!picked)return;
+    const options=partOptions(),index=options.findIndex(o=>picked==='stone'?o.value===stoneId:o.checked);
+    if(index<0){closePicker();return;}
+    el('variant-kind').textContent=t[picked]+' · '+(index+1)+' / '+options.length;
+    el('variant-value').textContent=picked==='stone'?options[index].title:t[options[index].value];
+    el('variant-prev').disabled=el('variant-next').disabled=options.length<2;
+  }
+  function closePicker(){
+    picked=null;picker.hidden=true;
+  }
+  function cycle(direction){
+    if(!picked)return;
+    const options=partOptions(),index=options.findIndex(o=>picked==='stone'?o.value===requestedStone:o.checked);
+    options[(index+direction+options.length)%options.length]?.click();
+  }
+  el('variant-prev').onclick=()=>cycle(-1);el('variant-next').onclick=()=>cycle(1);
+  function dismiss(){closePicker();tabs[step].focus({preventScroll:true});}
+  el('variant-close').onclick=dismiss;
+  picker.onkeydown=e=>{
+    if(e.key==='Escape'){dismiss();e.preventDefault();}
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){cycle(e.key==='ArrowLeft'?-1:1);e.preventDefault();}
+  };
+  let swipeStart;
+  swipe.onpointerdown=e=>{if(e.isPrimary&&e.button===0){swipeStart=e.clientX;swipe.setPointerCapture(e.pointerId);}};
+  swipe.onpointercancel=()=>{swipeStart=null;};
+  swipe.onpointerup=e=>{
+    if(swipeStart==null)return;
+    const dx=e.clientX-swipeStart;swipeStart=null;if(Math.abs(dx)>24)cycle(dx<0?1:-1);
+  };
+  viewer.onPick((part,place)=>{
+    if(!ready||step===5)return;
+    if(step===3&&place){syncEditor.pick(place);return;}
+    if(!part){closePicker();return;}
+    go(part==='stone'?2:1,false);
+    if(part!=='stone')showShapePart(part);
+    picked=part;picker.hidden=false;refreshPicker();
+    el('variant-next').focus({preventScroll:true});
+  });
   async function renderResult(){
     const revision=++resultVersion;
     await Promise.all([pendingStone,pendingEnvironment]);
@@ -172,6 +217,7 @@ async function start(){
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
   el('review').onclick=()=>go(5);
   function go(i,move=true){
+    closePicker();
     if(matchMedia('(max-width:760px)').matches){
       if(move&&tier===0)sheet(1);
     }

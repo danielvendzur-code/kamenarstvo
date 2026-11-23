@@ -126,7 +126,9 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     return mesh;
   }
   function block(width,height,depth,bottom,z,mat){
-    return add(blockGeometry(width,height,depth,.004,false),mat,0,bottom+height/2,z);
+    const mesh=add(blockGeometry(width,height,depth,.004,false),mat,0,bottom+height/2,z);
+    if(mat===faces||mat===satin||mat===polished)mesh.userData.part='stone';
+    return mesh;
   }
   function profileFace(path,depth,base,z){
     const mesh=add(sheet(path,depth,.004),faces,0,base+.004,z-depth/2+.004);
@@ -187,7 +189,8 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const ring=rectangle(-w/2+bevel,-d/2+bevel,w/2-bevel,d/2-bevel);
   const rail=model.sirkaObruby;
   ring.holes.push(rectangle(-w/2+rail,-d/2+rail,w/2-rail,d/2-rail));
-  add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0).rotation.x=-Math.PI/2;
+  const railMesh=add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0);
+  railMesh.rotation.x=-Math.PI/2;railMesh.userData.part='stone';
   const halfW=w/2+.005,halfD=d/2+.005,gap=.0025+bevel;
   const covers=cover==='delena'
     ?[rectangle(-halfW,-halfD,-gap,halfD),rectangle(gap,-halfD,halfW,halfD)]
@@ -244,7 +247,8 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       if(next!==slot){body.addGroup(indices.length,0,next);slot=next;}
       body.groups.at(-1).count+=3;indices.push(i,i+1,i+2);
     }
-    body.setIndex(indices);add(markSlabs(body),[chamfer,satin],0,shoulder+bevel,0).rotation.x=-Math.PI/2;
+    body.setIndex(indices);const edge=add(markSlabs(body),[chamfer,satin],0,shoulder+bevel,0);
+    edge.rotation.x=-Math.PI/2;edge.userData.part='cover';
   }
   // Reuse the body's cap triangles so even the curved flower opening shares
   // the exact boundary vertices of the bevel and a single reflective plane.
@@ -252,6 +256,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   cap.setAttribute('position',new T.Float32BufferAttribute(capPositions,3));
   cap.computeVertexNormals();
   const face=makeCoverFace(markSlabs(cap));
+  face.userData.part='cover';
   // Reserve a continuous engraving field away from the split, flower bed and footing.
   const fieldWidth=w*(cover==='delena'?.44:.82),cx=cover==='delena'?-w*.25:0;
   const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:0;

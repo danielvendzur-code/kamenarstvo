@@ -16,7 +16,7 @@
   "plus": "Priblížiť",
   "minus": "Oddialiť",
   "reset": "Obnoviť pohľad",
-  "hint": "Ťahaním otočíte · kolieskom priblížite",
+  "hint": "Kliknite na diel pre výber variantu · potiahnutím otočíte pomník",
   "canvas": "Trojrozmerný návrh. Ťahaním alebo šípkami ho otočíte, plusom a mínusom priblížite.",
   "error": "Náhľad sa nepodarilo načítať.",
   "unit": "cm",
@@ -94,7 +94,7 @@
     "Váš návrh"
   ],
   "stepHints": [
-    "Zvoľte vyhotovenie pre svoje hrobové miesto.",
+    "Vyberte vyhotovenie. Jednotlivé diely môžete meniť aj kliknutím na pomník.",
     "Vyberte obrys kameňa.",
     "Porovnajte kresbu žuly priamo na pomníku.",
     "Zadajte text. Miesto zvolíte v poli alebo kliknutím na pomník.",
@@ -152,5 +152,8 @@
   "leftPage": "Ľavá strana knihy",
   "rightPage": "Pravá strana knihy",
   "locationName": "Meno a dátumy",
-  "locationVerse": "Epitaf"
+  "locationVerse": "Epitaf",
+  "previousVariant": "Predchádzajúci variant",
+  "nextVariant": "Ďalší variant",
+  "variant": "Variant dielu"
 }

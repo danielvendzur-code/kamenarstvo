@@ -405,18 +405,20 @@ export function scena(host,model,stone,onOrbit){
   function onPick(callback){
     const ray=new T.Raycaster();let down;
     canvas.addEventListener('pointerdown',e=>{down=e.isPrimary?[e.clientX,e.clientY]:null;});
+    canvas.addEventListener('pointermove',e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)down=null;});
     canvas.addEventListener('pointercancel',()=>{down=null;});
     canvas.addEventListener('pointerup',e=>{
       const start=down;down=null;
-      if(!start||!e.isPrimary||Math.hypot(e.clientX-start[0],e.clientY-start[1])>5)return;
+      if(!start||!e.isPrimary||e.button!==0||Math.hypot(e.clientX-start[0],e.clientY-start[1])>5)return;
       const rect=canvas.getBoundingClientRect();
       ray.setFromCamera(new T.Vector2(2*(e.clientX-rect.left)/rect.width-1,1-2*(e.clientY-rect.top)/rect.height),camera);
       const hit=ray.intersectObject(monument,true)[0];
-      if(hit?.object.userData.coverField)callback('slab');
-      if(hit?.object.userData.face&&hit.face.normal.z>.9){
-        const box=hit.object.userData.face;
-        callback(box.curveWidth&&selection.type!=='dvojhrob'?(box.left<-.01?'leftPage':'rightPage'):'face');
-      }
+      const part=hit?.object.userData;
+      if(part?.face){
+        const side=part.face.curveWidth&&selection.type!=='dvojhrob'?(part.face.left<-.01?'leftPage':'rightPage'):'face';
+        callback('profile',hit.face.normal.z>.9?side:null);
+      }else if(part?.part)callback(part.part,part.coverField?'slab':null);
+      else callback(null,null);
     });
   }
   return {view,zoom,canvas,environment,change,decorate,frontImage,onPick};
