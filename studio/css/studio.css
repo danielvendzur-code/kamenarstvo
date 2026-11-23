@@ -553,4 +553,48 @@ dialog h2{margin:6px 0;font-size:30px}
 #part-picker #variant-close{font-size:20px;border-left:1px solid #dbdfd5;border-radius:0 20px 20px 0}
 @media(max-width:760px){#part-picker{bottom:12px}.viewer:has(#part-picker:not([hidden])) .camera{visibility:hidden}}
 
+/* Chapter menu. The section stays in place while its index floats above it. */
+.chapter-bar{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:clamp(12px,3vh,32px) var(--pad) 0;border-bottom:1px solid var(--line-strong);flex:none}
+#chapters{position:static}
+#chapters summary{display:flex;align-items:center;gap:10px;min-height:46px;cursor:pointer;list-style:none}
+#chapters summary::-webkit-details-marker{display:none}
+#chapters summary:after{content:"";width:6px;height:6px;border-bottom:1.5px solid;border-right:1.5px solid;transform:translateY(-2px) rotate(45deg)}
+#chapters[open] summary:after{transform:translateY(2px) rotate(225deg)}
+#chapters summary span,#chapter-count{font:500 11px/1.25 var(--sans);color:var(--muted);letter-spacing:.055em}
+#chapters summary b{font:650 14px/1.3 var(--sans)}
+#chapter-count{font-variant-numeric:tabular-nums}
+#chapters #step-track{position:absolute;top:100%;left:0;right:0;margin:4px 0 0;padding:6px;background:#fbfaf6;border:1px solid var(--line);box-shadow:0 12px 28px #18241d22;border-radius:9px;grid-template-columns:1fr 1fr;gap:0}
+#chapters:not([open]) #step-track{display:none}
+#chapters #step-track button{display:flex;flex-direction:row;justify-content:flex-start;gap:9px;height:44px;border-radius:3px;padding:0 10px;font:550 13px/1 var(--sans);background:transparent;color:var(--ink)}
+#chapters #step-track button:hover{background:var(--soft)}
+#chapters #step-track button[aria-current]{background:#e8ede5;color:#294233}
+#chapters #step-track .symbol{display:block;width:17px;height:17px}
+
+/* Catalogue rows share one baseline and one continuous dividing rule. */
+#product{display:block;border-top:1px solid var(--line)}
+#product label,#product label:has(:checked){display:grid;grid-template-columns:clamp(72px,7.2vw,108px) minmax(0,1fr) 22px;grid-template-rows:1fr 1fr;column-gap:18px;row-gap:0;align-items:center;text-align:left;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;padding:8px 8px 8px 0;min-height:0}
+#product label:has(:checked){background:linear-gradient(90deg,transparent,#e9eee52e)}
+#product label img,#product label:has(:checked) img{grid-column:1;grid-row:1/3;width:100%;height:clamp(54px,8vh,80px);border-radius:5px;object-fit:contain;background:#eeece6;outline:0;box-shadow:none}
+#product label span{grid-column:2;grid-row:1;align-self:end;margin:0;padding:0;font:500 clamp(18px,1.6vw,25px)/1.2 var(--serif)}
+#product label small{grid-column:2;grid-row:2;align-self:start;padding:4px 0 0;color:var(--muted);font-size:12px}
+#product label::before,#product label:has(:checked)::before{content:none}
+#product label::after{content:"";grid-column:3;grid-row:1/3;justify-self:end;width:17px;height:17px;border:1px solid var(--line-strong);border-radius:50%}
+#product label:has(:checked)::after{border-color:#405648;background:#405648;box-shadow:inset 0 0 0 4px var(--panel)}
+#product label:hover{background:var(--soft)}
+#profile label,#profile label:has(:checked){border:0;border-radius:0;border-bottom:1px solid var(--line);background:transparent;box-shadow:none}
+#profile label:has(:checked){border-bottom:2px solid #405648}
+#cover label,#cover label:has(:checked){border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+@media(max-width:760px){
+ .chapter-bar{margin:0 var(--pad)}
+ #chapters summary{min-height:38px}
+ #product label,#product label:has(:checked){grid-template-columns:74px minmax(0,1fr) 20px;gap:0 14px;padding:4px 6px 4px 0}
+ #product label img,#product label:has(:checked) img{height:45px}
+ #product label span{font-size:17px}#product label small{padding-top:2px;font-size:11px}
+}
+@media(max-width:760px) and (max-height:700px){
+ #product label img,#product label:has(:checked) img{height:35px}
+ #product label,#product label:has(:checked){grid-template-columns:58px minmax(0,1fr) 20px;padding-block:2px}
+ #chapters summary{min-height:31px}
+}
+
 .viewer:has(#part-picker:not([hidden])) .drag-hint{visibility:hidden}

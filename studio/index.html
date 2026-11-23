@@ -30,7 +30,10 @@
     <aside>
       <button id="handle" aria-controls="sheet-content" data-label="sheet"><i></i></button>
       <div id="sheet-content">
-        <nav id="step-track" data-label="editAreas"></nav>
+        <div class="chapter-bar"><details id="chapters">
+          <summary><span data-t="editAreas"></span><b id="chapter-name"></b></summary>
+          <nav id="step-track" data-label="editAreas"></nav>
+        </details><span id="chapter-count"></span></div>
         <progress id="step-progress" max="6" value="1" data-label="steps"></progress>
         <div class="scroll-panel" id="step-scroll">
           <h1 id="step-title" tabindex="-1"></h1><p id="step-hint"></p>
