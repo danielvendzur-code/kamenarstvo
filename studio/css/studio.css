@@ -535,3 +535,12 @@ dialog h2{margin:6px 0;font-size:30px}
  #letters input:not([type=radio]),#letters textarea,.placement select{font-size:16px;min-height:35px;padding-block:4px}
 }
 @media(max-height:540px) and (max-width:760px){#step-track button{height:31px;flex-direction:row}#step-track .symbol{display:none}#letters .placement select{min-height:29px}#letters input:not([type=radio]){min-height:29px}}
+@media(max-width:760px) and (max-height:700px){
+ .layout:not(.folded):not(.show-result){grid-template-rows:minmax(0,30%) minmax(0,1fr)}
+ #product label img,#product label:has(:checked) img{height:42px}
+}
+@media(max-width:760px) and (max-height:540px){
+ .layout:not(.folded):not(.show-result){grid-template-rows:minmax(0,27%) minmax(0,1fr)}
+ #step-track{display:grid}
+ #step-track button{height:30px}
+}
