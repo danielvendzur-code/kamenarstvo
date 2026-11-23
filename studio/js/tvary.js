@@ -143,11 +143,12 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   if(type==='urna'||type==='pamatna'){
     if(type==='urna'){
       block(w+.15,.058,.58,0,0,faces);
-      // The wedge supports the entire sloped face, including the book binding.
+      // Keep the back edge below the shoulders and the wedge inside curved sides.
       const wedge=new T.Shape();
-      wedge.moveTo(-.123,0);wedge.lineTo(.123,0);wedge.lineTo(.123,.118);
+      const rear=shape==='kniha'?.123:.066, supportWidth=w*(shape==='kniha'?.68:.50);
+      wedge.moveTo(-.123,0);wedge.lineTo(rear,0);wedge.lineTo(rear,.028+(rear+.123)*.09/.246);
       wedge.lineTo(-.123,.028);wedge.closePath();
-      const support=add(sheet(wedge,w*.68,.003),faces,-w*.34+.003,.061,-.015);
+      const support=add(sheet(wedge,supportWidth,.003),faces,-supportWidth/2+.003,.061,-.015);
       support.rotation.y=Math.PI/2;
       addTablet(.042,.070,.172,-1.22);
     }else{
@@ -159,7 +160,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
       // the pier with coplanar side faces, which flickered during orbit.
       const pierFront=-.218+.40/2, shelfFront=.146;
       block(w+.24,.045,shelfFront-pierFront,.710,(pierFront+shelfFront)/2,faces);
-      block(w*.68,h*.70,.030,.82,-.008,satin);
+      block(w*.50,h*.53,.030,.82,-.008,satin);
       addTablet(.042,.78,.020,0);
 
     }
