@@ -167,23 +167,45 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   }
   const bevel=model.zrazenie, footing=.035, shoulder=footing+model.vyskaObruby;
   const top=shoulder+model.hrubkaDosky;
-  block(w-.05,footing,d-.05,0,0,satin);
-  const ring=rectangle(-w/2+bevel,-d/2+bevel,w/2-bevel,d/2-bevel);
+  // Mitre the plinth, border and lid together so no square corners protrude.
+  function perimeter(x,z,inset=0){
+    if(cover!=='skosene-celo')return rectangle(-x,-z,x,z);
+    const cut=Math.min(w*.22,d*.13)-(2-Math.SQRT2)*inset;
+    const path=new T.Shape();
+    path.moveTo(-x+cut,-z);path.lineTo(x-cut,-z);path.lineTo(x,-z+cut);
+    path.lineTo(x,z);path.lineTo(-x,z);path.lineTo(-x,-z+cut);path.closePath();
+    return path;
+  }
+  if(cover==='skosene-celo'){
+    add(sheet(perimeter(w/2-.029,d/2-.029,.029),footing,.004),satin,0,.004,0).rotation.x=-Math.PI/2;
+  }else block(w-.05,footing,d-.05,0,0,satin);
+  const ring=perimeter(w/2-bevel,d/2-bevel,bevel);
   const rail=model.sirkaObruby;
-  ring.holes.push(rectangle(-w/2+rail,-d/2+rail,w/2-rail,d/2-rail));
+  ring.holes.push(perimeter(w/2-rail,d/2-rail,rail));
   const railMesh=add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0);
   railMesh.rotation.x=-Math.PI/2;railMesh.userData.part='stone';
   const halfW=w/2+.005,halfD=d/2+.005,gap=.0025+bevel;
-  const covers=cover==='delena'
-    ?[rectangle(-halfW,-halfD,-gap,halfD),rectangle(gap,-halfD,halfW,halfD)]
-    :[rectangle(-halfW,-halfD,halfW,halfD)];
-  if(cover==='kvety'){
-    covers[0].holes.push(recess(w,d,bevel));
-    const lip=recess(w,d,.022);
-    lip.holes.push(recess(w,d,-bevel));
+  const crossSeam=d*.09;
+  let covers=[perimeter(halfW,halfD)];
+  if(cover==='delena'){
+    covers=[rectangle(-halfW,-halfD,-gap,halfD),rectangle(gap,-halfD,halfW,halfD)];
+  }else if(cover==='priecne-delena'){
+    covers=[rectangle(-halfW,-halfD,halfW,crossSeam-gap),rectangle(-halfW,crossSeam+gap,halfW,halfD)];
+  }
+  const sideBed=cover==='bocny-zahon';
+  function opening(grow){
+    if(!sideBed)return recess(w,d,grow);
+    const path=new T.Shape();
+    path.absellipse(w*.24,-d*.055,w*.145+grow,d*.31+grow,0,2*Math.PI,false,0);
+    return path;
+  }
+  if(cover==='kvety'||sideBed){
+    covers[0].holes.push(opening(bevel));
+    const lip=opening(.022);
+    lip.holes.push(opening(-bevel));
     add(sheet(lip,.024,.003),polished,0,top+.003,0).rotation.x=-Math.PI/2;
     const soil=new T.MeshStandardMaterial({color:0x362c21,roughness:1});
-    const bed=add(new T.ShapeGeometry(recess(w,d,.012)),soil,0,shoulder-.023,0);
+    const bed=add(new T.ShapeGeometry(opening(.012)),soil,0,shoulder-.023,0);
     bed.rotation.x=-Math.PI/2;
     const gravel=new T.InstancedMesh(new T.IcosahedronGeometry(1,0),
       new T.MeshStandardMaterial({roughness:.95}),Math.round(1100*w));
@@ -192,7 +214,10 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
     for(let i=0;i<gravel.count;i++){
       const r=.004+random()*.007;
-      pebble.position.set((random()-.5)*w*.58,bed.position.y+.001,d*(.08+random()*.27));
+      if(sideBed){
+        const angle=random()*Math.PI*2,radius=Math.sqrt(random())*.98;
+        pebble.position.set(w*(.24+.145*radius*Math.cos(angle)),bed.position.y+.001,d*(.055+.31*radius*Math.sin(angle)));
+      }else pebble.position.set((random()-.5)*w*.58,bed.position.y+.001,d*(.08+random()*.27));
       pebble.rotation.set(random()*2,random()*3,random()*2);pebble.scale.set(r,r*.5,r*.85);
       pebble.updateMatrix();gravel.setMatrixAt(i,pebble.matrix);
       tone.setScalar(.045+random()*.11);gravel.setColorAt(i,tone);
@@ -200,10 +225,10 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     gravel.receiveShadow=true;group.add(gravel);
   }
   function markSlabs(geometry){
-    if(cover==='delena'){
+    if(cover==='delena'||cover==='priecne-delena'){
       const pos=geometry.attributes.position;
       geometry.setAttribute('slabCut',new T.Float32BufferAttribute(
-        Float32Array.from({length:pos.count},(_,i)=>Number(pos.getX(i)>0)),1));
+        Float32Array.from({length:pos.count},(_,i)=>Number(cover==='delena'?pos.getX(i)>0:pos.getY(i)>crossSeam)),1));
     }
     return geometry;
   }
@@ -240,8 +265,8 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const face=makeCoverFace(markSlabs(cap));
   face.userData.part='cover';
   // Reserve a continuous engraving field away from the split, flower bed and footing.
-  const fieldWidth=w*(cover==='delena'?.44:.82),cx=cover==='delena'?-w*.25:0;
-  const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:0;
+  const fieldWidth=w*(cover==='delena'?.44:sideBed?.49:.82),cx=cover==='delena'?-w*.25:sideBed?-w*.20:0;
+  const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:cover==='priecne-delena'?-d*.20:0;
   face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,baseHeight=model.vyskaPodstavca;
