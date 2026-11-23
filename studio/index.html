@@ -2,7 +2,7 @@
 <html lang="sk">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content">
   <meta name="robots" content="noindex,nofollow">
   <title>Studio</title>
   <link rel="icon" href="data:,">
@@ -39,7 +39,7 @@
             <dl id="summary"></dl>
             <label class="link-label" for="design-link" data-t="designLink"></label>
             <input id="design-link" type="url" readonly><button type="button" id="copy" data-t="copyLink"></button>
-            <button id="to-inquiry" class="primary" data-t="toInquiry"></button><dialog id="inquiry-dialog" aria-labelledby="inquiry-title"><button id="close-inquiry" data-t="close"></button><h2 id="inquiry-title" data-t="inquiry"></h2><p id="simulation" data-t="simulation" hidden></p>
+            <dialog id="inquiry-dialog" aria-labelledby="inquiry-title"><button id="close-inquiry" data-t="close"></button><h2 id="inquiry-title" data-t="inquiry"></h2><p id="simulation" data-t="simulation" hidden></p>
             <form id="inquiry">
               <label><span data-t="contactName"></span><input required name="name" autocomplete="name" maxlength="120"></label>
               <label><span data-t="phone"></span><input required type="tel" name="phone" autocomplete="tel" maxlength="40"></label>
@@ -52,7 +52,7 @@
             </form><p id="confirmation" role="status"></p></dialog>
           </section>
         </div>
-        <footer class="step-actions"><button id="back" data-t="back"></button><button id="next" class="primary" data-t="next"></button></footer>
+        <footer class="step-actions"><button id="back" data-t="back"></button><button id="next" class="primary" data-t="next"></button><button id="to-inquiry" class="primary" hidden data-t="toInquiry"></button></footer>
       </div>
     </aside>
   </main>

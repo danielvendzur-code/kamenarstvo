@@ -176,7 +176,7 @@ async function start(){
     el('review').setAttribute('aria-pressed',String(i===5));
     el('step-title').textContent=t.stepTitles[i];
     el('step-hint').textContent=t.stepHints[i];el('step-progress').value=i+1;
-    el('back').hidden=i===0;el('next').hidden=i===5;
+    el('back').hidden=i===0;el('next').hidden=i===5;el('to-inquiry').hidden=i!==5;
     tabs.forEach((tab,j)=>j===i?tab.setAttribute('aria-current','step'):tab.removeAttribute('aria-current'));
     el('step-scroll').scrollTop=0;
     layout.classList.toggle('show-result',i===5);
