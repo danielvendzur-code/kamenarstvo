@@ -231,6 +231,6 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,sw=w*.78,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);
-  addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,-.065);
+  addTablet(sw,h,model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
   return group;
 }

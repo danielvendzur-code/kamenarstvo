@@ -124,7 +124,7 @@ export function scena(host,model,stone,onOrbit){
   const ctx=surface(256,512);
   ctx.filter='blur(11px)';ctx.fillStyle='rgba(31,29,25,.54)';ctx.fillRect(24,29,208,454);
   const contact=new T.Mesh(new T.PlaneGeometry(model.sirka*1.28,model.dlzka*1.20),
-    new T.MeshBasicMaterial({color:0x000000,map:new T.CanvasTexture(ctx.canvas),transparent:true,opacity:.70,depthWrite:false,fog:false,toneMapped:false}));
+    new T.MeshBasicMaterial({color:0x000000,map:new T.CanvasTexture(ctx.canvas),transparent:true,opacity:.48,depthWrite:false,fog:false,toneMapped:false}));
   contact.renderOrder=1;contact.rotation.x=-Math.PI/2;contact.position.y=0.001;scene.add(contact);
   const hemi=new T.HemisphereLight(0xffffff,0x909090,0.6);
   scene.add(hemi);
@@ -135,6 +135,8 @@ export function scena(host,model,stone,onOrbit){
   sun.shadow.normalBias=0.0012;
   sun.shadow.bias=-0.00007;
   scene.add(sun);
+  const rim=new T.DirectionalLight(0xffeed7,.48);
+  rim.position.set(-2.4,2.8,-1.8);scene.add(rim);
   // Expand the PCF footprint with blocker distance for this orthographic light.
   // Near the contact line keep the built-in sub-texel PCFSoft filter.
   const shadowChunk=T.ShaderChunk.shadowmap_pars_fragment.replace(
@@ -148,7 +150,7 @@ export function scena(host,model,stone,onOrbit){
        float sampleDepth=unpackRGBAToDepth(texture2D(shadowMap,shadowCoord.xy+offset));
        separation=max(separation,shadowCoord.z-sampleDepth);
      }
-     float radius=min(0.005,separation*0.065);
+     float radius=min(0.008,separation*0.09);
      if(radius>texelSize.x){
        float visibility=0.0;
        for(int i=0;i<16;i++){
@@ -312,9 +314,9 @@ export function scena(host,model,stone,onOrbit){
     scene.fog=studio?studioFog:new T.FogExp2(dusk?0xd9b99d:0xcbd5cd,dusk?.026:.020);
     hemi.color.set(studio?0xffffff:dusk?0xffe8d6:0xd7e7ff);
     hemi.groundColor.set(studio?0x909090:0x77786c);
-    hemi.intensity=studio?.60:.92;
+    hemi.intensity=studio?.72:1.15;
     sun.color.set(studio?0xffffff:dusk?0xffc08a:0xffe0ba);
-    sun.intensity=studio?1.35:dusk?2.0:2.15;
+    sun.intensity=studio?1.35:dusk?1.62:1.78;
     if(studio)sun.position.set(-2,7,-1.4);
     else if(dusk)sun.position.set(-6.8,1.65,-4.6);
     else sun.position.set(5.5,3.4,-3.1);
