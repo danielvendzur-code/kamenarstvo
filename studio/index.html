@@ -1,81 +1,46 @@
 <!doctype html>
 <html lang="sk">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex,nofollow">
-    <title>Studio</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="./css/studio.css">
-    <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
-  </head>
-  <body>
-    <div id="loader" role="status"><img id="load-logo" alt=""><progress max="4" value="0"></progress></div>
-    <header>
-      <div class="brand">
-        <span class="brandmark">
-          <img id="logo" alt="">
-        </span>
-        <span id="brand">
-        </span>
-      </div>
-      <span class="studio" data-t="studio">
-      </span>
-    </header>
-    <main>
-      
-      <div class="layout">
-        <section class="viewer">
-          <div id="viewport">
-          </div>
-          <div class="environments" id="environments" role="group" data-label="prostredia"></div>
-          <div class="tools" role="group" data-label="views">
-            <button data-view="angle" data-t="angle">
-            </button>
-            <button data-view="front" data-t="front">
-            </button>
-            <button data-view="detail" data-t="detail"></button>
-            <button data-view="side" data-t="side">
-            </button>
-          </div>
-          <div class="zoom">
-            <button data-action="plus" data-label="plus">+</button>
-            <button data-action="minus" data-label="minus">−</button>
-            <button data-action="reset" data-label="reset">↺</button>
-          </div>
-        </section>
-        <aside><button id="handle" aria-controls="sheet-content" aria-expanded="true" data-label="sheet"><i></i></button><div id="sheet-content">
-          <div class="eyebrow" data-t="spec">
-          </div>
-          <h1 id="type">
-          </h1>
-          <div class="choices">
-            <fieldset><legend data-t="product"></legend><div id="product"></div></fieldset>
-            <fieldset><legend data-t="profile"></legend><div id="profile"></div></fieldset>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Studio</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./css/studio.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
+</head>
+<body>
+  <div id="loader" role="status"><img id="load-logo" alt=""><progress max="4" value="0"></progress></div>
+  <header><div class="brand"><img id="logo" alt=""><span id="brand"></span></div><span class="studio" data-t="studio"></span></header>
+  <main class="layout">
+    <section class="viewer" data-label="scene">
+      <div id="viewport"></div>
+      <div id="environments" role="group" data-label="prostredia"></div>
+      <div class="camera"><div class="tools" role="group" data-label="views">
+        <button data-view="angle" data-t="angle"></button><button data-view="front" data-t="front"></button>
+        <button data-view="detail" data-t="detail"></button><button data-view="side" data-t="side"></button>
+      </div><div class="zoom"><button data-action="minus" data-label="minus">−</button><button data-action="plus" data-label="plus">+</button></div></div>
+    </section>
+    <aside>
+      <button id="handle" aria-controls="sheet-content" data-label="sheet"><i></i></button>
+      <div id="sheet-content">
+        <div class="progress-head"><span data-t="design"></span><span id="counter"></span></div>
+        <nav id="step-track" data-label="steps"></nav>
+        <div class="scroll-panel" id="step-scroll">
+          <h1 id="step-title" tabindex="-1"></h1><p id="intro"></p>
+          <section data-step="0"><div id="product"></div></section>
+          <section data-step="1" hidden><fieldset><legend data-t="profile"></legend><div id="profile"></div></fieldset>
             <fieldset id="cover-field"><legend data-t="cover"></legend><div id="cover"></div></fieldset>
-          </div>
-          <div class="material-field"><span data-t="stone"></span><div id="samples" role="group" data-label="stone"></div></div>
-          <div class="stone">
-
-            <div>
-              <strong id="stone">
-              </strong>
-              <small data-t="stoneFinish">
-              </small>
-            </div>
-          </div>
-          <details id="letter-panel"><summary data-t="lettering"></summary><div id="letters" class="engrave-fields"></div></details>
-          <details id="extra-panel"><summary data-t="accessories"></summary><div id="extras"></div></details>
-          <dl><div><dt data-t="dims"></dt><dd id="size"></dd></div>
-            <div><dt data-t="edge"></dt><dd id="edge"></dd></div></dl>
-        </div></aside>
+            <dl class="measure"><div><dt data-t="dims"></dt><dd id="size"></dd></div><div><dt data-t="edge"></dt><dd id="edge"></dd></div></dl></section>
+          <section data-step="2" hidden><div id="samples" role="group" data-label="stone"></div></section>
+          <section data-step="3" hidden><div id="letter-panel"><div id="letters" class="engrave-fields"></div></div></section>
+          <section data-step="4" hidden><div id="extra-panel"><div id="extras"></div></div></section>
+          <section data-step="5" id="result" hidden><dl id="summary"></dl></section>
+        </div>
+        <nav class="step-nav"><button id="back" data-t="back"></button><button id="next" data-t="next"></button></nav>
       </div>
-      <p class="hint" data-t="hint">
-      </p>
-    </main>
-    <p id="error" role="alert" hidden>
-    </p>
-    <script type="module" src="./js/app.js">
-    </script>
-  </body>
+    </aside>
+  </main>
+  <p id="error" role="alert" hidden></p><script type="module" src="./js/app.js"></script>
+</body>
 </html>

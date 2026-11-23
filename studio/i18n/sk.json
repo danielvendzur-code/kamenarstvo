@@ -17,7 +17,7 @@
   "minus": "Oddialiť",
   "reset": "Obnoviť pohľad",
   "hint": "Ťahaním otočíte model",
-  "canvas": "Model jednohrobu. Šípky otáčajú pohľad, plus a mínus menia priblíženie.",
+  "canvas": "Trojrozmerný návrh. Ťahaním alebo šípkami ho otočíte, plusom a mínusom priblížite.",
   "error": "Náhľad sa nepodarilo načítať.",
   "unit": "cm",
   "prostredia": "Prostredie",
@@ -80,5 +80,25 @@
   ],
   "choosePhoto": "Vybrať fotografiu",
   "noPhoto": "Žiadny vybraný súbor",
-  "retryEnv": "Záhradu sa nepodarilo načítať. Výberom prostredia to skúsite znova."
+  "retryEnv": "Záhradu sa nepodarilo načítať. Výberom prostredia to skúsite znova.",
+  "design": "Váš návrh",
+  "steps": "Kroky návrhu",
+  "back": "Späť",
+  "next": "Ďalej",
+  "stepTitles": [
+    "Vyhotovenie",
+    "Tvar a rozmer",
+    "Kameň",
+    "Nápis",
+    "Doplnky",
+    "Váš návrh"
+  ],
+  "stepHints": [
+    "Vyberte si, pre aké miesto pripravujete návrh.",
+    "Určte siluetu a skontrolujte rozmery vyhotovenia.",
+    "Prezrite si kresbu a odlesk dostupných žúl.",
+    "Zvoľte písmo a vpíšte slová, ktoré majú zostať.",
+    "Doplňte návrh o predmety a detaily podľa svojich predstáv.",
+    "Skontrolujte výsledok, uložte si odkaz alebo pošlite dopyt."
+  ]
 }

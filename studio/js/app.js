@@ -1,4 +1,4 @@
-import {choiceSet,pictogram} from './volby.js';
+import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {editor} from './editor.js';
 import {scena} from './scena.js';
@@ -29,6 +29,7 @@ async function start(){
   if(!tema.pismoZnacky&&tema.pismoNadpis==='Cormorant'){
     document.documentElement.style.setProperty('--pismoZnacky','Playfair');
   }
+  if(tema.pismoText==='Inter')document.documentElement.style.setProperty('--pismoText','Manrope');
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title+' · '+firma.nazov;
   el('load-logo').src=base+firma.logo;
@@ -52,8 +53,7 @@ async function start(){
   profiles();
   function describe(){
     const m=definition(product.value);
-    el('type').textContent=t[product.value];
-    el('stone').textContent=catalog.kamene[stoneId].nazov;
+
     const dims=product.value==='pamatna'?[m.sirka,m.vyskaStely,m.dlzka]:[m.sirka,m.dlzka];
     el('size').textContent=dims.map(x=>Math.round(x*100)).join(' × ')+' '+t.unit;
     el('edge').parentElement.hidden=m.zrazenie==null;
@@ -80,7 +80,7 @@ async function start(){
   let typed=false;
   function detail(){if(!typed){typed=true;viewer.view('detail');mark('detail');}}
   for(const button of views){
-    button.prepend(pictogram(button.dataset.view));button.title=t[button.dataset.t];
+    button.title=t[button.dataset.t];
     button.onclick=()=>{viewer.view(button.dataset.view);mark(button.dataset.view);};
   }
   for(const button of document.querySelectorAll('[data-action]'))button.onclick=()=>{
@@ -103,7 +103,7 @@ async function start(){
   for(const id of allowed){
     const button=document.createElement('button');
     button.type='button';button.value=id;button.textContent=t[id];button.setAttribute('aria-label',t[id]);
-    button.prepend(pictogram(id));button.title=t[id];
+    button.title=t[id];
     button.onclick=()=>choose(id).catch(error=>{console.error(error);el('error').hidden=false;});
     group.append(button);
   }
@@ -118,7 +118,7 @@ async function start(){
   for(const id of katalog.kamene){
     const button=document.createElement('button'),img=document.createElement('img');
     button.type='button';button.value=id;button.title=catalog.kamene[id].nazov;button.setAttribute('aria-label',button.title);
-    img.alt='';img.src=vzorka(catalog.kamene[id]);button.append(img);el('samples').append(button);
+    img.alt='';img.src=vzorka(catalog.kamene[id]);const name=document.createElement('span');name.textContent=button.title;button.append(img,name);el('samples').append(button);
     button.onclick=async()=>{
       const job=++materialRequest;
       if(stoneId===id)return;
@@ -128,6 +128,24 @@ async function start(){
       stoneId=id;syncEditor.recommend(catalog.kamene[id].odporucanePismo);apply();
     };
   }
+  let step=0;
+  const panels=[...document.querySelectorAll('[data-step]')];
+  const stepViews=['angle','angle','detail','front','angle','front'];
+  const dots=t.stepTitles.map((name,i)=>{
+    const button=document.createElement('button');button.type='button';button.title=name;
+    button.setAttribute('aria-label',(i+1)+' · '+name);button.onclick=()=>go(i);
+    el('step-track').append(button);return button;
+  });
+  function go(i,move=true){
+    step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
+    dots.forEach((dot,j)=>{dot.classList.toggle('done',j<i);dot.setAttribute('aria-current',j===i?'step':'false');});
+    el('step-title').textContent=t.stepTitles[i];el('intro').textContent=t.stepHints[i];
+    el('counter').textContent=String(i+1).padStart(2,'0')+' / 06';
+    el('back').disabled=i===0;el('next').hidden=i===5;el('step-scroll').scrollTop=0;
+    if(move){viewer.view(stepViews[i]);mark(stepViews[i]);el('step-title').focus({preventScroll:true});}
+  }
+  el('back').onclick=()=>go(Math.max(0,step-1));el('next').onclick=()=>go(Math.min(5,step+1));
+  go(0,false);
   syncEditor.recommend(catalog.kamene[stoneId].odporucanePismo);describe();progress.value=3;
   try{await choose(initial);}catch{
     await choose('atelier');el('error').textContent=t.retryEnv;el('error').hidden=false;

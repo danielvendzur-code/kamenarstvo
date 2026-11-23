@@ -197,8 +197,7 @@ export function scena(host,model,stone,onOrbit){
     const focus=detail?bounds.getCenter(new T.Vector3()):target;
     const size=bounds.getSize(new T.Vector3());
     const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
-    const covered=document.querySelector('aside').offsetWidth;
-    const available=host.clientWidth-(host.clientWidth>760?covered+64:24);
+    const available=Math.max(1,host.clientWidth-24);
     const tangent=Math.tan(T.MathUtils.degToRad(camera.fov/2));
     const detailDistance=.5*1.26*Math.max(size.x/(available/host.clientHeight),size.y,size.z)/tangent+size.z*.4;
     const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?detailDistance:distance()*(outside&&!mobile?.94:1));
@@ -268,8 +267,6 @@ export function scena(host,model,stone,onOrbit){
       camera.position.copy(controls.target).add(offset);controls.update();
     }
     previousAspect=aspect;camera.aspect=aspect;
-    const offset=host.clientWidth>760?(document.querySelector('aside').offsetWidth+24)*.48:0;
-    camera.setViewOffset(host.clientWidth,host.clientHeight,offset,0,host.clientWidth,host.clientHeight);
     camera.updateProjectionMatrix();
     renderer.setSize(host.clientWidth,host.clientHeight,false);invalidate();
   }
