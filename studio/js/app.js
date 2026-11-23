@@ -95,7 +95,12 @@ async function start(){
   const initial=allowed.includes(requested)?requested:allowed[0];
   const group=el('environments');
   let last=0,environmentId=initial,ready=false,pendingStone,pendingEnvironment;
-  const showResult=resultPanel(t,dopyt,catalog,i=>go(i));
+  const showResult=resultPanel(t,dopyt,catalog,i=>{
+    go(i);
+    const visible=selector=>[...panels[i].querySelectorAll(selector)].find(node=>node.getClientRects().length);
+    const target=visible('[aria-pressed="true"],input:checked')??visible('button,input')??el('step-title');
+    target.focus({preventScroll:true});
+  });
   function state(){
     const inscription=syncEditor.state();
     if(product.value!=='dvojhrob')inscription.people=inscription.people.slice(0,1);

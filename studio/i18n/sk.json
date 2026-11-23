@@ -118,6 +118,7 @@
   "policy": "Informácie o ochrane údajov",
   "send": "Odoslať nezáväzný dopyt",
   "thanks": "Ďakujeme, ozveme sa do 24 hodín.",
+  "simulatedThanks": "Skúška prebehla úspešne. Údaje ostali vo vašom prehliadači.",
   "simulation": "Toto je ukážka – odoslanie si môžete vyskúšať, nikam sa neodošle.",
   "sendError": "Dopyt sa nepodarilo odoslať. Skúste to znova.",
   "toInquiry": "Požiadať o ponuku",

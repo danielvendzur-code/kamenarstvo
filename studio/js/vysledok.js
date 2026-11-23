@@ -87,7 +87,7 @@ export function resultPanel(t,settings,catalog,edit){
         });
         if(!response.ok)throw Error();
       }
-      confirmation.textContent=t.thanks;form.reset();
+      confirmation.textContent=cfg?t.thanks:t.simulatedThanks;form.reset();
     }catch{confirmation.textContent=t.sendError;}
     finally{button.disabled=false;}
   };

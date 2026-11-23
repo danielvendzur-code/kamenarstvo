@@ -38,7 +38,7 @@ body{margin:0;color:var(--ink);background:var(--paper);font:400 15px/1.6 var(--s
 button,input,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 button{border:0;background:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
 button:disabled{opacity:.45;cursor:default}
-:is(button,a,summary,input,textarea,canvas):focus-visible,.cards label:has(:focus-visible){outline:1px solid var(--metal);outline-offset:3px}
+:is(button,a,summary,input,select,textarea,canvas):focus-visible,.cards label:has(:focus-visible){outline:1px solid var(--metal);outline-offset:3px}
 .symbol{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .visually-hidden,.cards input{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
 ::selection{background:color-mix(in srgb,var(--metal) 28%,transparent)}
@@ -177,7 +177,7 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
  #extras{gap:0 16px}#extras label{min-height:32px;font-size:12px}
  .show-result{grid-template-columns:1fr;grid-template-rows:minmax(100px,1fr) auto;gap:0;padding:0;align-items:stretch}
  .show-result aside{padding:12px 16px 16px;max-height:58dvh}.show-result h1{font-size:25px;margin-bottom:10px;max-width:none}
- #summary div{padding:6px 0}.result-actions{margin-top:10px}
+ #summary div{padding:0;min-height:40px}#summary button{align-self:stretch;min-width:48px}.result-actions{margin-top:10px}
 }
 @media(max-height:550px) and (max-width:760px){header{padding-top:3px}.brand{font-size:16px}aside{max-height:68dvh}.letter-part{gap:2px 8px}.letter-part input{padding:3px 7px}.camera{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::after,*::before{animation:none!important;transition:none!important}}
