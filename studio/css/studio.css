@@ -113,7 +113,7 @@ h1{margin-bottom:9px;line-height:1.18}
 
 .step-actions #to-inquiry{width:auto;min-width:55%;margin:0 0 0 auto}
 @media(max-width:760px) and (max-height:540px){
- .layout,.layout[data-sheet="2"]{grid-template-rows:minmax(0,42%) minmax(0,1fr)}
+ .layout,.layout[data-sheet="2"]{grid-template-rows:minmax(0,42dvh) minmax(0,1fr)}
  .layout[data-sheet="0"]{grid-template-rows:minmax(0,1fr) 30px}
  #handle{height:12px}#step-track button{height:32px}
 }
