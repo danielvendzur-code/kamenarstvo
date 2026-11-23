@@ -47,6 +47,7 @@ async function start(){
   let stoneId=katalog.kamene[0];
   function profiles(){
     profile.fill(katalog.tvary);
+    el('cover-field').hidden=katalog.dosky?.includes(product.value);
   }
   profiles();
   function describe(){
@@ -55,7 +56,8 @@ async function start(){
     el('stone').textContent=catalog.kamene[stoneId].nazov;
     const dims=product.value==='pamatna'?[m.sirka,m.vyskaStely,m.dlzka]:[m.sirka,m.dlzka];
     el('size').textContent=dims.map(x=>Math.round(x*100)).join(' × ')+' '+t.unit;
-    el('edge').textContent='4 '+t.unitEdge;
+    el('edge').parentElement.hidden=m.zrazenie==null;
+    el('edge').textContent=Math.round((m.zrazenie??0)*1000)+' '+t.unitEdge;
     for(const b of el('samples').children)b.setAttribute('aria-pressed',String(b.value===stoneId));
   }
   const handle=el('handle'),layout=document.querySelector('.layout');
@@ -75,7 +77,8 @@ async function start(){
   await loadStone(catalog.kamene[stoneId]);
   const viewer=scena(el('viewport'),definition(product.value),catalog.kamene[stoneId],()=>mark(null));
   viewer.canvas.setAttribute('aria-label',t.canvas);
-  function detail(){if(!document.querySelector('[data-view="detail"][aria-pressed="true"]')){viewer.view('detail');mark('detail');}}
+  let typed=false;
+  function detail(){if(!typed){typed=true;viewer.view('detail');mark('detail');}}
   for(const button of views){
     button.prepend(pictogram(button.dataset.view));button.title=t[button.dataset.t];
     button.onclick=()=>{viewer.view(button.dataset.view);mark(button.dataset.view);};
@@ -94,6 +97,7 @@ async function start(){
     const turn=++last;
     await viewer.environment(id);
     if(turn!==last)return;
+    el('error').hidden=true;
     for(const button of group.children)button.setAttribute('aria-pressed',String(button.value===id));
   }
   for(const id of allowed){
@@ -107,9 +111,6 @@ async function start(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
     describe();
   }
-  el('letter-panel').addEventListener('toggle',()=>{
-    if(el('letter-panel').open){viewer.view('detail');mark('detail');}
-  });
   const syncEditor=editor(katalog,t,product,viewer,detail);
   product.container.onchange=()=>{profiles();syncEditor();apply();mark('angle');};
   profile.container.onchange=cover.container.onchange=apply;
@@ -128,7 +129,9 @@ async function start(){
     };
   }
   syncEditor.recommend(catalog.kamene[stoneId].odporucanePismo);describe();progress.value=3;
-  await choose(initial);
+  try{await choose(initial);}catch{
+    await choose('atelier');el('error').textContent=t.retryEnv;el('error').hidden=false;
+  }
   if(product.value!=='jednohrob'||profile.value!=='rovny'||cover.value!=='cela')apply();
   progress.value=4;await document.fonts.ready;el('loader').hidden=true;
   mark('angle');

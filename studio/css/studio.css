@@ -44,7 +44,9 @@ aside details{border-top:1px solid var(--rule)}aside summary{cursor:pointer;padd
 #extras>label{display:flex;justify-content:space-between;align-items:center;min-height:42px;border-bottom:1px solid var(--rule)}#extras input[type=checkbox]{accent-color:var(--green);width:18px;height:18px}#extras input[type=file]{width:100%;margin:6px 0 10px}#extras{padding:0 0 12px}
 .example{grid-column:1/-1;justify-self:start;padding:0;text-decoration:underline;text-underline-offset:3px;font-size:13px}
 @media(max-width:760px){#handle{position:sticky;top:0;z-index:2;background:var(--paper)}aside summary{scroll-margin-top:32px}.engrave-fields input,.engrave-fields textarea{font-size:16px}}
-@font-face{font-family:Cormorant;src:url('../fonts/Cormorant.woff2') format('woff2');font-weight:300 700;font-display:swap}
+@font-face{font-family:Cormorant;src:url('../fonts/Cormorant-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Cormorant;src:url('../fonts/Cormorant-600.woff2') format('woff2');font-weight:600;font-display:swap}
+
 @font-face{font-family:Inter;src:url('../fonts/Inter.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:Cinzel;src:url('../fonts/Cinzel.woff2') format('woff2');font-weight:400 900;font-display:swap}
 @font-face{font-family:Playfair;src:url('../fonts/Playfair.woff2') format('woff2');font-weight:400 900;font-display:swap}
@@ -109,3 +111,9 @@ summary:focus-visible,#extras input:focus-visible,.engrave-fields :is(input,text
  .environments button,.zoom button{min-height:40px}
 }
 body:has(#loader:not([hidden])) :is(header,main){visibility:hidden}
+
+[hidden]{display:none!important}
+.visually-hidden{position:absolute;width:1px!important;height:1px;clip-path:inset(50%);overflow:hidden}
+.engrave-fields label{min-width:0;display:grid;gap:4px}
+.engrave-fields :is(input:not([type=radio]),textarea){min-height:44px;min-width:0;line-height:1.5}
+@media(max-width:760px){.engrave-fields,.engrave-fields fieldset{grid-template-columns:minmax(0,1fr)}}

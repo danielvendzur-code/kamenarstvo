@@ -21,7 +21,8 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
     color:0xffffff,roughness:satin?.85:.065,ior:1.53,metalness:0,
     clearcoat:satin?.02:.38,clearcoatRoughness:.055,fog:false
   });
-  material.customProgramCacheKey=()=>mirror?'granite-planar':satin?'granite-satin':'granite-polished';
+  const neutral=stone.textura==='absolute-black';
+  material.customProgramCacheKey=()=>(neutral?'neutral-':'')+(mirror?'granite-planar':satin?'granite-satin':'granite-polished');
   material.onBeforeCompile=shader=>{
     shader.uniforms.slab={value:stone.maps[0]};shader.uniforms.grit={value:stone.maps[1]};
     shader.vertexShader='attribute float slabCut; varying vec3 vStone,cutPos,cutNormal; varying vec2 slabAxis;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
@@ -59,7 +60,8 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
         'vec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );',
         `vec4 envMapColor=textureCubeUV(envMap,reflectVec,roughness);
          float upright=1.0-abs(inverseTransformDirection(normal,viewMatrix).y);
-         envMapColor.rgb*=mix(.38,1.9,upright);`);
+         envMapColor.rgb*=mix(.29,1.9,upright);
+         ${neutral?'envMapColor.rgb=mix(vec3(dot(envMapColor.rgb,vec3(.2126,.7152,.0722))),envMapColor.rgb,.10);':''}`);
       shader.fragmentShader=shader.fragmentShader.replace('#include <envmap_physical_pars_fragment>',ibl);
     }
     if(mirror){

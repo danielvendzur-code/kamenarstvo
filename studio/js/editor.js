@@ -14,7 +14,7 @@ export function editor(config,t,product,viewer,detail){
     return choiceSet(choices,ids,t,kind);
   }
   const font=cards('font',config.pisma,'fonts'),finish=cards('finish',config.farbyPisma,'inks');
-  font.container.onchange=finish.container.onchange=()=>{detail();update();};
+  font.container.onchange=finish.container.onchange=()=>{update();};
   const second=document.createElement('fieldset'),legend=document.createElement('legend');
   legend.textContent=t.second;second.append(legend);
   for(const parent of [letters,second]){
@@ -43,9 +43,13 @@ export function editor(config,t,product,viewer,detail){
   }
   const photoBox=document.createElement('div'),input=document.createElement('input'),reset=document.createElement('button'),error=document.createElement('small');
   input.type='file';input.accept='image/jpeg,image/png,image/webp';
-  field(photoBox,'portrait',input);reset.type='button';reset.textContent=t.clearPhoto;reset.hidden=true;
+  input.className='visually-hidden';input.id='portrait-file';
+  const picker=document.createElement('button'),filename=document.createElement('span');
+  picker.type='button';picker.textContent=t.choosePhoto;picker.onclick=()=>input.click();
+  input.tabIndex=-1;input.setAttribute('aria-label',t.portrait);
+  filename.textContent=t.noPhoto;filename.setAttribute('role','status');photoBox.append(picker,input,filename);reset.type='button';reset.textContent=t.clearPhoto;reset.hidden=true;
   error.setAttribute('role','status');photoBox.append(reset,error);photoBox.hidden=true;
-  reset.onclick=()=>{photoVersion++;photo=null;input.value='';reset.hidden=true;error.textContent='';update();};
+  reset.onclick=()=>{photoVersion++;photo=null;input.value='';filename.textContent=t.noPhoto;reset.hidden=true;error.textContent='';update();};
   input.onchange=async()=>{
     const file=input.files[0],revision=++photoVersion;if(!file)return;
     try{
@@ -54,7 +58,7 @@ export function editor(config,t,product,viewer,detail){
       const canvas=document.createElement('canvas'),ratio=Math.min(1,768/Math.max(bitmap.width,bitmap.height));
       canvas.width=Math.max(1,Math.round(bitmap.width*ratio));canvas.height=Math.max(1,Math.round(bitmap.height*ratio));
       canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
-      photo=canvas;reset.hidden=false;error.textContent='';update();
+      photo=canvas;filename.textContent=file.name;reset.hidden=false;error.textContent='';update();
     }catch{if(revision===photoVersion){error.textContent=t.badPhoto;input.value='';}}
   };
   for(const id of config.doplnky??[]){

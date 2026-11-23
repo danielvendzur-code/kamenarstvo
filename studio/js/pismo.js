@@ -132,17 +132,22 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
   for(const [index,mesh] of faces.entries()){
     const {left,right,height,z}=mesh.userData.face;
     const surface=new T.Group();surface.applyMatrix4(monument.matrixWorld.clone().invert().multiply(mesh.matrixWorld));group.add(surface);
-    const width=right-left,cols=double&&!book?2:1;
-    const lettering=[];
-    for(let col=0;col<cols;col++){
-      const person=state.people[double&&book?index:col];
-      const epitaph=state.epitaph.split(/\r?\n/).slice(0,2);
-      let lines=[[person.first,.30,.15],[person.last,.47,.16],
-        [[person.birth&&'* '+person.birth,person.death&&'† '+person.death].filter(Boolean).join('    '),.64,.082]];
-      if(book&&!double&&index===1)lines=epitaph.map((v,i)=>[v,.44+i*.14,.12]);
-      else if(!double&&(!book||index===1))lines.push(...epitaph.map((v,i)=>[v,.78+i*.10,.084]));
-      if(double&&col===0&&(!book||index===0))lines.push(...epitaph.map((v,i)=>[v,.78+i*.10,.084]));
-      lettering.push(...lines.map(line=>[...line,(col+.5)/cols,1/cols]));
+    const width=right-left,lettering=[];
+    const people=(double?state.people:state.people.slice(0,1)).filter(p=>Object.values(p).some(Boolean));
+    // A shared line on a carved book spans two adjacent engraving canvases.
+    const sharedCenter=book?1-index:.5,sharedSpan=book?2:1;
+    people.forEach((person,i)=>{
+      if(book&&((people.length===2&&i!==index)||(!double&&index===1)))return;
+      const shared=double&&people.length===1;
+      const center=shared?sharedCenter:book?.5:(i+.5)/people.length;
+      const span=shared?sharedSpan:book?1:1/people.length;
+      const dates=[person.birth&&'* '+person.birth,person.death&&'† '+person.death].filter(Boolean).join('    ');
+      lettering.push([person.first,.30,.15,center,span],[person.last,.47,.16,center,span],[dates,.64,.082,center,span]);
+    });
+    if(double||!book||index===1){
+      const soloLeaf=book&&!double;
+      state.epitaph.split(/\r?\n/).slice(0,2).forEach((line,i)=>lettering.push(
+        [line,soloLeaf?.44+i*.14:.78+i*.10,soloLeaf?.12:.084,soloLeaf?.5:sharedCenter,soloLeaf?1:sharedSpan]));
     }
     if(lettering.some(([value])=>value))group.userData.release.push(engraving(mesh,lettering,state.font,state.finish,aniso,resolution));
     if(index===0){
@@ -171,6 +176,7 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
   for(const [id,side] of [['vaza',-1],['lampas',1]])if(state.extras.has(id)){
     const obj=standingAccessory(id),grave=!['urna','pamatna'].includes(selection.type);
     obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.038),grave?.035+model.vyskaObruby+model.hrubkaDosky:.058,grave?-model.dlzka*.23:.075);
+    if(selection.type==='pamatna')obj.position.y=.755;
     if(!grave)obj.scale.setScalar(.58);group.add(obj);
   }
   return group;

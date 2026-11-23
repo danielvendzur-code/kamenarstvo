@@ -77,5 +77,8 @@
     "Otvoriť panel do polovice",
     "Otvoriť celý panel",
     "Zbaliť panel"
-  ]
+  ],
+  "choosePhoto": "Vybrať fotografiu",
+  "noPhoto": "Žiadny vybraný súbor",
+  "retryEnv": "Záhradu sa nepodarilo načítať. Výberom prostredia to skúsite znova."
 }

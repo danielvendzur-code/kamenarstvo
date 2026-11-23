@@ -190,9 +190,15 @@ export function scena(host,model,stone,onOrbit){
   function view(key,duration=640){
     const detail=key==='detail', outside=active&&active!=='atelier';
     const plaque=['urna','pamatna'].includes(selection.type);
-    const focus=detail&&!plaque?new T.Vector3(0,.68,-.805):target;
-    const direction=detail?(selection.type==='urna'?[-.12,1.8,.86]:[-.18,.04,1]):outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
-    const detailDistance=plaque?.97:Math.max(2.02,model.sirka*.78/((mobile?1.68:1.36)*camera.aspect*Math.tan(T.MathUtils.degToRad(camera.fov/2))));
+    const bounds=new T.Box3();
+    monument.traverse(mesh=>{if(mesh.userData.face)bounds.expandByObject(mesh);});
+    const focus=detail?bounds.getCenter(new T.Vector3()):target;
+    const size=bounds.getSize(new T.Vector3());
+    const direction=detail?(selection.type==='urna'?[0,2,.8]:[0,.025,1]):outside&&key==='angle'?[1.57,.51,2.55]:directions[key];
+    const covered=document.querySelector('aside').offsetWidth;
+    const available=host.clientWidth-(host.clientWidth>760?covered+64:24);
+    const tangent=Math.tan(T.MathUtils.degToRad(camera.fov/2));
+    const detailDistance=.5*1.26*Math.max(size.x/(available/host.clientHeight),size.y,size.z)/tangent+size.z*.4;
     const end=new T.Vector3().fromArray(direction).normalize().multiplyScalar(detail?detailDistance:distance()*(outside&&!mobile?.94:1));
     const fromFocus=controls.target.clone(), from=new T.Spherical().setFromVector3(camera.position.clone().sub(fromFocus));
     const to=new T.Spherical().setFromVector3(end);
@@ -284,8 +290,8 @@ export function scena(host,model,stone,onOrbit){
     const request=++revision;
     if(name===active)return;
     if(name!=='atelier'){
-      groundsPending??=garden(mobile);
-      if(!skies.has(name))skies.set(name,parkSky(name));
+      groundsPending??=garden(mobile).catch(error=>{groundsPending=null;throw error;});
+      if(!skies.has(name))skies.set(name,parkSky(name).catch(error=>{skies.delete(name);throw error;}));
       const [park,sky]=await Promise.all([groundsPending,skies.get(name)]);
       if(request!==revision)return;
       if(!grounds){
@@ -379,7 +385,7 @@ export function scena(host,model,stone,onOrbit){
     }
     const plaque=['urna','pamatna'].includes(next.type);
     controls.minDistance=plaque?.65:1.65;
-    target.set(0,next.type==='urna'?.13:next.type==='pamatna'?.30:.39,plaque?0:.03);
+    target.set(0,next.type==='urna'?.13:next.type==='pamatna'?.99:.39,plaque?0:.03);
     contact.scale.set(next.type==='pamatna'?.76:model.sirka,next.type==='pamatna'?.09:model.dlzka/2,1);
     renderer.shadowMap.needsUpdate=true;
     if(typeChanged)view('angle');
