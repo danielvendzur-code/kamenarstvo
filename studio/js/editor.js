@@ -170,12 +170,6 @@ export function editor(config,t,product,viewer,detail,changed,shape){
     for(const [key,{select}] of Object.entries(locations))if([...select.options].some(o=>o.value===d[key]))select.value=d[key];
     await update();
   };
-  sync.pick=place=>{
-    if(!['first','second','epitaph'].includes(active))open('first');
-    const {select}=locations[active==='epitaph'?'verseAt':'nameAt'];
-    if(![...select.options].some(o=>o.value===place)||select.value===place)return;
-    select.value=place;select.dispatchEvent(new Event('change'));
-  };
   sync.focus=()=>locations[active==='epitaph'?'verseAt':'nameAt'].select.value;
   tabs.style.disabled=true;sync();return sync;
 }

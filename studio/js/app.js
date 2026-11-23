@@ -51,7 +51,6 @@ async function start(){
     el('step-title').textContent=isCover?t.cover:t.stepTitles[1];
   }
   function showShapePart(part){
-    el('markers').dataset.selected=part;
     el('profile-field').hidden=part!=='profile';el('cover-field').hidden=part!=='cover';
     if(!el('shape-tools').closest('[data-step]').hidden)shapeHeading();
     for(const button of el('shape-tools').children)button.setAttribute('aria-pressed',String(button.dataset.shapePart===part));
@@ -152,28 +151,6 @@ async function start(){
     button.onclick=()=>pendingStone=selectStone();
   }
   let step=0,resultVersion=0;
-  const markers=el('markers'),pins=[...markers.children];
-  function selectPart(part,place){
-    if(!ready||!part||step===5)return;
-    viewer.highlight(part);
-    if(step===3){if(place)syncEditor.pick(place);return;}
-    go(part==='stone'?2:1,false);
-    if(part!=='stone')showShapePart(part);
-    const target=part==='stone'?el('samples').querySelector('[aria-pressed=true]'):el(part).querySelector(':checked');
-    target?.focus({preventScroll:true});
-  }
-  viewer.onPick(selectPart);
-  viewer.onAnchors(points=>{
-    for(const pin of pins){
-      const point=points[pin.dataset.part];
-      pin.hidden=!point;
-      if(!point)continue;
-      pin.style.left=point.x+'px';pin.style.top=point.y+'px';
-      const left=pin.dataset.part==='profile'?point.x>pin.offsetWidth+24:point.x>viewer.canvas.clientWidth-pin.offsetWidth-24;
-      pin.dataset.side=left?'left':'right';
-      pin.onclick=event=>{if(event.detail===0)selectPart(pin.dataset.part,point.place);};
-    }
-  });
   for(const [group,options] of [[el('profile'),profile],[el('cover'),cover],[el('samples'),null]]){
     let start,swiped=false;
     group.addEventListener('pointerdown',e=>{start=e.isPrimary?[e.clientX,e.clientY]:null;swiped=false;});
@@ -219,9 +196,6 @@ async function start(){
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
   function go(i,move=true){
     el('step-track').style.setProperty('--step',i);
-    markers.hidden=i===5;
-    for(const pin of pins)pin.textContent=t[(i===3?'write':'pick')+(pin.dataset.part==='profile'?'Face':'Cover')];
-    markers.dataset.selected='';
     step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
     tabs.forEach((tab,j)=>tab.setAttribute('aria-pressed',String(j===i)));
     el('step-title').textContent=t.stepTitles[i];

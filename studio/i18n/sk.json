@@ -94,10 +94,10 @@
     "Váš návrh"
   ],
   "stepHints": [
-    "Vyberte vyhotovenie. Jednotlivé diely môžete meniť aj kliknutím na pomník.",
+    "Vyberte vyhotovenie.",
     "Vyberte obrys kameňa.",
     "Porovnajte kresbu žuly priamo na pomníku.",
-    "Zadajte text. Miesto zvolíte v poli alebo kliknutím na pomník.",
+    "Zadajte text. Vyberte plochu na gravírovanie.",
     "Vyberte doplnky k pomníku.",
     "Uložte návrh alebo pošlite nezáväzný dopyt."
   ],
@@ -158,10 +158,6 @@
   "previousVariant": "Predchádzajúci variant",
   "nextVariant": "Ďalší variant",
   "variant": "Variant dielu",
-  "pickFace": "Stela",
-  "pickCover": "Krycia doska",
-  "writeFace": "Nápis na stele",
-  "writeCover": "Nápis na doske",
   "edit": "Upraviť",
   "fullInscription": "Celý nápis",
   "collapseInscription": "Zbaliť nápis",
