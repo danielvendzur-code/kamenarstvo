@@ -1,3 +1,5 @@
+import {openConfig} from './sukromna-ukazka.js';
+import {setStudioProfile,tabletSize} from './profily.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -18,10 +20,25 @@ function mark(view){
 async function start(){
   const t=await json('./i18n/sk.json');
   el('error').textContent=t.error;
-  const slug=new URLSearchParams(location.search).get('k')??'vzor';
+  const brandedHost=/^([a-z0-9-]+)\.mojchatbot\.sk$/.exec(location.hostname);
+  const slug=brandedHost?.[1]??new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
-  const {firma,tema,katalog,prostredia,dopyt}=await json(base+'config.json');
+  let config;
+  try {
+    config=await openConfig(await json(base+'config.json'));
+  } catch (error) {
+    if(error.message!=='private-preview')throw error;
+    el('loader').hidden=true;el('error').textContent=t.privateAccess;el('error').hidden=false;
+    return;
+  }
+  const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
+  if(ukazka){
+    document.documentElement.dataset.controls=ukazka.ovladanie;
+    setStudioProfile(ukazka.profil);
+    t.atelierovy=ukazka.profil.nazov;
+    document.documentElement.classList.add('client-preview');
+  }
   const catalog=await json('./katalog/'+encodeURIComponent(katalog.zaklad)+'.json');
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
@@ -29,7 +46,15 @@ async function start(){
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title;
   el('brand').textContent=firma.nazov;
-  if(firma.logo)el('logo').src=base+firma.logo;
+  if(firma.logo){
+    const logo=firma.logo.startsWith('data:image/webp;base64,')?firma.logo:base+firma.logo;
+    el('logo').src=logo;
+    if(ukazka){
+      el('logo').alt=firma.nazov;
+      el('load-logo').src=logo;el('load-logo').alt=firma.nazov;
+      el('brand').classList.add('visually-hidden');
+    }
+  }
   else el('logo').hidden=true;
   const progress=document.querySelector('progress');progress.value=2;progress.setAttribute('aria-label',t.loading);
   for(const node of document.querySelectorAll('[data-t]'))node.textContent=t[node.dataset.t];
@@ -37,12 +62,22 @@ async function start(){
     node.setAttribute('aria-label',t[node.dataset.label??node.dataset.t]);
     if(node.matches('button'))node.title=node.getAttribute('aria-label');
   }
+  if(ukazka){
+    document.title=firma.nazov+' · '+t.title;
+    el('private-intro').textContent=t.privateFor.replace('{firma}',firma.nazov);
+    el('private-intro').hidden=false;
+  }
   const types=[...katalog.pomniky,...(katalog.dosky??[])];
   const definition=id=>catalog.pomniky[id]??catalog.dosky[id];
+  if(ukazka)Object.assign(definition('jednohrob'),ukazka.rozmery,{detailStely:ukazka.detailStely});
   const product=choiceSet(el('product'),types,t,'profiles');
   for(const label of product.container.children){
     const model=definition(label.querySelector('input').value),dim=document.createElement('small');
     dim.textContent=[model.sirka,label.querySelector('input').value==='pamatna'?model.vyskaStely:model.dlzka].map(v=>Math.round(v*100)).join(' × ')+' '+t.unit;label.append(dim);
+  }
+  if(ukazka?.nahlad){
+    const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
+    initialCard.querySelector('img').src=ukazka.nahlad;
   }
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
@@ -60,7 +95,7 @@ async function start(){
   }
   for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
   function profiles(){
-    profile.fill(katalog.tvary);
+    profile.fill(katalog.tvary,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
     el('shape-tools').hidden=katalog.dosky?.includes(product.value);
   }
@@ -68,6 +103,7 @@ async function start(){
   if(katalog.tvary.includes(restored?.shape))profile.select(restored.shape);
   if(katalog.krycieDosky?.includes(restored?.cover))cover.select(restored.cover);
   function describe(){
+    if(ukazka)document.querySelector('.studio').textContent=catalog.kamene[stoneId].nazov;
     const m=definition(product.value);
 
     const dims=product.value==='pamatna'?[m.sirka,m.vyskaStely,m.dlzka]:[m.sirka,m.dlzka];

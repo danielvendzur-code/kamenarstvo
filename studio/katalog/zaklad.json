@@ -29,7 +29,13 @@
     "kniha": {},
     "vlna": {},
     "ramena": {},
-    "stit": {}
+    "stit": {},
+    "zrezane-rohy": {},
+    "sikmy": {},
+    "oval": {},
+    "zaobleny": {},
+    "stupnovity": {},
+    "slza": {}
   },
   "kamene": {
     "absolute-black": {
@@ -84,7 +90,10 @@
   "krycieDosky": {
     "cela": {},
     "delena": {},
-    "kvety": {}
+    "kvety": {},
+    "priecne-delena": {},
+    "skosene-celo": {},
+    "bocny-zahon": {}
   },
   "pisma": {
     "cinzel": {},

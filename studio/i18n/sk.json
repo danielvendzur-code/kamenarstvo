@@ -161,5 +161,17 @@
   "edit": "Upraviť",
   "fullInscription": "Celý nápis",
   "collapseInscription": "Zbaliť nápis",
-  "emptyInscription": "Bez nápisu"
+  "emptyInscription": "Bez nápisu",
+  "zrezane-rohy": "Zrezané rohy",
+  "sikmy": "Šikmý profil",
+  "oval": "Oválna stela",
+  "zaobleny": "Zaoblený obdĺžnik",
+  "stupnovity": "Stupňovitý profil",
+  "slza": "Asymetrická slza",
+  "priecne-delena": "Priečne delená",
+  "skosene-celo": "So skoseným čelom",
+  "bocny-zahon": "S bočným záhonom",
+  "privateAccess": "Táto ukážka vyžaduje úplný súkromný odkaz.",
+  "privateLabel": "Súkromná ukážka",
+  "privateFor": "Súkromná ukážka iba pre {firma}"
 }

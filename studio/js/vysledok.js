@@ -3,7 +3,7 @@ const byId=id=>document.getElementById(id);
 export function readDesign(){
   if(!location.hash.startsWith('#navrh='))return null;
   try{
-    const payload=location.hash.slice(7);
+    const payload=location.hash.slice(7).split('&',1)[0];
     if(payload.length>200000)return null;
     const d=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0))));
     if(d?.v===1)return d;
@@ -25,6 +25,8 @@ export function designLink(state){
   for(const byte of bytes)binary+=String.fromCharCode(byte);
   const url=new URL(location.href);
   url.hash='navrh='+btoa(binary).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+  const key=new URLSearchParams(location.hash.slice(1)).get('ukazka');
+  if(key && /^[\w-]{43}$/.test(key))url.hash+='&ukazka='+key;
   return url.href;
 }
 

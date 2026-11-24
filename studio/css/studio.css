@@ -378,3 +378,77 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
   #cover{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
   #cover label{font:500 16px/1.25 var(--serif)}
 }
+
+/* Client identity is limited to private previews. */
+.client-preview .brand img,.client-preview #load-logo {
+  width:clamp(120px,14vw,198px);height:42px;object-fit:contain;
+  background:var(--logoSurface);padding:5px 9px;border-radius:var(--radius);
+}
+.client-preview .scene-header::before {background:linear-gradient(var(--paper) 45%,transparent)}
+.client-preview .scene-header .studio {color:var(--ink)}
+
+
+
+
+.client-preview :is(#product,#profile,#cover) label,
+.client-preview #samples button {
+  padding:7px;border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:var(--panel);transition:border-color .15s,background .15s;
+}
+.client-preview :is(#product,#profile,#cover) label:has(:checked),
+.client-preview #samples button[aria-pressed=true]{
+  border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);
+  background:color-mix(in srgb,var(--accent) 7%,var(--paper));
+}
+.client-preview :is(#product,#cover) label:has(:checked) img,
+.client-preview #samples button[aria-pressed=true] img{outline:none}
+.client-preview :is(#product,#cover,#samples) img {border-radius:min(var(--radius),5px)}
+.client-preview :is(#next,#copy,#to-inquiry,#shape-tools button,#letter-tools button,#environments button,.camera button){border-radius:var(--radius)}
+@media(max-width:760px){
+  .client-preview .brand img{width:104px;height:28px;padding:3px 5px}
+  
+  
+  
+  
+  .client-preview #product label{padding:3px}
+}
+
+
+/* Catalogue cards and action buttons have different proportions on the source sites. */
+.client-preview :is(#product,#profile,#cover) label,
+.client-preview #samples button {border-radius:var(--cardRadius)}
+.client-preview :is(#product,#cover,#samples) img{border-radius:var(--cardRadius)}
+.client-preview :is(#next,#to-inquiry,#inquiry button[type=submit]){
+  border-radius:var(--buttonRadius);background:var(--buttonFill);color:var(--buttonInk);
+  font-family:var(--buttonFont),sans-serif;font-weight:700;text-transform:uppercase;
+  letter-spacing:.065em;box-shadow:none;padding-inline:23px;
+}
+.client-preview #next::after{content:var(--buttonArrow)}
+.client-preview :is(#copy,#back,.example,.subnav button,.camera,#environments,.camera button,#environments button){
+  border-radius:var(--buttonRadius);
+}
+.client-preview :is(.subnav button,#extras label){border:1px solid var(--line-strong);padding:6px 12px;border-radius:var(--buttonRadius)}
+.client-preview .subnav button[aria-pressed=true]{background:var(--accent);color:white}
+.client-preview[data-controls=catalogue] :is(#shape-tools,#letter-tools){gap:0}
+.client-preview[data-controls=catalogue] :is(#shape-tools,#letter-tools) button{text-transform:uppercase;font:700 11px/1.2 Georgia,serif;letter-spacing:.06em}
+.client-preview[data-controls=catalogue] :is(#product,#profile,#cover) label:has(:checked){border-color:#171914;box-shadow:inset 0 -3px #171914}
+.client-preview[data-controls=block] :is(#product,#profile,#cover) label:has(:checked),
+.client-preview[data-controls=block] #samples button[aria-pressed=true]{background:#151616;color:white;box-shadow:none}
+.client-preview[data-controls=block] :is(#product,#profile,#cover) label:has(:checked) :is(small,span){color:white}
+.client-preview[data-controls=block] #next{letter-spacing:.15em;justify-content:center}
+.client-preview[data-controls=capsule] :is(#next,#to-inquiry,#inquiry button[type=submit]){text-transform:none;letter-spacing:0;padding-inline:30px}
+.client-preview[data-controls=capsule] :is(#product,#profile,#cover) label:has(:checked) span,
+.client-preview[data-controls=capsule] #samples button[aria-pressed=true] span{border-radius:100px;background:var(--accent);color:white;align-self:flex-start;padding:3px 10px}
+.client-preview[data-controls=outline] :is(#next,#to-inquiry){background:var(--paper);border:2px solid var(--buttonFill);color:var(--ink);justify-content:space-between}
+.client-preview[data-controls=outline] #next::after{color:var(--ink);font-size:20px}
+.client-preview[data-controls=outline] :is(#product,#profile,#cover) label:has(:checked),
+.client-preview[data-controls=outline] #samples button[aria-pressed=true]{border:2px solid var(--buttonFill);padding:6px;box-shadow:none}
+.client-preview[data-controls=outline] .subnav button[aria-pressed=true]{background:var(--buttonFill);color:var(--buttonInk)}
+@media(max-width:760px){
+  .client-preview[data-controls=outline] #product label:has(:checked){padding:2px}
+}
+
+.client-preview #product label:has(input[value="jednohrob"]) img{object-fit:contain;mix-blend-mode:normal;background:var(--paper)}
+.client-preview[data-controls=outline] .step-actions button#next,.client-preview[data-controls=outline] #result button#to-inquiry{background:var(--paper);border:2px solid var(--buttonFill);color:var(--ink)}
+
+#private-intro{margin:0;max-width:34em;padding-inline:16px;text-align:center;color:var(--ink);font:500 14px/1.5 var(--sans)}
