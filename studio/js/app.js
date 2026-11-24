@@ -1,4 +1,5 @@
-import {tabletSize} from './profily.js';
+import {openConfig} from './sukromna-ukazka.js';
+import {setStudioProfile,tabletSize} from './profily.js';
 import {choiceSet} from './volby.js';
 import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
@@ -22,7 +23,20 @@ async function start(){
   const slug=new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
-  const {firma,tema,katalog,prostredia,dopyt}=await json(base+'config.json');
+  let config;
+  try {
+    config=await openConfig(await json(base+'config.json'));
+  } catch (error) {
+    if(error.message!=='private-preview')throw error;
+    el('loader').hidden=true;el('error').textContent=t.privateAccess;el('error').hidden=false;
+    return;
+  }
+  const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
+  if(ukazka){
+    setStudioProfile(ukazka.profil);
+    t.atelierovy=ukazka.profil.nazov;
+    document.documentElement.classList.add('client-preview');
+  }
   const catalog=await json('./katalog/'+encodeURIComponent(katalog.zaklad)+'.json');
   for(const [key,value] of Object.entries(tema)){
     document.documentElement.style.setProperty('--'+key,value);
@@ -30,7 +44,15 @@ async function start(){
   document.documentElement.style.setProperty('--radius',tema.zaoblenie+'px');
   document.title=t.title;
   el('brand').textContent=firma.nazov;
-  if(firma.logo)el('logo').src=base+firma.logo;
+  if(firma.logo){
+    const logo=firma.logo.startsWith('data:image/webp;base64,')?firma.logo:base+firma.logo;
+    el('logo').src=logo;
+    if(ukazka){
+      el('logo').alt=firma.nazov;
+      el('load-logo').src=logo;el('load-logo').alt=firma.nazov;
+      el('brand').classList.add('visually-hidden');
+    }
+  }
   else el('logo').hidden=true;
   const progress=document.querySelector('progress');progress.value=2;progress.setAttribute('aria-label',t.loading);
   for(const node of document.querySelectorAll('[data-t]'))node.textContent=t[node.dataset.t];
@@ -38,8 +60,17 @@ async function start(){
     node.setAttribute('aria-label',t[node.dataset.label??node.dataset.t]);
     if(node.matches('button'))node.title=node.getAttribute('aria-label');
   }
+  if(ukazka){
+    document.title=firma.nazov+' · '+t.privateLabel;
+    document.querySelector('.studio').textContent=t.privateLabel;
+    el('client-note').hidden=false;
+    el('private-intro').textContent=t.privateFor.replace('{firma}',firma.nazov);
+    el('client-detail').textContent=firma.slogan;
+    el('client-model').textContent=ukazka.nazov;
+  }
   const types=[...katalog.pomniky,...(katalog.dosky??[])];
   const definition=id=>catalog.pomniky[id]??catalog.dosky[id];
+  if(ukazka)Object.assign(definition('jednohrob'),ukazka.rozmery,{detailStely:ukazka.detailStely});
   const product=choiceSet(el('product'),types,t,'profiles');
   for(const label of product.container.children){
     const model=definition(label.querySelector('input').value),dim=document.createElement('small');

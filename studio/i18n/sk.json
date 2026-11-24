@@ -170,5 +170,8 @@
   "slza": "Asymetrická slza",
   "priecne-delena": "Priečne delená",
   "skosene-celo": "So skoseným čelom",
-  "bocny-zahon": "S bočným záhonom"
+  "bocny-zahon": "S bočným záhonom",
+  "privateAccess": "Táto ukážka vyžaduje úplný súkromný odkaz.",
+  "privateLabel": "Súkromná ukážka",
+  "privateFor": "Súkromná ukážka iba pre {firma}"
 }

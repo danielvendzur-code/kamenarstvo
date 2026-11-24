@@ -272,6 +272,13 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,baseHeight=model.vyskaPodstavca;
   block(w*.89,baseHeight,.32,top,z,faces);
+  if(shape==='atelierovy' && model.detailStely){
+    const detail=model.detailStely;
+    // The narrow reveal separates the writing tablet from its recessed backing.
+    const depth=model.hrubkaStely*.60;
+    const back=block(w*detail.sirka,h*detail.vyska,depth,top+baseHeight,z-model.hrubkaStely/2-depth/2,satin);
+    back.position.x=w*detail.posun;
+  }
   addTablet(model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
   return group;
 }

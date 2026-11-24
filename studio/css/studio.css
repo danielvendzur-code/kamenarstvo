@@ -378,3 +378,41 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
   #cover{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
   #cover label{font:500 16px/1.25 var(--serif)}
 }
+
+/* Client identity is limited to private previews. */
+.client-preview .brand img,.client-preview #load-logo {
+  width:clamp(120px,14vw,198px);height:42px;object-fit:contain;
+  background:var(--logoSurface);padding:5px 9px;border-radius:var(--radius);
+}
+.client-preview .scene-header::before {background:linear-gradient(var(--paper) 45%,transparent)}
+.client-preview .scene-header .studio {color:var(--ink)}
+.client-preview #client-note {
+  border-inline-start:3px solid var(--metal);padding:2px 12px;margin:0 0 16px;
+  display:grid;gap:2px;color:var(--ink);text-align:left;
+}
+#client-note span {font:650 10px/1.35 var(--sans);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+#client-note strong {font:600 18px/1.22 var(--serif)}
+#client-note small {font:450 12px/1.4 var(--sans);color:var(--muted)}
+.client-preview :is(#product,#profile,#cover) label,
+.client-preview #samples button {
+  padding:7px;border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:var(--panel);transition:border-color .15s,background .15s;
+}
+.client-preview :is(#product,#profile,#cover) label:has(:checked),
+.client-preview #samples button[aria-pressed=true]{
+  border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);
+  background:color-mix(in srgb,var(--accent) 7%,var(--paper));
+}
+.client-preview :is(#product,#cover) label:has(:checked) img,
+.client-preview #samples button[aria-pressed=true] img{outline:none}
+.client-preview :is(#product,#cover,#samples) img {border-radius:min(var(--radius),5px)}
+.client-preview :is(#next,#copy,#to-inquiry,#shape-tools button,#letter-tools button,#environments button,.camera button){border-radius:var(--radius)}
+@media(max-width:760px){
+  .client-preview .brand img{width:104px;height:28px;padding:3px 5px}
+  .client-preview #client-note{margin-bottom:9px;gap:1px;padding-inline:9px}
+  #client-note span{font-size:9px}
+  #client-note strong{font-size:15px}
+  #client-note small{font-size:11px}
+  .client-preview #product label{padding:3px}
+}
+

@@ -7,14 +7,23 @@ export function tabletSize(model,type){
   return {width:model.sirka*.78,height:model.vyskaStely};
 }
 
+let studioProfile;
+export function setStudioProfile(profile){studioProfile=profile;}
+
 export function outline(width,height,profile){
   const shape=new Shape(),half=width/2,h=height;
-  const foot=profile==='oval'?.64:1;
+  const foot=profile==='atelierovy'?studioProfile.foot:profile==='oval'?.64:1;
   shape.moveTo(-half*foot,0);shape.lineTo(half*foot,0);
   function line(x,y){shape.lineTo(x*half,y*h);}
   function quad(x1,y1,x,y){shape.quadraticCurveTo(x1*half,y1*h,x*half,y*h);}
   function curve(x1,y1,x2,y2,x,y){shape.bezierCurveTo(x1*half,y1*h,x2*half,y2*h,x*half,y*h);}
   switch(profile){
+    case 'atelierovy':
+      for(const segment of studioProfile.outline){
+        if(segment.length===2)line(...segment);
+        else curve(...segment);
+      }
+      break;
     case 'obluk':
       line(1,.86);curve(.52,1.045,-.52,1.045,-1,.86);break;
     case 'ramena':
