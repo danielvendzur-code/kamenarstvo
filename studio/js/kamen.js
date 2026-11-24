@@ -2,7 +2,7 @@ import * as T from 'three';
 
 const root=new URL('../assets/kamene/',import.meta.url);
 const loader=new T.TextureLoader(), maps=new Map();
-export function vzorka(stone){return new URL(stone.textura+'-vzorka.webp',root).href;}
+export function vzorka(stone){return stone.vzorka??new URL(stone.textura+'-vzorka.webp',root).href;}
 export function loadStone(stone){
   const id=stone.textura;
   if(!maps.has(id)){
@@ -11,10 +11,10 @@ export function loadStone(stone){
       map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=8;map.minFilter=T.LinearMipmapLinearFilter;
       if(!suffix)map.colorSpace=T.SRGBColorSpace;
       return map;
-    })).then(pair=>{stone.maps=pair;}).catch(error=>{maps.delete(id);throw error;});
+    })).catch(error=>{maps.delete(id);throw error;});
     maps.set(id,pending);
   }
-  return maps.get(id);
+  return maps.get(id).then(pair=>{stone.maps=pair;});
 }
 export function vytvorZulu(stone,{satin=false,mirror=null}={}){
   const material=new T.MeshPhysicalMaterial({
@@ -23,6 +23,7 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
   });
   material.customProgramCacheKey=()=>mirror?'granite-planar':satin?'granite-satin':'granite-polished';
   material.onBeforeCompile=shader=>{
+    shader.uniforms.stoneLift={value:stone.zosvetlenie??0};
     shader.uniforms.slab={value:stone.maps[0]};shader.uniforms.grit={value:stone.maps[1]};
     shader.vertexShader='attribute float slabCut; varying vec3 vStone,cutPos,cutNormal; varying vec2 slabAxis;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
       #include <begin_vertex>
@@ -35,7 +36,7 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
       cutNormal=normal;`);
     shader.fragmentShader=`
       varying vec3 vStone,cutPos,cutNormal; varying vec2 slabAxis;
-      uniform sampler2D slab,grit;
+      uniform sampler2D slab,grit; uniform float stoneLift;
       vec4 projectSlab(sampler2D tex,vec3 weights){
         mat2 turn=mat2(slabAxis.x,-slabAxis.y,slabAxis.y,slabAxis.x);
         return texture2D(tex,turn*cutPos.zy)*weights.x+texture2D(tex,turn*cutPos.xz)*weights.y+texture2D(tex,turn*cutPos.xy)*weights.z;
@@ -44,6 +45,7 @@ export function vytvorZulu(stone,{satin=false,mirror=null}={}){
       #include <color_fragment>
       vec3 weights=pow(abs(normalize(cutNormal)),vec3(8.));weights/=dot(weights,vec3(1.));
       diffuseColor.rgb=projectSlab(slab,weights).rgb;
+      diffuseColor.rgb+=stoneLift*sqrt(diffuseColor.rgb);
       float surfaceGrain=projectSlab(grit,weights).g;
       diffuseColor.rgb+=${satin?'vec3(.027+.035*surfaceGrain)':'vec3(0.)'};`)
       .replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>

@@ -52,7 +52,9 @@ async function start(){
     if(ukazka){
       el('logo').alt=firma.nazov;
       el('load-logo').src=logo;el('load-logo').alt=firma.nazov;
-      el('brand').classList.add('visually-hidden');
+      if(ukazka.slovnaZnacka){
+        el('brand').textContent=ukazka.slovnaZnacka;el('brand').classList.add('wordmark');
+      }else el('brand').classList.add('visually-hidden');
     }
   }
   else el('logo').hidden=true;
@@ -69,6 +71,12 @@ async function start(){
   }
   const types=[...katalog.pomniky,...(katalog.dosky??[])];
   const definition=id=>catalog.pomniky[id]??catalog.dosky[id];
+  if(ukazka?.materialy)Object.assign(catalog.kamene,ukazka.materialy);
+  if(ukazka?.zostava){
+    definition('jednohrob').zostava=ukazka.zostava;
+    const accent=catalog.kamene[ukazka.zostava.kamenStely];
+    if(accent){await loadStone(accent);definition('jednohrob').kamenStely=accent;}
+  }
   if(ukazka)Object.assign(definition('jednohrob'),ukazka.rozmery,{detailStely:ukazka.detailStely});
   const product=choiceSet(el('product'),types,t,'profiles');
   for(const label of product.container.children){
@@ -78,6 +86,7 @@ async function start(){
   if(ukazka?.nahlad){
     const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
     initialCard.querySelector('img').src=ukazka.nahlad;
+    if(ukazka.zostava)initialCard.querySelector('span').textContent=ukazka.profil.nazov;
   }
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
@@ -95,12 +104,19 @@ async function start(){
   }
   for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
   function profiles(){
-    profile.fill(katalog.tvary,tabletSize(definition(product.value),product.value));
+    const available=ukazka?.zostava && product.value!=='jednohrob'?katalog.tvary.filter(id=>id!=='atelierovy'):katalog.tvary;
+    profile.fill(available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
+    if(ukazka?.nahladyDosiek){
+      for(const label of cover.container.children){
+        const id=label.querySelector('input').value;
+        label.querySelector('img').src=(product.value==='jednohrob' && ukazka.nahladyDosiek[id]) || './assets/dosky/'+id+'.webp';
+      }
+    }
     el('shape-tools').hidden=katalog.dosky?.includes(product.value);
   }
   profiles();
-  if(katalog.tvary.includes(restored?.shape))profile.select(restored.shape);
+  if([...profile.container.querySelectorAll('input')].some(input=>input.value===restored?.shape))profile.select(restored.shape);
   if(katalog.krycieDosky?.includes(restored?.cover))cover.select(restored.cover);
   function describe(){
     if(ukazka)document.querySelector('.studio').textContent=catalog.kamene[stoneId].nazov;
@@ -168,10 +184,17 @@ async function start(){
     viewer.change({type:product.value,shape:profile.value,cover:cover.value},definition(product.value),catalog.kamene[stoneId]);
     describe();persist();
   }
+  function recommendedInk(){
+    const material=profile.value==='atelierovy' && syncEditor.state().nameAt!=='slab' && definition(product.value).kamenStely;
+    return (material||catalog.kamene[stoneId]).odporucanePismo;
+  }
   const syncEditor=editor(katalog,t,product,viewer,detail,persist,()=>profile.value);
 
-  product.container.onchange=()=>{profiles();syncEditor();apply();syncEditor.flush();mark('angle');};
-  profile.container.onchange=()=>{syncEditor();apply();syncEditor.flush();};
+  product.container.onchange=()=>{profiles();syncEditor();syncEditor.recommend(recommendedInk());apply();syncEditor.flush();mark('angle');};
+  profile.container.onchange=()=>{syncEditor();syncEditor.recommend(recommendedInk());apply();syncEditor.flush();};
+  el('letters').addEventListener('change',event=>{
+    if(event.target.matches('[data-placement=nameAt]'))syncEditor.recommend(recommendedInk());
+  });
   cover.container.onchange=apply;
   let materialRequest=0,requestedStone=stoneId;
   for(const id of katalog.kamene){
@@ -185,7 +208,7 @@ async function start(){
       try{await loadStone(catalog.kamene[id]);}
       catch(error){if(job===materialRequest){requestedStone=stoneId;console.error(error);el('error').hidden=false;}return;}
       if(job!==materialRequest)return;
-      stoneId=id;syncEditor.recommend(catalog.kamene[id].odporucanePismo);apply();
+      stoneId=id;syncEditor.recommend(recommendedInk());apply();
     }
     button.onclick=()=>pendingStone=selectStone();
   }
@@ -252,7 +275,7 @@ async function start(){
   el('to-inquiry').onclick=()=>{inquiryDialog.showModal();el('inquiry').elements.name.focus();};
   el('close-inquiry').onclick=()=>inquiryDialog.close();
   go(0,false);
-  syncEditor.recommend(catalog.kamene[stoneId].odporucanePismo);describe();progress.value=3;
+  syncEditor.recommend(recommendedInk());describe();progress.value=3;
   try{await choose(allowed.includes(restored?.environment)?restored.environment:initial);}catch{
     await choose('atelier');el('error').textContent=t.retryEnv;el('error').hidden=false;
   }
