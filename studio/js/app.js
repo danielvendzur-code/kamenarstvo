@@ -105,7 +105,8 @@ async function start(){
   for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
   function profiles(savedShape){
     const available=ukazka?.zostava && product.value!=='jednohrob'?katalog.tvary.filter(id=>id!=='atelierovy'):katalog.tvary;
-    const sculpted = ukazka ? available.filter(id => !['rovny', 'zaobleny', 'sikmy'].includes(id) || id === savedShape) : available;
+    const featured = ['atelierovy', 'kniha', 'slza', 'ramena', 'stupnovity', 'vlna'];
+    const sculpted = ukazka ? available.filter(id => featured.includes(id) || id === savedShape) : available;
     profile.fill(sculpted.length ? sculpted : available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
     if(ukazka?.nahladyDosiek){

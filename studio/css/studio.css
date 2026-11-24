@@ -459,3 +459,5 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
   .client-preview .brand:has(.wordmark) img{width:25px;height:25px}
   .client-preview .brand .wordmark{font-size:13px}
 }
+
+.client-preview[data-controls=block] #profile label:has(:checked) .silhouette{fill:currentColor}
