@@ -103,9 +103,10 @@ async function start(){
     for(const button of el('shape-tools').children)button.setAttribute('aria-pressed',String(button.dataset.shapePart===part));
   }
   for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
-  function profiles(){
+  function profiles(savedShape){
     const available=ukazka?.zostava && product.value!=='jednohrob'?katalog.tvary.filter(id=>id!=='atelierovy'):katalog.tvary;
-    profile.fill(available,tabletSize(definition(product.value),product.value));
+    const sculpted = ukazka ? available.filter(id => !['rovny', 'zaobleny', 'sikmy'].includes(id) || id === savedShape) : available;
+    profile.fill(sculpted.length ? sculpted : available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
     if(ukazka?.nahladyDosiek){
       for(const label of cover.container.children){
@@ -115,7 +116,7 @@ async function start(){
     }
     el('shape-tools').hidden=katalog.dosky?.includes(product.value);
   }
-  profiles();
+  profiles(restored?.shape);
   if([...profile.container.querySelectorAll('input')].some(input=>input.value===restored?.shape))profile.select(restored.shape);
   if(katalog.krycieDosky?.includes(restored?.cover))cover.select(restored.cover);
   function describe(){
