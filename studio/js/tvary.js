@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {vytvorZulu} from './kamen.js';
 import {outline,tabletSize,bookLeaf} from './profily.js';
 
 // A single closed perimeter avoids coincident end faces and seams at the corners.
@@ -103,6 +104,10 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const {sirka:w,dlzka:d,vyskaStely:h}=model;
   const {type='jednohrob',shape='rovny',cover='cela'}=selection;
   const group=new T.Group(),faces=[polished,satin];
+  const assembly=type==='jednohrob'?model.zostava:null;
+  const signature=shape==='atelierovy'?assembly:null;
+  const tabletFaces=signature && model.kamenStely
+    ? [vytvorZulu(model.kamenStely),vytvorZulu(model.kamenStely,{satin:true})] : faces;
   function add(geo,mat,x,y,z){
     const mesh=new T.Mesh(geo,mat);
     mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;group.add(mesh);
@@ -114,7 +119,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     return mesh;
   }
   function profileFace(path,depth,base,z){
-    const mesh=add(sheet(path,depth,.004),faces,0,base+.004,z-depth/2+.004);
+    const mesh=add(sheet(path,depth,.004),tabletFaces,0,base+.004,z-depth/2+.004);
     const bounds=path.getPoints(64);
     const xs=bounds.map(p=>p.x),ys=bounds.map(p=>p.y);
     mesh.userData.face={left:Math.min(...xs),right:Math.max(...xs),height:Math.max(...ys),z:depth-.004};
@@ -136,6 +141,26 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     }else{
       const path=outline(sw-.008,h-.008,shape);
       const stela=profileFace(path,depth,bottom,z);
+      if(signature?.intarzia){
+        const cross=new T.MeshStandardMaterial({color:0xb6b8b4,roughness:.48,metalness:.28});
+        const stem=add(new T.BoxGeometry(.032,h-.012,.002),cross,0,bottom+h/2,z+depth/2+.001);
+        stem.position.x=-sw*.245;
+        const bar=add(new T.BoxGeometry(sw*.24,.032,.002),cross,0,bottom+h*.71,z+depth/2+.0012);
+        bar.position.x=stem.position.x;
+        stela.userData.face.left=-sw*.10;
+      }
+      if(signature?.pilier){
+        const pillar=signature.pilier;
+        stela.position.x=w*pillar.posunStely;
+        const jamb=block(w*pillar.sirka,h*pillar.vyska,depth+.012,bottom,z,faces);
+        jamb.position.x=w*pillar.x;
+      }
+      if(signature?.vrstvy){
+        for(let i=1;i<=signature.vrstvy;i++){
+          const layer=add(sheet(path,.024,.004),tabletFaces,-i*.022,bottom+.004+i*.018,z-depth/2-i*.026+.004);
+          layer.userData.part='stone';
+        }
+      }
       stela.userData.face.contour=path.getPoints(40);
       stela.rotation.x=tilt;
     }
@@ -170,6 +195,13 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const top=shoulder+model.hrubkaDosky;
   // Mitre the plinth, border and lid together so no square corners protrude.
   function perimeter(x,z,inset=0){
+    if(assembly?.oblukCela && cover==='cela'){
+      const bow=assembly.oblukCela;
+      const path=new T.Shape();
+      path.moveTo(-x,z);path.lineTo(x,z);path.lineTo(x,-z+bow);
+      path.quadraticCurveTo(0,-z-bow,-x,-z+bow);path.closePath();
+      return path;
+    }
     if(cover!=='skosene-celo')return rectangle(-x,-z,x,z);
     const cut=Math.min(w*.22,d*.13)-(2-Math.SQRT2)*inset;
     const path=new T.Shape();
@@ -177,15 +209,23 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     path.lineTo(x,z);path.lineTo(-x,z);path.lineTo(-x,-z+cut);path.closePath();
     return path;
   }
+  if(assembly?.listovanie && cover==='cela'){
+    const course=assembly.listovanie;
+    block(w+.012,course,d+.012,shoulder-course,0,faces);
+  }
   if(cover==='skosene-celo'){
     add(sheet(perimeter(w/2-.029,d/2-.029,.029),footing,.004),satin,0,.004,0).rotation.x=-Math.PI/2;
+  }else if(assembly?.sokel){
+    const lip=assembly.sokel;
+    block(w+lip,footing,d+lip,0,0,faces);
   }else block(w-.05,footing,d-.05,0,0,satin);
   const ring=perimeter(w/2-bevel,d/2-bevel,bevel);
   const rail=model.sirkaObruby;
   ring.holes.push(perimeter(w/2-rail,d/2-rail,rail));
   const railMesh=add(sheet(ring,model.vyskaObruby,bevel),satin,0,footing+bevel,0);
   railMesh.rotation.x=-Math.PI/2;railMesh.userData.part='stone';
-  const halfW=w/2+.005,halfD=d/2+.005,gap=.0025+bevel;
+  const overhang=assembly?.presah??.005;
+  const halfW=w/2+overhang,halfD=d/2+overhang,gap=.0025+bevel;
   const crossSeam=d*.09;
   let covers=[perimeter(halfW,halfD)];
   if(cover==='delena'){
@@ -271,7 +311,14 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,baseHeight=model.vyskaPodstavca;
-  block(w*.89,baseHeight,.32,top,z,faces);
+  block(w*(assembly?.podstavec??.89),baseHeight,assembly?.hlbkaPodstavca??.32,top,z,signature?.tmavyPodstavec?tabletFaces:faces);
+  if(assembly?.stredovaDoska && cover==='cela'){
+    const inset=rectangle(-w*.37,-d*.325,w*.37,d*.325);
+    const panel=add(sheet(inset,.028,.003),faces,0,top+.003,d*.045);
+    panel.rotation.x=-Math.PI/2;
+    panel.userData.coverField={left:-w*.31,right:w*.31,height:d*.47,bottom:-d*.235};
+    delete face.userData.coverField;
+  }
   if(shape==='atelierovy' && model.detailStely){
     const detail=model.detailStely;
     // The narrow reveal separates the writing tablet from its recessed backing.

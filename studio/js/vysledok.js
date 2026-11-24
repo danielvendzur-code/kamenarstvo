@@ -41,9 +41,12 @@ export function resultPanel(t,settings,catalog,edit){
   if(!settings?.emailjs)byId('simulation').hidden=false;
   function show(state,url){
     const people=state.type==='dvojhrob'?state.people:state.people.slice(0,1);
+    const stone=catalog.kamene[state.stone].nazov;
+    const tablet=state.shape==='atelierovy' && catalog.pomniky[state.type]?.kamenStely?.nazov;
+    const materials=tablet && tablet!==stone ? stone+' · '+t.face+' '+tablet : stone;
     const rows=[[t.product,t[state.type]],[t.profile,t[state.shape]]];
     if(state.cover)rows.push([t.cover,t[state.cover]]);
-    rows.push([t.stone,catalog.kamene[state.stone].nazov],[t.font,t[state.font]],[t.finish,t[state.finish]]);
+    rows.push([t.stone,materials],[t.font,t[state.font]],[t.finish,t[state.finish]]);
     for(const p of people){
       const name=[p.first,p.last].filter(Boolean).join(' ');
       const dates=[p.birth&&'* '+p.birth,p.death&&'† '+p.death].filter(Boolean).join('   ');
@@ -56,7 +59,7 @@ export function resultPanel(t,settings,catalog,edit){
     byId('step-title').textContent=t[state.type]+' · '+catalog.kamene[state.stone].nazov;
     const names=people.map(p=>[p.first,p.last,[p.birth,p.death].filter(Boolean).join(' – ')].filter(Boolean).join(' ')).filter(Boolean);
     const inscription=[...names,state.epitaph].filter(Boolean).join(' · ')||t.emptyInscription;
-    const groups=[[t.product,t[state.type]],[t.profile,[t[state.shape],t[state.cover]].filter(Boolean).join(' · ')],[t.stone,catalog.kamene[state.stone].nazov],[t.person,inscription],[t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none]];
+    const groups=[[t.product,t[state.type]],[t.profile,[t[state.shape],t[state.cover]].filter(Boolean).join(' · ')],[t.stone,materials],[t.person,inscription],[t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none]];
     summary.replaceChildren(...groups.map(([key,value],index)=>{
       const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd'),button=document.createElement('button');
       dt.textContent=key;dd.textContent=value;dd.title=value;button.textContent=t.edit;button.type='button';button.setAttribute('aria-label',t.edit+' · '+key);button.onclick=()=>edit(index);

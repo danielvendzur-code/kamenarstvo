@@ -4,7 +4,7 @@ import {Shape} from 'three';
 export function tabletSize(model,type){
   if(type==='urna')return {width:model.sirka,height:model.dlzka};
   if(type==='pamatna')return {width:model.sirka,height:model.vyskaStely};
-  return {width:model.sirka*.78,height:model.vyskaStely};
+  return {width:model.sirka*(model.zostava?.sirkaStely??.78),height:model.vyskaStely};
 }
 
 let studioProfile;

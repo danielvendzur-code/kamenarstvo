@@ -452,3 +452,10 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
 .client-preview[data-controls=outline] .step-actions button#next,.client-preview[data-controls=outline] #result button#to-inquiry{background:var(--paper);border:2px solid var(--buttonFill);color:var(--ink)}
 
 #private-intro{margin:0;max-width:34em;padding-inline:16px;text-align:center;color:var(--ink);font:500 14px/1.5 var(--sans)}
+
+.client-preview .brand:has(.wordmark) img{width:36px;height:36px;padding:0;background:transparent}
+.client-preview .brand .wordmark{font:650 clamp(14px,1.4vw,21px)/1.1 var(--sans);letter-spacing:.035em}
+@media(max-width:760px){
+  .client-preview .brand:has(.wordmark) img{width:25px;height:25px}
+  .client-preview .brand .wordmark{font-size:13px}
+}
