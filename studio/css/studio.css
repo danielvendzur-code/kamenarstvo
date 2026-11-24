@@ -460,4 +460,4 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
   .client-preview .brand .wordmark{font-size:13px}
 }
 
-.client-preview[data-controls=block] #profile label:has(:checked) .silhouette{fill:currentColor}
+.client-preview[data-controls=block] #profile label:has(:checked){--profile-face:#e3e4e0}

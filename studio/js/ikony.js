@@ -17,11 +17,34 @@ export function icon(key){
 export function profileIcon(id,{width,height}){
   const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
   svg.setAttribute('aria-hidden','true');svg.setAttribute('class','silhouette');
-  svg.setAttribute('viewBox',[-width/2,-height,width,height].join(' '));
+  const relief=document.documentElement.classList.contains('client-preview');
+  const depthX=relief ? width*.09 : 0;
+  const depthY=relief ? -height*.055 : 0;
+  svg.setAttribute('viewBox',[-width/2-.01,-height+depthY-.02,width+depthX+.02,height-depthY+.05].join(' '));
+  function polygon(points){return 'M'+points.map(([x,y])=>x+','+y).join(' L')+' Z';}
+  function surface(path,tone){
+    const face=document.createElementNS(ns,'path');
+    face.setAttribute('d',path);
+    if(tone)face.setAttribute('fill',tone);
+    svg.append(face);
+  }
   function add(shape,dx=0,scaleX=1,dy=0){
-    const path=document.createElementNS(ns,'path');
-    const coords=shape.getPoints(32).map(p=>(dx+p.x*scaleX)+','+(dy-p.y));
-    path.setAttribute('d','M'+coords.join(' L')+' Z');svg.append(path);
+    const points=shape.getPoints(32).map(p=>[dx+p.x*scaleX,dy-p.y]);
+    if(relief){
+      const back=points.map(([x,y])=>[x+depthX,y+depthY]);
+      surface(polygon(back),'#5c6267');
+      const facets=new Map();
+      for(let i=1;i<points.length;i++){
+        const [x,y]=points[i-1], [nextX,nextY]=points[i];
+        const length=Math.hypot(nextX-x,nextY-y);
+        if(!length)continue;
+        const level=112+8*Math.round(7*Math.abs(nextX-x)/length);
+        const quad=polygon([points[i-1],back[i-1],back[i],points[i]]);
+        facets.set(level,(facets.get(level)??'')+quad);
+      }
+      for(const [level,path] of facets)surface(path,'rgb('+[level,level+3,level+5].join(',')+')');
+    }
+    surface(polygon(points),relief?'var(--profile-face, #333a40)':null);
   }
   if(id==='kniha'){
     for(const sign of [-1,1])add(bookLeaf(width*.494,height,sign),sign*.005,Math.cos(.095),.03);
