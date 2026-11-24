@@ -20,7 +20,8 @@ function mark(view){
 async function start(){
   const t=await json('./i18n/sk.json');
   el('error').textContent=t.error;
-  const slug=new URLSearchParams(location.search).get('k')??'vzor';
+  const brandedHost=/^([a-z0-9-]+)\.mojchatbot\.sk$/.exec(location.hostname);
+  const slug=brandedHost?.[1]??new URLSearchParams(location.search).get('k')??'vzor';
   if(!/^[a-z0-9-]+$/.test(slug))throw new Error('slug');
   const base='./klienti/'+slug+'/';
   let config;
@@ -62,12 +63,9 @@ async function start(){
     if(node.matches('button'))node.title=node.getAttribute('aria-label');
   }
   if(ukazka){
-    document.title=firma.nazov+' · '+t.privateLabel;
-    document.querySelector('.studio').textContent=t.privateLabel;
-    el('client-note').hidden=false;
+    document.title=firma.nazov+' · '+t.title;
     el('private-intro').textContent=t.privateFor.replace('{firma}',firma.nazov);
-    el('client-detail').textContent=firma.slogan;
-    el('client-model').textContent=ukazka.nazov;
+    el('private-intro').hidden=false;
   }
   const types=[...katalog.pomniky,...(katalog.dosky??[])];
   const definition=id=>catalog.pomniky[id]??catalog.dosky[id];
@@ -105,6 +103,7 @@ async function start(){
   if(katalog.tvary.includes(restored?.shape))profile.select(restored.shape);
   if(katalog.krycieDosky?.includes(restored?.cover))cover.select(restored.cover);
   function describe(){
+    if(ukazka)document.querySelector('.studio').textContent=catalog.kamene[stoneId].nazov;
     const m=definition(product.value);
 
     const dims=product.value==='pamatna'?[m.sirka,m.vyskaStely,m.dlzka]:[m.sirka,m.dlzka];
