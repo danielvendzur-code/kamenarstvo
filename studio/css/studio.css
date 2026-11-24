@@ -451,3 +451,5 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
   .client-preview[data-controls=outline] #product label:has(:checked){padding:2px}
 }
 
+.client-preview #product label:has(input[value="jednohrob"]) img{object-fit:contain;mix-blend-mode:normal;background:var(--paper)}
+.client-preview[data-controls=outline] .step-actions button#next,.client-preview[data-controls=outline] #result button#to-inquiry{background:var(--paper);border:2px solid var(--buttonFill);color:var(--ink)}
