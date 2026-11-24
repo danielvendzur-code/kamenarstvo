@@ -33,6 +33,7 @@ async function start(){
   }
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
   if(ukazka){
+    document.documentElement.dataset.controls=ukazka.ovladanie;
     setStudioProfile(ukazka.profil);
     t.atelierovy=ukazka.profil.nazov;
     document.documentElement.classList.add('client-preview');
@@ -75,6 +76,10 @@ async function start(){
   for(const label of product.container.children){
     const model=definition(label.querySelector('input').value),dim=document.createElement('small');
     dim.textContent=[model.sirka,label.querySelector('input').value==='pamatna'?model.vyskaStely:model.dlzka].map(v=>Math.round(v*100)).join(' × ')+' '+t.unit;label.append(dim);
+  }
+  if(ukazka?.nahlad){
+    const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
+    initialCard.querySelector('img').src=ukazka.nahlad;
   }
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');

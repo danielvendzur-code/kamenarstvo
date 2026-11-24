@@ -416,3 +416,38 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
   .client-preview #product label{padding:3px}
 }
 
+
+/* Catalogue cards and action buttons have different proportions on the source sites. */
+.client-preview :is(#product,#profile,#cover) label,
+.client-preview #samples button {border-radius:var(--cardRadius)}
+.client-preview :is(#product,#cover,#samples) img{border-radius:var(--cardRadius)}
+.client-preview :is(#next,#to-inquiry,#inquiry button[type=submit]){
+  border-radius:var(--buttonRadius);background:var(--buttonFill);color:var(--buttonInk);
+  font-family:var(--buttonFont),sans-serif;font-weight:700;text-transform:uppercase;
+  letter-spacing:.065em;box-shadow:none;padding-inline:23px;
+}
+.client-preview #next::after{content:var(--buttonArrow)}
+.client-preview :is(#copy,#back,.example,.subnav button,.camera,#environments,.camera button,#environments button){
+  border-radius:var(--buttonRadius);
+}
+.client-preview :is(.subnav button,#extras label){border:1px solid var(--line-strong);padding:6px 12px;border-radius:var(--buttonRadius)}
+.client-preview .subnav button[aria-pressed=true]{background:var(--accent);color:white}
+.client-preview[data-controls=catalogue] :is(#shape-tools,#letter-tools){gap:0}
+.client-preview[data-controls=catalogue] :is(#shape-tools,#letter-tools) button{text-transform:uppercase;font:700 11px/1.2 Georgia,serif;letter-spacing:.06em}
+.client-preview[data-controls=catalogue] :is(#product,#profile,#cover) label:has(:checked){border-color:#171914;box-shadow:inset 0 -3px #171914}
+.client-preview[data-controls=block] :is(#product,#profile,#cover) label:has(:checked),
+.client-preview[data-controls=block] #samples button[aria-pressed=true]{background:#151616;color:white;box-shadow:none}
+.client-preview[data-controls=block] :is(#product,#profile,#cover) label:has(:checked) :is(small,span){color:white}
+.client-preview[data-controls=block] #next{letter-spacing:.15em;justify-content:center}
+.client-preview[data-controls=capsule] :is(#next,#to-inquiry,#inquiry button[type=submit]){text-transform:none;letter-spacing:0;padding-inline:30px}
+.client-preview[data-controls=capsule] :is(#product,#profile,#cover) label:has(:checked) span,
+.client-preview[data-controls=capsule] #samples button[aria-pressed=true] span{border-radius:100px;background:var(--accent);color:white;align-self:flex-start;padding:3px 10px}
+.client-preview[data-controls=outline] :is(#next,#to-inquiry){background:var(--paper);border:2px solid var(--buttonFill);color:var(--ink);justify-content:space-between}
+.client-preview[data-controls=outline] #next::after{color:var(--ink);font-size:20px}
+.client-preview[data-controls=outline] :is(#product,#profile,#cover) label:has(:checked),
+.client-preview[data-controls=outline] #samples button[aria-pressed=true]{border:2px solid var(--buttonFill);padding:6px;box-shadow:none}
+.client-preview[data-controls=outline] .subnav button[aria-pressed=true]{background:var(--buttonFill);color:var(--buttonInk)}
+@media(max-width:760px){
+  .client-preview[data-controls=outline] #product label:has(:checked){padding:2px}
+}
+
