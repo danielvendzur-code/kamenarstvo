@@ -35,6 +35,7 @@ async function start(){
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
   if(ukazka){
     document.documentElement.dataset.controls=ukazka.ovladanie;
+    if(ukazka.vzhlad==='galeria')document.documentElement.classList.add('gallery-ui');
     setStudioProfile(ukazka.profil);
     t.atelierovy=ukazka.profil.nazov;
     document.documentElement.classList.add('client-preview');
@@ -81,6 +82,10 @@ async function start(){
   const product=choiceSet(el('product'),types,t,'profiles');
   for(const label of product.container.children){
     const model=definition(label.querySelector('input').value),dim=document.createElement('small');
+    if(ukazka?.vzhlad==='galeria'){
+      const image=label.querySelector('img');
+      image.src=image.src.replace('/vyhotovenia/','/galeria/');
+    }
     dim.textContent=[model.sirka,label.querySelector('input').value==='pamatna'?model.vyskaStely:model.dlzka].map(v=>Math.round(v*100)).join(' × ')+' '+t.unit;label.append(dim);
   }
   if(ukazka?.nahlad){
