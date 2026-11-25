@@ -452,3 +452,55 @@ dialog{padding:28px;max-height:100dvh}dialog h2{margin:10px 0}#inquiry{grid-temp
 .client-preview[data-controls=outline] .step-actions button#next,.client-preview[data-controls=outline] #result button#to-inquiry{background:var(--paper);border:2px solid var(--buttonFill);color:var(--ink)}
 
 #private-intro{margin:0;max-width:34em;padding-inline:16px;text-align:center;color:var(--ink);font:500 14px/1.5 var(--sans)}
+
+.client-preview .brand:has(.wordmark) img{width:36px;height:36px;padding:0;background:transparent}
+.client-preview .brand .wordmark{font:650 clamp(14px,1.4vw,21px)/1.1 var(--sans);letter-spacing:.035em}
+@media(max-width:760px){
+  .client-preview .brand:has(.wordmark) img{width:25px;height:25px}
+  .client-preview .brand .wordmark{font-size:13px}
+}
+
+.client-preview[data-controls=block] #profile label:has(:checked){--profile-face:#e3e4e0}
+
+/* Gallery treatment is opt-in per client. */
+html.gallery-ui aside {--paper:#fcfbfa;--panel:#fff;--soft:#f2f0ee;background:var(--paper);font-family:Manrope,sans-serif}
+html.gallery-ui #step-title {font:550 clamp(25px,2.6vw,42px)/1.1 Manrope,sans-serif;letter-spacing:-.052em;color:#211f20}
+html.gallery-ui #step-track button {font-family:Manrope,sans-serif;font-weight:560}
+html.gallery-ui #step-track button::before {font-variant-numeric:tabular-nums;letter-spacing:.06em}
+html.gallery-ui #step-track [aria-current] {font-weight:800}
+html.gallery-ui #shape-tools {display:flex;gap:3px;padding:3px;background:#eeedeb;border:0;border-radius:5px}
+html.gallery-ui #shape-tools button {flex:1;border:0;border-radius:3px;background:transparent;color:#585352;font:620 12px/1.35 Manrope,sans-serif}
+html.gallery-ui #shape-tools button[aria-pressed=true] {background:white;color:#302729;box-shadow:0 1px 3px #30272920}
+html.gallery-ui :is(#product,#profile,#cover).cards label,
+html.gallery-ui #samples button {border:1px solid #dedbd8;border-radius:5px;box-shadow:none;background:#f5f4f2;color:#282426;overflow:hidden}
+html.gallery-ui :is(#product,#profile,#cover).cards label:has(:checked),
+html.gallery-ui #samples button[aria-pressed=true] {background:#faf6f7;border-color:var(--accent);box-shadow:inset 0 0 0 .5px var(--accent)}
+html.gallery-ui :is(#product,#profile,#cover).cards label::after,html.gallery-ui #samples button::after {display:none}
+html.gallery-ui :is(#product,#profile,#cover).cards label:has(:checked)::after,
+html.gallery-ui #samples button[aria-pressed=true]::after {content:"";display:block;position:absolute;inset:8px 8px auto auto;width:6px;height:6px;border:0;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px white;opacity:1;transform:none}
+html.gallery-ui :is(#product,#profile,#cover).cards label span,
+html.gallery-ui #samples button span,html.gallery-ui #samples button[aria-pressed=true] span {margin:0;padding:0;border-radius:0;background:transparent;color:inherit;font:650 12px/1.25 Manrope,sans-serif;letter-spacing:-.018em;align-self:inherit}
+html.gallery-ui #product.cards {grid-template-columns:1fr;gap:7px}
+html.gallery-ui #product.cards label {display:grid;grid-template-columns:104px 1fr;grid-template-rows:auto auto;gap:3px 15px;align-content:center;align-items:center;text-align:left;padding:6px 16px 6px 6px;min-height:78px}
+html.gallery-ui #product.cards label img,html.gallery-ui #product.cards label:has(:checked) img {grid-area:1/1/3/2;width:100%;height:67px;object-fit:contain;mix-blend-mode:normal;background:transparent;outline:0;border:0;border-radius:0}
+html.gallery-ui #product.cards label span {grid-area:1/2;align-self:end;font-size:17px}
+html.gallery-ui #product.cards label small {grid-area:2/2;align-self:start;margin:0;font:500 11px/1.35 Manrope,sans-serif;color:#6b6466}
+html.gallery-ui #profile.cards {gap:8px}
+html.gallery-ui #profile.cards label {align-items:flex-start;text-align:left;gap:10px;padding:14px 12px 10px;min-height:80px}
+html.gallery-ui #profile .silhouette {align-self:center;width:62px;height:38px;--profile-face:#35373a}
+html.gallery-ui #samples button {padding:4px 4px 8px;gap:7px}
+html.gallery-ui #samples button img {border:0;border-radius:2px;outline:0}
+html.gallery-ui #samples button span {padding-inline:4px}
+html.gallery-ui #cover.cards label {padding:4px 4px 8px;gap:6px}
+html.gallery-ui #cover.cards label img {outline:0;border-radius:2px}
+html.gallery-ui :is(#product,#profile,#cover).cards label:has(:focus-visible),html.gallery-ui #samples button:focus-visible {outline:2px solid var(--accent);outline-offset:2px}
+html.gallery-ui .step-actions #next {border-radius:5px;font:700 14px/1 Manrope,sans-serif;letter-spacing:0}
+@media(max-width:760px){
+ html.gallery-ui #product.cards label {grid-template-columns:84px 1fr;min-height:51px;padding:3px 12px 3px 6px}
+ html.gallery-ui #product.cards label img,html.gallery-ui #product.cards label:has(:checked) img {height:47px}
+ html.gallery-ui #product.cards label span {font-size:15px}
+ html.gallery-ui #profile.cards {gap:6px}
+ html.gallery-ui #profile.cards label {padding:7px;gap:6px;min-height:59px}
+ html.gallery-ui #profile .silhouette {height:28px}
+ html.gallery-ui #profile.cards label span {font-size:11px}
+}
