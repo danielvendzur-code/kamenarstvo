@@ -33,7 +33,7 @@ export function designLink(state){
 export function resultPanel(t,settings,catalog,edit){
   const summary=byId('summary'),link=byId('design-link'),form=byId('inquiry');
   const confirmation=byId('confirmation'),copy=byId('copy'),policy=byId('policy');
-  // Keep a leading pictogram when the label changes.
+  // Labels may sit in a span next to other content.
   const say=(button,text)=>{const label=button.querySelector('.label');if(label)label.textContent=text;else button.textContent=text;};
   let current;
   if(settings?.gdprUrl&&settings.gdprUrl!=='#'){

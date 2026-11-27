@@ -5,7 +5,6 @@ import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
 import {editor} from './editor.js';
 import {scena} from './scena.js';
-import {pictogram} from './ikony.js';
 
 async function json(path){
   const response=await fetch(path);
@@ -36,7 +35,12 @@ async function start(){
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
   // The second visual generation is opt-in, so earlier previews keep their look.
   const plus=(ukazka?.dizajn??config.dizajn)==='plus';
-  if(plus)document.documentElement.classList.add('plus');
+  if(plus){
+    document.documentElement.classList.add('plus');
+    // Three interface proposals share one markup; ?ui= previews them.
+    const ui=new URLSearchParams(location.search).get('ui')??ukazka?.ui??config.ui??'a';
+    document.documentElement.dataset.ui=/^[abc]$/.test(ui)?ui:'a';
+  }
   if(ukazka){
     if(!plus){
       document.documentElement.dataset.controls=ukazka.ovladanie;
@@ -94,7 +98,9 @@ async function start(){
     }
     dim.textContent=[model.sirka,label.querySelector('input').value==='pamatna'?model.vyskaStely:model.dlzka].map(v=>Math.round(v*100)).join(' × ')+' '+t.unit;label.append(dim);
   }
-  if(ukazka?.nahlad){
+  // One stone and one framing for every thumbnail in the second generation.
+  if(plus)for(const label of product.container.children)label.querySelector('img').src='./assets/typy/'+label.querySelector('input').value+'.webp';
+  if(ukazka?.nahlad&&!plus){
     const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
     initialCard.querySelector('img').src=ukazka.nahlad;
     if(ukazka.zostava)initialCard.querySelector('span').textContent=ukazka.profil.nazov;
@@ -123,7 +129,12 @@ async function start(){
     const sculpted = ukazka ? available.filter(id => featured.includes(id) || id === savedShape) : available;
     profile.fill(sculpted.length ? sculpted : available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
-    if(ukazka?.nahladyDosiek){
+    if(plus)for(const label of profile.container.children){
+      const id=label.querySelector('input').value,image=document.createElement('img');image.alt='';
+      image.src=id==='atelierovy'?ukazka?.nahladProfilu??'./assets/profily/rovny.webp':'./assets/profily/'+id+'.webp';
+      label.querySelector('svg')?.replaceWith(image);
+    }
+    if(ukazka?.nahladyDosiek&&!plus){
       for(const label of cover.container.children){
         const id=label.querySelector('input').value;
         label.querySelector('img').src=(product.value==='jednohrob' && ukazka.nahladyDosiek[id]) || './assets/dosky/'+id+'.webp';
@@ -295,15 +306,7 @@ async function start(){
   const inquiryDialog=el('inquiry-dialog');
   el('to-inquiry').onclick=()=>{inquiryDialog.showModal();el('inquiry').elements.name.focus();};
   if(plus){
-    // Pictograms carry no meaning on their own; every control keeps its visible label.
-    for(const button of views)button.prepend(pictogram(button.dataset.view));
-    for(const button of document.querySelectorAll('[data-action]'))button.replaceChildren(pictogram(button.dataset.action));
-    for(const button of group.children)button.prepend(pictogram(button.value));
-    el('to-inquiry').prepend(pictogram('send'));
-    const copyLabel=document.createElement('span');copyLabel.className='label';copyLabel.textContent=t.copyLink;
-    el('copy').replaceChildren(pictogram('link'),copyLabel);
-    el('back').prepend(pictogram('back'));el('next').append(pictogram('next'));
-    const download=el('download');download.hidden=false;download.prepend(pictogram('download'));
+    const download=el('download');download.hidden=false;
     download.onclick=()=>{
       const link=document.createElement('a');link.href=el('rendered').src;link.download=t.downloadName+'.jpg';
       document.body.append(link);link.click();link.remove();

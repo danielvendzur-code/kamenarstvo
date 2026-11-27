@@ -4,274 +4,160 @@
 @font-face{font-family:OpenSans;src:url('../fonts/OpenSans-ext.woff2') format('woff2');font-weight:400 800;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 
 /* Pieces of the second generation stay invisible in earlier previews. */
-#extras :is(.extra-icon,.extra-hint),#extras .extra-group,#step-hint{display:none}
-.pictogram{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#extras .extra-hint,#extras .extra-group,#step-hint{display:none}
 
-/* ---------- Kamenárstvo Studio · druhá generácia vzhľadu ---------- */
+/* ---------- Druhá generácia: spoločný pokojný základ ---------- */
 html.plus{
-  --r-card:clamp(10px,var(--cardRadius,14px),18px);
-  --r-btn:clamp(8px,var(--buttonRadius,12px),999px);
   --fill:var(--buttonFill,var(--accent));
   --fill-ink:var(--buttonInk,var(--on-accent));
   --btn-font:var(--buttonFont,var(--pismoText,Manrope));
-  --tint:color-mix(in srgb,var(--accent) 7%,var(--panel));
-  --elev-1:0 1px 2px color-mix(in srgb,var(--ink) 7%,transparent),0 6px 16px -10px color-mix(in srgb,var(--ink) 28%,transparent);
-  --elev-2:0 2px 6px color-mix(in srgb,var(--ink) 8%,transparent),0 18px 34px -18px color-mix(in srgb,var(--ink) 42%,transparent);
-  --ring:0 0 0 3px var(--panel),0 0 0 5px color-mix(in srgb,var(--metal) 75%,transparent);
-  --check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.2 4.2L19 7'/%3E%3C/svg%3E");
+  --r:6px;
+  --select:var(--accent);
 }
-html.plus body{background:var(--panel)}
+html.plus *,html.plus *::before,html.plus *::after{transition-property:color,background-color,border-color,box-shadow;transition-duration:.15s}
 html.plus :is(button,a,summary,input,select,textarea):focus-visible,
-html.plus .cards label:has(:focus-visible){outline:0;box-shadow:var(--ring)}
+html.plus .cards label:has(:focus-visible){outline:2px solid var(--metal);outline-offset:2px;box-shadow:none}
 
-/* Primary action: brushed fill, inner light, travelling sheen and a moving arrow. */
+/* Buttons: one flat fill, no motion. */
 html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]){
-  position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:12px;
-  min-height:52px;padding:0 26px;border:0;border-radius:var(--r-btn);
-  background-color:var(--fill);
-  background-image:linear-gradient(180deg,rgb(255 255 255 / .17),rgb(255 255 255 / 0) 55%,rgb(0 0 0 / .12));
-  color:var(--fill-ink);font:650 15px/1 var(--btn-font),sans-serif;letter-spacing:.01em;text-transform:none;
-  box-shadow:inset 0 1px 0 rgb(255 255 255 / .24),inset 0 -1px 0 rgb(0 0 0 / .2),0 1px 2px rgb(0 0 0 / .14),
-    0 12px 24px -12px color-mix(in srgb,var(--fill) 80%,transparent);
-  transition:transform .28s var(--ease),box-shadow .28s var(--ease),filter .28s;
-}
-html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit])::before{
-  content:"";position:absolute;z-index:-1;top:0;bottom:0;left:-70%;width:42%;
-  background:linear-gradient(90deg,transparent,rgb(255 255 255 / .30),transparent);
-  transform:skewX(-20deg);opacity:0;transition:transform .8s var(--ease),opacity .35s;
-}
+  display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;border:0;border-radius:var(--r);
+  background:var(--fill);color:var(--fill-ink);box-shadow:none;font:600 14.5px/1 var(--btn-font),sans-serif;letter-spacing:.01em;text-transform:none}
 html.plus:root #next::after{content:none}
-html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]) .pictogram{width:19px;height:19px;stroke-width:1.8;transition:transform .3s var(--ease)}
-@media(hover:hover){
-  html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):not(:disabled):hover{
-    transform:translateY(-1px);filter:saturate(1.08) brightness(1.04);
-    box-shadow:inset 0 1px 0 rgb(255 255 255 / .28),inset 0 -1px 0 rgb(0 0 0 / .2),0 2px 4px rgb(0 0 0 / .12),
-      0 18px 32px -14px color-mix(in srgb,var(--fill) 85%,transparent);
-  }
-  html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):not(:disabled):hover::before{opacity:1;transform:skewX(-20deg) translateX(420%)}
-  html.plus:root #next:not(:disabled):hover .pictogram{transform:translateX(4px)}
-  html.plus:root #to-inquiry:not(:disabled):hover .pictogram{transform:translate(2px,-2px) rotate(-6deg)}
-}
-html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):not(:disabled):active{transform:translateY(0) scale(.985);filter:brightness(.97)}
-html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):focus-visible{box-shadow:var(--ring),0 12px 24px -12px color-mix(in srgb,var(--fill) 80%,transparent)}
-
-/* Secondary actions: quiet bordered pills with a glyph. */
+@media(hover:hover){html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):not(:disabled):hover{background:color-mix(in srgb,var(--fill) 88%,#000)}}
 html.plus:root :is(#back,#copy,#download,#close-inquiry,#review){
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;
-  border:1px solid var(--line-strong);border-radius:var(--r-btn);background:var(--panel);color:var(--ink);
-  font:600 13px/1 var(--sans);letter-spacing:0;text-transform:none;text-decoration:none;box-shadow:var(--elev-1);
-  transition:transform .25s var(--ease),border-color .25s,background-color .25s,box-shadow .25s;
-}
-html.plus:root :is(#back,#copy,#download) .pictogram{width:17px;height:17px;opacity:.82}
-@media(hover:hover){
-  html.plus:root :is(#back,#copy,#download,#close-inquiry,#review):hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--ink) 45%,transparent);background:#fff;box-shadow:var(--elev-2)}
-}
-html.plus:root :is(#back,#copy,#download,#close-inquiry,#review):active{transform:none}
-html.plus:root #review{min-height:36px;padding:0 14px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-  background:color-mix(in srgb,var(--panel) 84%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid var(--line-strong);border-radius:var(--r);
+  background:transparent;color:var(--ink);box-shadow:none;font:500 13px/1 var(--sans);letter-spacing:0;text-transform:none;text-decoration:none}
+@media(hover:hover){html.plus:root :is(#back,#copy,#download,#close-inquiry,#review):hover{border-color:var(--ink)}}
+html.plus:root #review{min-height:34px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:color-mix(in srgb,var(--panel) 80%,transparent)}
 
-/* Step track: numbered beads on a thread; finished steps carry a check. */
-html.plus #step-track{border:0}
-html.plus #step-track:before,html.plus #step-track:after{top:14px;bottom:auto;left:calc(100% / 12);width:calc(100% - 100% / 6);height:2px;border-radius:2px}
-html.plus #step-track:before{background:var(--line)}
-html.plus #step-track:after{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 70%,var(--panel)),var(--accent));transform:scaleX(calc(var(--step) / 5))}
-html.plus #step-track button{position:relative;z-index:1;height:auto;min-height:56px;padding:0 0 4px;display:grid;justify-items:center;align-content:start;gap:6px;color:var(--muted);font:550 11.5px/1.2 var(--sans)}
-html.plus #step-track button::before{
-  width:28px;height:28px;display:grid;place-items:center;border-radius:50%;box-sizing:border-box;
-  border:1.5px solid var(--line-strong);background:var(--panel);color:var(--muted);
-  font:650 11px/1 var(--sans);letter-spacing:0;transition:background-color .3s,border-color .3s,color .3s,box-shadow .3s,transform .3s var(--ease);
-}
-html.plus #step-track button[data-done]::before{content:"";border-color:var(--accent);background:var(--accent) var(--check) center/14px no-repeat}
-html.plus #step-track button[aria-current]::before{border-color:var(--accent);background:var(--accent);color:var(--on-accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent);transform:scale(1.06)}
-html.plus #step-track button[aria-current]{color:var(--ink);font-weight:750}
-html.plus #step-track button[data-done]{color:color-mix(in srgb,var(--ink) 82%,var(--panel))}
-@media(hover:hover){html.plus #step-track button:hover::before{border-color:var(--accent)}html.plus #step-track button:hover{color:var(--ink)}}
+/* Step track: quiet text tabs with a hairline that fills. */
+html.plus #step-track button{height:46px;font:500 12px/1.2 var(--sans);color:var(--muted)}
+html.plus #step-track button[aria-current]{color:var(--ink);font-weight:650}
+html.plus #step-track button::before{color:inherit;font-weight:500}
+html.plus #step-track:after{height:1px;background:var(--ink)}
+html.plus #step-hint{display:block;margin:-12px 0 22px;color:var(--muted);font:400 14px/1.5 var(--sans)}
 
-/* Titles and the short hint under them. */
-html.plus #step-hint{display:block;margin:-14px 0 22px;color:var(--muted);font:400 14px/1.5 var(--sans)}
-
-/* Choice cards. */
+/* Choice cards: identical photographs, selection is a border only. */
 html.plus :is(#product,#profile,#cover).cards label,html.plus #samples button{
-  position:relative;border:1px solid var(--line);border-radius:var(--r-card);
-  background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--soft) 70%,#fff));box-shadow:var(--elev-1);
-  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s,background-color .2s;
-}
-@media(hover:hover){
-  html.plus :is(#product,#profile,#cover).cards label:hover,html.plus #samples button:hover{transform:translateY(-2px);box-shadow:var(--elev-2);border-color:var(--line-strong);background:#fff}
-}
+  position:relative;padding:6px 6px 10px;gap:6px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);box-shadow:none}
+html.plus :is(#product,#profile,#cover).cards label::after,html.plus #samples button::after{content:none!important}
+@media(hover:hover){html.plus :is(#product,#profile,#cover).cards label:hover,html.plus #samples button:hover{border-color:var(--line-strong)}}
 html.plus :is(#product,#profile,#cover).cards label:has(:checked),html.plus #samples button[aria-pressed=true]{
-  border-color:var(--accent);background:linear-gradient(180deg,#fff,var(--tint));
-  box-shadow:0 0 0 1px var(--accent),var(--elev-2);
-}
-html.plus :is(#product,#profile,#cover).cards label::after,html.plus #samples button::after{
-  content:"";position:absolute;z-index:2;inset:9px 9px auto auto;left:auto;right:9px;bottom:auto;width:22px;height:22px;border:0;border-radius:50%;
-  background:var(--accent) var(--check) center/13px no-repeat;box-shadow:0 2px 6px color-mix(in srgb,var(--accent) 45%,transparent);
-  transform:scale(.4);opacity:0;transition:transform .3s var(--ease),opacity .2s;
-}
-html.plus :is(#product,#profile,#cover).cards label:has(:checked)::after,html.plus #samples button[aria-pressed=true]::after{transform:scale(1);opacity:1}
-html.plus #product.cards label{padding:8px 8px 12px;gap:3px}
-html.plus #product img,html.plus #product label:has(:checked) img{
-  border:0;outline:0;border-radius:calc(var(--r-card) - 4px);mix-blend-mode:multiply;
-  background:radial-gradient(120% 90% at 50% 38%,#fff 0%,color-mix(in srgb,var(--soft-strong) 80%,#fff) 100%)}
-html.plus #product label span{margin:6px 4px 0;font-weight:500}
-html.plus #product label small{margin:0 4px;color:var(--muted)}
-html.plus #profile.cards label{min-height:96px;padding:14px 8px 10px;gap:8px}
-html.plus #profile .silhouette{height:52px;width:84px;fill:color-mix(in srgb,var(--ink) 34%,var(--panel));transition:fill .25s,transform .3s var(--ease)}
-html.plus #profile label:has(:checked) .silhouette{fill:var(--accent);--profile-face:var(--accent);transform:translateY(-1px)}
-html.plus #profile.cards label span{font:600 12.5px/1.25 var(--sans)}
-html.plus #cover.cards label{padding:7px 7px 11px}
-html.plus #cover img,html.plus #cover label:has(:checked) img{outline:0;border-radius:calc(var(--r-card) - 4px)}
-html.plus #cover.cards label span{padding:0 3px}
-html.plus #samples{gap:14px}
-html.plus #samples button{padding:7px 7px 11px;gap:8px;text-align:left}
-html.plus #samples button img,html.plus #samples button[aria-pressed=true] img{height:74px;outline:0;border-radius:calc(var(--r-card) - 4px)}
-/* A soft polished sheen over every swatch. */
-html.plus #samples button::before{
-  content:"";position:absolute;z-index:1;top:7px;left:7px;right:7px;height:74px;border-radius:calc(var(--r-card) - 4px);pointer-events:none;
-  background:linear-gradient(125deg,rgb(255 255 255 / 0) 30%,rgb(255 255 255 / .26) 46%,rgb(255 255 255 / 0) 60%),
-    linear-gradient(180deg,rgb(255 255 255 / .10),rgb(0 0 0 / .10));
-}
-html.plus #samples button span{padding:0 3px;font:600 13px/1.25 var(--sans)}
-html.plus #samples button[aria-pressed=true] span{color:var(--ink)}
+  border-color:var(--select);box-shadow:inset 0 0 0 1px var(--select);background:var(--panel)}
+html.plus :is(#product,#profile,#cover) img,html.plus #samples button img{
+  display:block;width:100%;outline:0!important;border:0;border-radius:calc(var(--r) - 3px);mix-blend-mode:normal;background:#ece7dd}
+html.plus #product img{height:auto;aspect-ratio:558/360;object-fit:cover}
+html.plus #profile img{aspect-ratio:4/3;object-fit:cover}
+html.plus #cover img{aspect-ratio:1.56;object-fit:cover}
+html.plus #samples button img{height:auto;aspect-ratio:1.9;object-fit:cover}
+html.plus #product label span,html.plus #product label small,html.plus #cover label span,html.plus #samples button span,html.plus #profile label span{
+  margin:0;padding:0 4px;align-self:stretch;text-align:left;color:var(--ink);background:none;border-radius:0}
+html.plus #product label span{font:500 17px/1.2 var(--serif)}
+html.plus #product label small{color:var(--muted)}
+html.plus #profile.cards label{min-height:0;align-items:stretch}
+html.plus :is(#profile,#cover,#samples) :is(label,button) span{font:500 13px/1.25 var(--sans)}
+html.plus #profile,html.plus #samples,html.plus #cover{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+html.plus #product{gap:12px}
 
-/* Segmented controls. */
-html.plus :is(#shape-tools,#letter-tools){gap:4px;padding:4px;margin-bottom:18px;border:1px solid var(--line);border-radius:calc(var(--r-btn) + 4px);background:var(--soft)}
-html.plus:root :is(#shape-tools,#letter-tools) button{min-height:38px;border:0;border-radius:var(--r-btn);padding:4px 10px;color:var(--muted);font:600 12.5px/1.2 var(--sans);text-transform:none;letter-spacing:0;background:transparent}
-html.plus:root :is(#shape-tools,#letter-tools) button[aria-pressed=true]{background:#fff;color:var(--accent);box-shadow:var(--elev-1)}
-@media(hover:hover){html.plus:root :is(#shape-tools,#letter-tools) button:not([aria-pressed=true]):not(:disabled):hover{color:var(--ink);background:color-mix(in srgb,#fff 55%,transparent)}}
+/* Segmented control. */
+html.plus :is(#shape-tools,#letter-tools){gap:0;padding:0;margin-bottom:18px;border:1px solid var(--line-strong);border-radius:var(--r);background:transparent;overflow:hidden}
+html.plus:root :is(#shape-tools,#letter-tools) button{min-height:38px;border:0;border-radius:0;color:var(--muted);font:500 12.5px/1.2 var(--sans);background:transparent;box-shadow:none;text-transform:none;letter-spacing:0}
+html.plus:root :is(#shape-tools,#letter-tools) button+button{border-left:1px solid var(--line)}
+html.plus:root :is(#shape-tools,#letter-tools) button[aria-pressed=true]{background:var(--ink);color:var(--panel);box-shadow:none}
 
 /* Fields. */
-html.plus input:not([type=radio],[type=checkbox],[type=file]),html.plus textarea,html.plus select{
-  min-height:44px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:calc(var(--r-btn) - 2px);background:#fffefb;
-  transition:border-color .2s,box-shadow .2s;
-}
-html.plus :is(input:not([type=radio],[type=checkbox],[type=file]),textarea,select):hover{border-color:color-mix(in srgb,var(--ink) 40%,transparent)}
-html.plus :is(input:not([type=radio],[type=checkbox],[type=file]),textarea,select):focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-html.plus .letter-part label>span,html.plus #inquiry label>span{font:600 11.5px/1.3 var(--sans);color:var(--muted);letter-spacing:.01em}
-html.plus:root .example{display:inline-flex;align-items:center;gap:6px;justify-self:start;min-height:36px;padding:0 14px;border:1px dashed color-mix(in srgb,var(--accent) 55%,transparent);border-radius:var(--r-btn);color:var(--accent);font:600 12.5px/1 var(--sans);text-decoration:none;background:var(--tint)}
-@media(hover:hover){html.plus:root .example:hover{border-style:solid;background:#fff}}
+html.plus input:not([type=radio],[type=checkbox],[type=file]),html.plus textarea,html.plus select{min-height:44px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:var(--r);background:var(--panel);color:var(--ink)}
+html.plus :is(input:not([type=radio],[type=checkbox],[type=file]),textarea,select):focus{outline:0;border-color:var(--ink)}
+html.plus:root .example{min-height:34px;padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r);text-decoration:none;font:500 12.5px/1 var(--sans)}
+html.plus .fonts label,html.plus .inks label{padding:10px 8px 8px;border:1px solid var(--line);border-radius:var(--r)}
+html.plus .fonts label:has(:checked),html.plus .inks label:has(:checked){border-color:var(--select);box-shadow:inset 0 0 0 1px var(--select)}
+html.plus .inks i{width:26px;height:26px;border:1px solid var(--line)}
+html.plus .inks label:has([value=zlata]) i{background-image:linear-gradient(135deg,#8a6a2e,#d9bd7c 50%,#9c7a3c)}
+html.plus .inks label:has([value=strieborna]) i{background-image:linear-gradient(135deg,#8d9396,#e4e7e8 50%,#a2a8ab)}
 
-/* Typeface and finish choices. */
-html.plus .fonts label,html.plus .inks label{position:relative;padding:10px 8px 8px;border:1px solid var(--line);border-radius:var(--r-card);background:#fff;box-shadow:var(--elev-1);transition:transform .25s var(--ease),box-shadow .25s,border-color .2s}
-html.plus .fonts label:has(:checked),html.plus .inks label:has(:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--elev-2);background:var(--tint)}
-@media(hover:hover){html.plus :is(.fonts,.inks) label:hover{transform:translateY(-2px);box-shadow:var(--elev-2)}}
-html.plus .fonts i{font-size:23px;color:var(--ink)}
-html.plus .inks{gap:10px}
-html.plus .inks i{width:30px;height:30px;border:0;box-shadow:inset 0 1px 2px rgb(255 255 255 / .5),inset 0 -2px 3px rgb(0 0 0 / .25),0 1px 3px rgb(0 0 0 / .25)}
-html.plus .inks label:has([value=zlata]) i{background-image:linear-gradient(135deg,#7d5a20 0%,#e7cc85 38%,#a98035 58%,#f6e4ad 80%,#8a6526 100%)}
-html.plus .inks label:has([value=strieborna]) i{background-image:linear-gradient(135deg,#7c8286 0%,#eef1f2 40%,#9ea4a8 60%,#ffffff 80%,#7d8387 100%)}
-html.plus .inks label:has([value=biela]) i{background-image:linear-gradient(160deg,#ffffff,#e4e0d6)}
-html.plus .inks label:has([value=cierna]) i{background-image:linear-gradient(160deg,#3a3c3e,#0b0c0d)}
-html.plus .inks label:has([value=piesokovana]) i{background-image:radial-gradient(circle at 30% 30%,rgb(255 255 255 / .35) 0 1px,transparent 1.6px),radial-gradient(circle at 70% 60%,rgb(0 0 0 / .18) 0 1px,transparent 1.6px),linear-gradient(160deg,#c8bfae,#9b917f);background-size:5px 5px,6px 6px,auto}
-html.plus .inks label[data-recommended]::before{content:"";position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--metal);box-shadow:0 0 0 2px #fff}
-
-/* Accessories as cards with a pictogram, grouped by where they sit. */
-html.plus #extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-html.plus #extras .extra-group{display:flex;align-items:center;gap:10px;grid-column:1/-1;margin:10px 0 0;color:var(--muted);font:700 10.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+/* Accessories: plain text cards grouped by where they sit. */
+html.plus #extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html.plus #extras .extra-group{display:block;grid-column:1/-1;margin:14px 0 2px;color:var(--muted);font:600 10.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
 html.plus #extras .extra-group:first-child{margin-top:0}
-html.plus #extras .extra-group::after{content:"";flex:1;height:1px;background:var(--line)}
-html.plus:root #extras label{
-  position:relative;display:grid;grid-template-columns:minmax(0,1fr) 22px;grid-template-rows:auto auto auto;align-items:start;gap:2px 8px;
-  min-height:66px;padding:12px 12px 13px;border:1px solid var(--line);border-radius:var(--r-card);
-  background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--soft) 65%,#fff));box-shadow:var(--elev-1);cursor:pointer;
-  transition:transform .28s var(--ease),box-shadow .28s var(--ease),border-color .2s,background-color .2s;
-}
-@media(hover:hover){html.plus:root #extras label:hover{transform:translateY(-2px);box-shadow:var(--elev-2);border-color:var(--line-strong);background:#fff}}
-html.plus #extras .extra-icon{display:block;grid-column:1;grid-row:1;margin-bottom:8px;width:40px;height:40px;padding:9px;border-radius:12px;box-sizing:border-box;
-  fill:none;stroke:var(--accent);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;background:var(--tint);transition:background-color .25s,stroke .25s}
-html.plus #extras label>span{grid-column:1/-1;grid-row:2;font:650 13.5px/1.2 var(--sans);color:var(--ink)}
-html.plus #extras .extra-hint{display:block;grid-column:1/-1;grid-row:3;font:400 11.5px/1.35 var(--sans);color:var(--muted)}
-html.plus #extras input[type=checkbox]{
-  appearance:none;-webkit-appearance:none;grid-column:2;grid-row:1;justify-self:end;width:22px;height:22px;margin:0;border:1.5px solid var(--line-strong);border-radius:7px;background:#fff;cursor:pointer;
-  transition:background-color .2s,border-color .2s,transform .25s var(--ease)}
-html.plus #extras input[type=checkbox]:checked{border-color:var(--accent);background:var(--accent) var(--check) center/13px no-repeat;transform:scale(1.05)}
-html.plus:root #extras label:has(:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--elev-2);background:linear-gradient(180deg,#fff,var(--tint))}
-html.plus #extras label:has(:checked) .extra-icon{background:var(--accent);stroke:var(--on-accent)}
-html.plus #extras>div{grid-column:1/-1;padding:10px 12px;border:1px dashed var(--line-strong);border-radius:var(--r-card);background:var(--panel)}
-html.plus:root #extras>div button{min-height:38px;padding:0 14px;border-radius:var(--r-btn);border:1px solid var(--line-strong);background:#fff;font:600 12px/1 var(--sans);letter-spacing:0;text-transform:none}
+html.plus:root #extras label{display:grid;grid-template-columns:minmax(0,1fr) 18px;gap:2px 10px;align-items:start;min-height:0;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);cursor:pointer}
+html.plus #extras label>span{grid-column:1;grid-row:1;font:600 13.5px/1.25 var(--sans);color:var(--ink)}
+html.plus #extras .extra-hint{display:block;grid-column:1;grid-row:2;font:400 12px/1.35 var(--sans);color:var(--muted)}
+html.plus #extras input[type=checkbox]{grid-column:2;grid-row:1;width:16px;height:16px;margin:1px 0 0;accent-color:var(--select)}
+html.plus:root #extras label:has(:checked){border-color:var(--select);box-shadow:inset 0 0 0 1px var(--select)}
+html.plus #extras>div{grid-column:1/-1}
 
-/* Scene controls float as dark glass with a bright active segment. */
-html.plus .camera,html.plus #environments{
-  gap:2px;padding:4px;border:1px solid rgb(255 255 255 / .16);border-radius:16px;
-  background:color-mix(in srgb,var(--night) 64%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);
-  box-shadow:0 10px 30px -12px rgb(0 0 0 / .45);
-}
-html.plus:root :is(.camera,#environments) button{
-  display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 11px;border:0;border-radius:12px;color:rgb(255 255 255 / .86);
-  font:600 11.5px/1 var(--sans);text-decoration:none;transition:background-color .2s,color .2s;
-}
-html.plus:root :is(.camera,#environments) button .pictogram{width:16px;height:16px;stroke-width:1.7}
-html.plus:root :is(.camera,#environments) button[aria-pressed=true]{background:rgb(255 255 255 / .94);color:var(--ink);text-decoration:none;font-weight:700;box-shadow:0 2px 8px rgb(0 0 0 / .18)}
-@media(hover:hover){html.plus:root :is(.camera,#environments) button:not([aria-pressed=true]):hover{background:rgb(255 255 255 / .14);color:#fff}}
-html.plus .zoom{gap:2px;margin-left:2px;padding-left:4px;border-left:1px solid rgb(255 255 255 / .16)}
-html.plus:root .zoom button{width:36px;justify-content:center;padding:0}
+/* Scene controls: a quiet bar of words. */
+html.plus .camera,html.plus #environments{gap:0;padding:3px;border:0;border-radius:var(--r);color:var(--ink);
+  background:color-mix(in srgb,var(--panel) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 1px 3px rgb(0 0 0 / .12)}
+html.plus:root :is(.camera,#environments) button{min-height:32px;padding:0 11px;border-radius:calc(var(--r) - 2px);color:var(--muted);font:500 12px/1 var(--sans);text-decoration:none}
+html.plus:root :is(.camera,#environments) button[aria-pressed=true]{color:var(--ink);font-weight:650;background:color-mix(in srgb,var(--ink) 8%,transparent);text-decoration:none}
+html.plus .zoom{border-left:1px solid var(--line);margin-left:3px;padding-left:3px}
+html.plus:root .zoom button{width:32px;padding:0;font-size:16px;color:var(--ink)}
 
-/* Result: framed render, summary card and a clear set of actions. */
-html.plus .show-result .viewer{border-radius:var(--r-card);box-shadow:var(--elev-2);border:1px solid var(--line)}
-html.plus #summary{padding:4px 18px;border:1px solid var(--line);border-radius:var(--r-card);background:#fff;box-shadow:var(--elev-1)}
+/* Result and inquiry. */
+html.plus #summary{padding:0 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
 html.plus #summary div:first-child{border-top:0}
-html.plus:root #summary button{min-height:30px;padding:0 10px;border:1px solid var(--line);border-radius:999px;font:600 11px/1 var(--sans);text-decoration:none;color:var(--accent);background:var(--tint);transition:background-color .2s,border-color .2s}
-@media(hover:hover){html.plus:root #summary button:hover{border-color:var(--accent);background:#fff}}
-html.plus .result-actions{gap:10px;margin-top:22px}
+html.plus:root #summary button{min-height:28px;padding:0 4px;border:0;font:500 12px/1 var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;background:none}
+html.plus .result-actions{gap:8px;margin-top:18px}
 html.plus:root #to-inquiry{flex:1 1 100%}
-
-/* Inquiry drawer. */
-html.plus dialog{padding:30px 30px 34px;background:var(--panel)}
-html.plus dialog h2{font-size:clamp(30px,3vw,40px)}
-html.plus:root #close-inquiry{float:right;min-height:38px;padding:0 14px}
-html.plus #simulation{margin:4px 0 22px;padding:10px 14px;border-radius:calc(var(--r-btn) - 2px);background:var(--tint);color:var(--ink);font-size:13px}
-html.plus #inquiry{gap:14px}
-html.plus #inquiry .consent input{border-radius:6px}
-html.plus #inquiry .consent input:checked{background:var(--accent) var(--check) center/13px no-repeat;box-shadow:none}
-html.plus #confirmation{border-top:1px solid var(--line);font-size:24px}
-
-/* Loader. */
-html.plus #loader progress{width:200px;height:3px;border-radius:3px;overflow:hidden}
-html.plus #loader progress::-webkit-progress-bar{background:var(--line);border-radius:3px}
-html.plus #loader progress::-webkit-progress-value{background:linear-gradient(90deg,var(--metal),var(--accent));border-radius:3px}
-html.plus #loader progress::-moz-progress-bar{background:linear-gradient(90deg,var(--metal),var(--accent))}
+html.plus .show-result .viewer{border-radius:var(--r)}
+html.plus #simulation{padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);font-size:13px}
+html.plus #inquiry .consent input:checked{background:var(--ink);border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--panel)}
 
 @media(min-width:761px){
-  html.plus .layout:not(.show-result) h1{margin-bottom:20px}
-  html.plus .step-actions{gap:12px;padding:16px clamp(22px,2.4vw,38px) 18px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 70%,transparent),var(--panel))}
-  html.plus:root #next{flex:1;min-height:54px;font-size:15.5px}
-  html.plus:root #back{margin-right:0;min-height:54px;padding:0 18px}
-  html.plus #product{gap:16px 14px}
-  html.plus #product img{height:clamp(78px,15vh,150px)}
-  html.plus #profile{gap:12px}
+  html.plus .step-actions{gap:10px}
+  html.plus:root #next{flex:1}
+  html.plus:root #back{margin-right:0}
 }
 @media(max-width:760px){
-  html.plus .layout:not(.show-result)>aside{border-radius:22px 22px 0 0;box-shadow:0 -10px 30px -12px rgb(0 0 0 / .28)}
-  html.plus #step-track:before,html.plus #step-track:after{top:11px}
-  html.plus #step-track button{min-height:46px;gap:4px;font-size:10px}
-  html.plus .layout:not(.show-result) #step-track button{height:auto;font-size:10px}
-  html.plus #step-track button::before{width:22px;height:22px;font-size:10px}
-  html.plus #step-hint{margin:-6px 0 10px;font-size:12.5px}
-  html.plus:root #next{min-height:48px;border-radius:var(--r-btn);font-size:14.5px}
-  html.plus:root #back{min-height:48px;padding:0 12px}
-  html.plus:root #back .pictogram{margin:0}
-  html.plus #product.cards label{padding:5px 5px 7px}
-  html.plus #product img{height:clamp(46px,7dvh,70px)}
-  html.plus #profile.cards label{min-height:70px;padding:9px 4px 7px;gap:5px}
-  html.plus #profile .silhouette{height:32px;width:56px}
-  html.plus #samples{gap:8px}
-  html.plus #samples button{padding:5px 5px 7px}
-  html.plus #samples button img,html.plus #samples button[aria-pressed=true] img{height:46px}
-  html.plus #samples button::before{top:5px;left:5px;right:5px;height:46px}
-  html.plus :is(#product,#profile,#cover).cards label::after,html.plus #samples button::after{inset:6px 6px auto auto;width:18px;height:18px;background-size:11px}
-  html.plus #extras{grid-template-columns:1fr;gap:8px}
-  html.plus:root #extras label{min-height:56px;padding:8px 10px;grid-template-columns:34px minmax(0,1fr) 22px;grid-template-rows:auto auto;align-items:center;gap:1px 10px}
-  html.plus #extras .extra-icon{grid-row:1/3;margin:0;width:34px;height:34px;padding:7px;border-radius:10px}
-  html.plus #extras label>span{grid-column:2;grid-row:1;align-self:end}
-  html.plus #extras .extra-hint{grid-column:2;grid-row:2}
-  html.plus #extras input[type=checkbox]{grid-column:3;grid-row:1/3;justify-self:auto}
-  html.plus .camera,html.plus #environments{border-radius:14px;padding:3px}
-  html.plus:root :is(.camera,#environments) button{min-height:32px;padding:0 8px;font-size:10.5px;gap:4px}
-  html.plus:root :is(.camera,#environments) button .pictogram{width:14px;height:14px}
-  html.plus:root .zoom button{width:32px}
-  html.plus .result-actions{margin-top:12px}
+  html.plus:root #next{min-height:46px}
+  html.plus:root #back{min-height:46px}
+  html.plus #profile,html.plus #samples{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  html.plus #extras{grid-template-columns:1fr}
+  html.plus:root :is(.camera,#environments) button{padding:0 8px;font-size:11px;min-height:30px}
+  html.plus #product label span{font-size:15px}
 }
-@media(max-width:560px){
-  html.plus:root .camera .tools button{font-size:0;gap:0;padding:0 9px}
-  html.plus:root .camera .tools button .pictogram{width:16px;height:16px}
-}
+
+/* ---------- Variant B · katalóg: bez rámov, tmavé tlačidlo ---------- */
+html.plus[data-ui=b]{--r:2px;--select:var(--ink)}
+html.plus[data-ui=b] :is(#product,#profile,#cover).cards label,html.plus[data-ui=b] #samples button{padding:0 0 8px;border:0;background:transparent}
+html.plus[data-ui=b] :is(#product,#profile,#cover).cards label:has(:checked),html.plus[data-ui=b] #samples button[aria-pressed=true]{box-shadow:none;background:transparent}
+html.plus[data-ui=b] :is(#product,#profile,#cover) label:has(:checked) img,html.plus[data-ui=b] #samples button[aria-pressed=true] img{outline:2px solid var(--ink)!important;outline-offset:2px}
+html.plus[data-ui=b] :is(#product,#profile,#cover,#samples) :is(label,button) :is(span,small){padding:0}
+html.plus[data-ui=b] :is(#product,#profile,#cover) label:has(:checked) span,html.plus[data-ui=b] #samples button[aria-pressed=true] span{font-weight:650}
+html.plus[data-ui=b]:root :is(#next,#to-inquiry,#inquiry button[type=submit]){background:var(--ink);color:var(--paper);font:600 12px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase}
+html.plus[data-ui=b] #step-track button::before{content:none}
+html.plus[data-ui=b] #step-track button{height:40px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+html.plus[data-ui=b] #product label span{font-size:18px}
+html.plus[data-ui=b]:root #extras label{border-width:0 0 1px;border-radius:0;padding:12px 2px;background:transparent}
+html.plus[data-ui=b]:root #extras label:has(:checked){box-shadow:none;border-color:var(--ink)}
+html.plus[data-ui=b] #extras{grid-template-columns:1fr;gap:0}
+html.plus[data-ui=b] .camera,html.plus[data-ui=b] #environments{background:rgb(20 20 20 / .34);box-shadow:none;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+html.plus[data-ui=b]:root :is(.camera,#environments) button{color:#fff;text-shadow:0 1px 3px rgb(0 0 0 / .5);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+html.plus[data-ui=b]:root :is(.camera,#environments) button[aria-pressed=true]{background:transparent;text-decoration:underline;text-underline-offset:6px;color:#fff}
+html.plus[data-ui=b] .zoom{border-color:rgb(255 255 255 / .4)}
+html.plus[data-ui=b]:root .zoom button{color:#fff}
+
+/* ---------- Variant C · tmavý panel ---------- */
+html.plus[data-ui=c]{--r:4px}
+html.plus[data-ui=c] aside{
+  --ink:#efebe4;--panel:#1d1e1e;--paper:#1d1e1e;--soft:#262828;--soft-strong:#2e3030;
+  --line:rgb(255 255 255 / .12);--line-strong:rgb(255 255 255 / .26);--muted:rgb(239 235 228 / .6);
+  --select:var(--metal);background:#1d1e1e;color:var(--ink)}
+html.plus[data-ui=c] .layout:not(.show-result)>aside{background:#1d1e1e;border-color:#1d1e1e}
+html.plus[data-ui=c] aside h1{color:#f6f3ee}
+html.plus[data-ui=c]:root :is(#next,#to-inquiry,#inquiry button[type=submit]){background:#efebe4;color:#1d1e1e}
+html.plus[data-ui=c] #step-track:after{background:var(--metal);height:2px}
+html.plus[data-ui=c] #step-track button[aria-current]::before{color:var(--metal)}
+html.plus[data-ui=c] .step-actions{border-color:rgb(255 255 255 / .1);background:#1d1e1e}
+html.plus[data-ui=c] :is(#product,#profile,#cover).cards label,html.plus[data-ui=c] #samples button,html.plus[data-ui=c]:root #extras label{background:#232525}
+html.plus[data-ui=c] :is(#product,#profile,#cover) img{background:#ece7dd}
+html.plus[data-ui=c] .show-result{background:#1d1e1e}
+html.plus[data-ui=c] dialog{--ink:#262c26;--panel:#f8f6f0;--line:rgb(0 0 0 / .12);--line-strong:rgb(0 0 0 / .28);--muted:#6b6f69;color:#262c26;background:#f8f6f0}
+html.plus[data-ui=c]:root dialog :is(#close-inquiry){color:#262c26}
+html.plus[data-ui=c]:root dialog #inquiry button[type=submit]{background:#1d1e1e;color:#efebe4}
+html.plus[data-ui=c] .camera,html.plus[data-ui=c] #environments{background:rgb(29 30 30 / .82);color:#efebe4}
+html.plus[data-ui=c]:root :is(.camera,#environments) button{color:rgb(239 235 228 / .7)}
+html.plus[data-ui=c]:root :is(.camera,#environments) button[aria-pressed=true]{color:#fff;background:rgb(255 255 255 / .12)}
+html.plus[data-ui=c]:root .zoom button{color:#efebe4}
+html.plus[data-ui=c] .zoom{border-color:rgb(255 255 255 / .16)}

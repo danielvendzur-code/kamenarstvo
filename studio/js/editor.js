@@ -1,5 +1,4 @@
 import {choiceSet,families as fonts} from './volby.js';
-import {extraIcon} from './ikony.js';
 // Accessories are grouped by where they sit. Loose ones need a grave cover to stand on.
 const extraGroups={fotokeramika:'stela',kriz:'stela','ornament-ruza':'stela',holubica:'stela',klasy:'stela',
   vaza:'doska',lampas:'doska','kamenne-srdce':'doska','kamenna-kniha':'doska',kahance:'doska',zardiniera:'doska','kamenny-lampas':'doska',
@@ -116,7 +115,7 @@ export function editor(config,t,product,viewer,detail,changed,shape,slabOk=()=>t
       group=where;const heading=document.createElement('p');heading.className='extra-group';heading.textContent=t.extraGroups[where];extras.append(heading);
     }
     const check=document.createElement('input');check.type='checkbox';check.value=id;field(extras,id,check);
-    const label=check.parentElement;label.dataset.extra=id;label.prepend(extraIcon(id));
+    const label=check.parentElement;label.dataset.extra=id;
     const hint=document.createElement('small');hint.className='extra-hint';hint.textContent=t.extraHints?.[id]??'';label.querySelector('span').after(hint);
     check.onchange=()=>{if(check.checked)selected.add(id);else selected.delete(id);photoBox.hidden=!selected.has('fotokeramika');update();};
   }
