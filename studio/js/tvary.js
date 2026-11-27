@@ -3,7 +3,7 @@ import {vytvorZulu} from './kamen.js';
 import {outline,tabletSize,bookLeaf,layered} from './profily.js';
 
 // A single closed perimeter avoids coincident end faces and seams at the corners.
-function blockGeometry(w, h, d, bevel, openTop) {
+export function blockGeometry(w, h, d, bevel, openTop) {
   const x=w/2, z=d/2, b=bevel;
   const rim=[[-x+b,-z],[x-b,-z],[x,-z+b],[x,z-b],
              [x-b,z],[-x+b,z],[-x,z-b],[-x,-z+b]];

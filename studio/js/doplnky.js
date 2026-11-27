@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {bookLeaf} from './profily.js';
+import {blockGeometry} from './tvary.js';
 
 // Accessories added in the second catalogue. Each builder returns a group whose
 // origin sits on the supporting surface, facing +z (towards the visitor).
@@ -10,9 +11,10 @@ function mesh(geometry,material,x=0,y=0,z=0){
   const m=new T.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;return m;
 }
 
-// BoxGeometry faces: +x, -x, +y, -y, +z, -z. Polished top and front, satin elsewhere.
-function stoneBox(w,h,d,[polished,satin],x=0,y=0,z=0){
-  return mesh(new T.BoxGeometry(w,h,d),[satin,satin,polished,satin,polished,satin],x,y+h/2,z);
+// Same mitred block as the monument: polished caps and arrises, satin sides.
+function stoneBox(w,h,d,faces,x=0,y=0,z=0){
+  const bevel=Math.min(.006,w/6,h/6,d/6);
+  return mesh(blockGeometry(w,h,d,bevel,false),faces,x,y+h/2,z);
 }
 
 function extrude(shape,depth,bevel=.003,segments=40){
@@ -170,7 +172,5 @@ export function lavicka(faces){
   for(const z of [-.36,.36])g.add(stoneBox(.30,height-seat,.085,faces,0,0,z));
   const top=stoneBox(width,seat,length,faces,0,height-seat,0);
   g.add(top);
-  // A slim plinth under the legs keeps the bench out of the turf.
-  g.add(mesh(new T.BoxGeometry(width+.08,.012,length+.08),new T.MeshStandardMaterial({color:0x8e8a82,roughness:.96}),0,.006,0));
   return g;
 }
