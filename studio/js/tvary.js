@@ -348,6 +348,12 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     const panel=add(sheet(inset,.028,.003),faces,0,top+.003,d*.045);
     panel.rotation.x=-Math.PI/2;
     panel.userData.coverField={left:-w*.31,right:w*.31,height:d*.47,bottom:-d*.235};
+    if(assembly.druhyStupen){
+      const upper=add(sheet(rectangle(-w*.34,-d*.16,w*.34,d*.16),.032,.003),faces,0,top+.031,-d*.10);
+      upper.rotation.x=-Math.PI/2;
+      upper.userData.coverField={left:-w*.29,right:w*.29,height:d*.26,bottom:-d*.13};
+      delete panel.userData.coverField;
+    }
     delete face.userData.coverField;
   }
   if(shape==='atelierovy' && model.detailStely){
