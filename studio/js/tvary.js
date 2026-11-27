@@ -43,7 +43,7 @@ export function blockGeometry(w, h, d, bevel, openTop) {
 
 function sheet(shape,depth,b){
   return new T.ExtrudeGeometry(shape,{depth:depth-2*b,bevelSize:b,bevelThickness:b,
-    bevelSegments:2,steps:1,curveSegments:40});
+    bevelSegments:3,steps:1,curveSegments:72});
 }
 
 function rectangle(x0,y0,x1,y1){

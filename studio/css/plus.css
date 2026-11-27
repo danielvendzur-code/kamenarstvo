@@ -282,3 +282,4 @@ html.plus #summary div{grid-template-columns:104px minmax(0,1fr) auto;padding:11
 html.plus #summary dd{-webkit-line-clamp:2}
 html.plus .result-actions{margin-top:20px}
 @media(min-width:761px){html.plus .site-menu{flex:0 1 auto;min-width:0;margin-left:auto;justify-content:flex-start;overflow:hidden;gap:24px}html.plus .site-menu a[hidden]{display:none}}
+html.plus:not(.client-preview) .brand img{width:42px;height:42px;padding:8px;background:var(--accent);border-radius:var(--d-r)}

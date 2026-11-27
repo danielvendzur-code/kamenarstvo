@@ -45,7 +45,7 @@ export function scena(host,model,stone,onOrbit){
   scene.fog=new T.FogExp2(0xeee8dc,.12);
   let fastMotion=false;
   function coverFace(geometry){
-    const size=mobile?512:1024;
+    const size=mobile?512:2048;
     const face=new Reflector(geometry,{
       textureWidth:size,textureHeight:size,clipBias:0,multisample:0
     });
@@ -86,7 +86,7 @@ export function scena(host,model,stone,onOrbit){
   scene.add(hemi);
   const sun=new T.DirectionalLight(0xffffff,1.35);
   sun.position.set(-2,7,-1.4);sun.castShadow=true;
-  sun.shadow.mapSize.setScalar(mobile?1024:2048);
+  sun.shadow.mapSize.setScalar(mobile?1024:4096);
   Object.assign(sun.shadow.camera,{left:-2,right:2,top:2,bottom:-2,near:1,far:12});
   sun.shadow.normalBias=0.0012;
   sun.shadow.bias=-0.00007;
@@ -218,7 +218,16 @@ export function scena(host,model,stone,onOrbit){
       moving=false;motionDetail(false);renderer.setPixelRatio(fullDpr);invalidate();
     },200);
   }
+  // When the view rests on a desktop, one extra frame is drawn supersampled for crisp edges and lettering.
+  const restDpr=Math.min(3,fullDpr*1.5);let sharpTimer,sharp=false;
+  function rest(){
+    if(mobile||restDpr<=fullDpr)return;
+    clearTimeout(sharpTimer);
+    if(sharp){sharp=false;renderer.setPixelRatio(fullDpr);}
+    sharpTimer=setTimeout(()=>{if(moving)return;sharp=true;renderer.setPixelRatio(restDpr);renderer.render(scene,camera);},350);
+  }
   function invalidate(){
+    rest();
     if(!frame)frame=requestAnimationFrame(()=>{frame=0;renderer.render(scene,camera);});
   }
   controls.addEventListener('change',()=>{motion();invalidate();});
@@ -331,7 +340,7 @@ export function scena(host,model,stone,onOrbit){
   let design,decoration,shadowExtras;
   function decorate(next){
     design=next;odstran(decoration);
-    decoration=personalizuj(monument,design,selection,model,Math.min(8,renderer.capabilities.getMaxAnisotropy()),mobile?1024:1536,
+    decoration=personalizuj(monument,design,selection,model,Math.min(8,renderer.capabilities.getMaxAnisotropy()),mobile?1024:2048,
       ()=>[vytvorZulu(stone),vytvorZulu(stone,{satin:true})]);
     const extras=[...next.extras].sort().join(',');
     if(extras!==shadowExtras)renderer.shadowMap.needsUpdate=true;
@@ -402,7 +411,8 @@ export function scena(host,model,stone,onOrbit){
     shot.position.copy(center).addScaledVector(facing,distance);shot.updateProjectionMatrix();
     const size=renderer.getSize(new T.Vector2()),ratio=renderer.getPixelRatio();
     try{
-      renderer.setPixelRatio(1);renderer.setSize(Math.round(1280*Math.min(1,shot.aspect)),Math.round(1280*Math.min(1,1/shot.aspect)),false);renderer.render(scene,shot);
+      const edge=mobile?1280:2048;
+      renderer.setPixelRatio(1);renderer.setSize(Math.round(edge*Math.min(1,shot.aspect)),Math.round(edge*Math.min(1,1/shot.aspect)),false);renderer.render(scene,shot);
       return canvas.toDataURL('image/jpeg',.92);
     }finally{renderer.setPixelRatio(ratio);renderer.setSize(size.x,size.y,false);invalidate();}
   }
