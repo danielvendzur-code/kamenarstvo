@@ -34,7 +34,8 @@ async function start(){
   }
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
   // The second visual generation is opt-in, so earlier previews keep their look.
-  const plus=(ukazka?.dizajn??config.dizajn)==='plus';
+  // Every private preview now shares the workshop design; a config may still opt out with "klasik".
+  const plus=(ukazka?.dizajn??config.dizajn??(ukazka?'plus':''))==='plus';
   if(plus){
     document.documentElement.classList.add('plus');
     // The firm's own menu sits next to its logo and leads back to its website.
@@ -49,13 +50,20 @@ async function start(){
       toggle.setAttribute('aria-expanded','false');
       toggle.onclick=()=>toggle.setAttribute('aria-expanded',String(nav.classList.toggle('open')));
       document.querySelector('.scene-header').append(toggle);
+      // Keep the first and last item; drop middle items that do not fit beside the logo.
+      const fitMenu=()=>{
+        const links=[...nav.children];links.forEach(link=>link.hidden=false);
+        for(let i=links.length-2;i>0&&nav.scrollWidth>nav.clientWidth+1;i--)links[i].hidden=true;
+      };
+      new ResizeObserver(fitMenu).observe(nav);
     }
     // The workshop layout: header across the page, sharp or softened corners after the firm's website.
     const root=document.documentElement.style,round=Number(tema.zaoblenie)||0,r=round<=4?0:Math.min(Math.round(round*.7),10);
     root.setProperty('--d-r',r+'px');
     root.setProperty('--d-br',parseFloat(tema.buttonRadius)>=20?'999px':r+'px');
     root.setProperty('--d-serif',['Playfair','Cinzel'].includes(tema.pismoNadpis)?tema.pismoNadpis:'Cormorant');
-    document.querySelector('.layout').before(document.querySelector('.scene-header'));
+    // On phones the header sits above the scene; on wider screens it floats over a blurred strip.
+    if(matchMedia('(max-width:760px)').matches)document.querySelector('.layout').before(document.querySelector('.scene-header'));
   }
   if(ukazka){
     if(!plus){
@@ -121,8 +129,11 @@ async function start(){
     initialCard.querySelector('img').src=ukazka.nahlad;
     if(ukazka.zostava)initialCard.querySelector('span').textContent=ukazka.profil.nazov;
   }
+  let profileThumb=null;
   const profile=choiceSet(el('profile'),[],t,'profiles');
-  const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
+  // At least five covers: the firm's own first, then the universal ones.
+  const coverIds=plus?[...new Set([...(katalog.krycieDosky??[]),'cela','delena','priecne-delena','polovicna','strk','kvety'])]:katalog.krycieDosky??['cela'];
+  const cover=choiceSet(el('cover'),coverIds,t,'profiles');
   const restored=readDesign();
   // A firm may open on its own typical build instead of the bare default.
   const preset=restored?null:ukazka?.navrh??config.navrh??null;
@@ -142,12 +153,19 @@ async function start(){
   function profiles(savedShape){
     const available=ukazka?.zostava && product.value!=='jednohrob'?katalog.tvary.filter(id=>id!=='atelierovy'):katalog.tvary;
     const featured = ukazka?.profily ?? ['atelierovy', 'kniha', 'slza', 'ramena', 'stupnovity', 'vlna'];
-    const sculpted = ukazka ? available.filter(id => featured.includes(id) || id === savedShape) : available;
+    let sculpted = ukazka ? available.filter(id => featured.includes(id) || id === savedShape) : available;
+    if(plus&&ukazka){
+      // The firm's own profiles lead; a universal set completes at least ten.
+      const universal=['rovny','obluk','srdce','dvojity-obluk','vlna','kniha','goticky','ramena','zaobleny','vrstveny','slza','lomeny'];
+      const own=[...available.filter(id=>id==='atelierovy'),...featured.filter(id=>id!=='atelierovy'&&available.includes(id))];
+      sculpted=[...new Set([...own,...universal,...(savedShape&&savedShape!=='atelierovy'?[savedShape]:[])])];
+      if(own.length+universal.length>12)sculpted=sculpted.slice(0,Math.max(12,own.length+6));
+    }
     profile.fill(sculpted.length ? sculpted : available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
     if(plus)for(const label of profile.container.children){
       const id=label.querySelector('input').value,image=document.createElement('img');image.alt='';
-      image.src=id==='atelierovy'?ukazka?.nahladProfilu??'./assets/profily/rovny.webp':'./assets/profily/'+id+'.webp';
+      image.src=id==='atelierovy'?ukazka?.nahladProfilu??profileThumb??'./assets/profily/rovny.webp':'./assets/profily/'+id+'.webp';
       label.querySelector('svg')?.replaceWith(image);
     }
     if(ukazka?.nahladyDosiek&&!plus){
@@ -174,6 +192,23 @@ async function start(){
   const layout=document.querySelector('.layout');
   await loadStone(catalog.kamene[stoneId]);
   const viewer=scena(el('viewport'),definition(product.value),catalog.kamene[stoneId],()=>mark(null));
+  if(plus&&ukazka&&!ukazka.nahladProfilu&&katalog.tvary.includes('atelierovy')&&catalog.kamene.impala){
+    // Older previews carry no photo of their own profile: render it once off screen, in the shared stone and framing.
+    setTimeout(async()=>{
+      try{
+        const frame=document.createElement('div'),host=document.createElement('div');
+        frame.style.cssText='position:fixed;left:-4000px;top:0;width:360px;height:310px';host.style.cssText='width:100%;height:100%';
+        frame.append(host);document.body.append(frame);
+        const stone=catalog.kamene.impala;await loadStone(stone);
+        const model=definition('jednohrob'),mini=scena(host,model,stone,()=>{});
+        await mini.environment('atelier');
+        mini.change({type:'jednohrob',shape:'atelierovy',cover:'cela'},model,stone);
+        profileThumb=mini.frontImage();frame.remove();
+        const card=profile.container.querySelector('input[value=atelierovy]')?.closest('label')?.querySelector('img');
+        if(card)card.src=profileThumb;
+      }catch(error){console.error(error);}
+    },1200);
+  }
   viewer.canvas.setAttribute('aria-label',t.canvas);
   let typed=false;
   function detail(place,force=false){if(force||!typed){typed=true;viewer.view(place==='slab'?'slab':'detail');mark(place==='slab'?null:'detail');}}
@@ -193,7 +228,7 @@ async function start(){
   const group=el('environments');
   let last=0,environmentId=initial,ready=false,pendingStone,pendingEnvironment;
   const showResult=resultPanel(t,dopyt,catalog,i=>{
-    go(i);
+    if(plus)goV([0,1,3,4,5][i]);else go(i);
     const visible=selector=>[...panels[i].querySelectorAll(selector)].find(node=>node.getClientRects().length);
     const target=visible('[aria-pressed="true"],input:checked')??visible('button,input')??el('step-title');
     target.focus({preventScroll:true});
@@ -294,10 +329,13 @@ async function start(){
   }
   const panels=[...document.querySelectorAll('[data-step]')];
   const stepViews=['angle','angle','angle','angle','angle','front'];
-  const tabs=t.editTabs.map((label,i)=>{
+  // The second generation splits the shape into profile and cover; the result closes the guide.
+  const vsteps=[{p:0},{p:1,part:'profile'},{p:1,part:'cover'},{p:2},{p:3},{p:4},{p:5}];
+  let vstep=0;
+  const tabs=(plus?t.plusTabs:t.editTabs).map((label,i)=>{
     const button=document.createElement('button');button.type='button';
     button.textContent=label;
-    button.onclick=()=>go(i);el('step-track').append(button);return button;
+    button.onclick=()=>plus?goV(i):go(i);el('step-track').append(button);return button;
   });
   let stepHint=null;
   let stepKicker=null,nextHint=null;
@@ -307,7 +345,45 @@ async function start(){
     nextHint=document.createElement('span');nextHint.id='next-hint';el('next').before(nextHint);
   }
   el('review').onclick=()=>go(5);
-  el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
+  el('next').onclick=()=>plus?goV(vstep+1):go(step+1);el('back').onclick=()=>plus?goV(vstep-1,true,-1):go(step-1);
+  const noCover=()=>Boolean(katalog.dosky?.includes(product.value));
+  function goV(v,move=true,direction=1){
+    if(v===2&&noCover())v+=direction;
+    v=Math.max(0,Math.min(6,v));vstep=v;
+    const {p,part}=vsteps[v];
+    go(p,move);
+    if(part){showShapePart(part);stepHint.textContent=part==='cover'?t.coverHint:t.stepHints[1];}
+    tabs.forEach((tab,j)=>{
+      tab.setAttribute('aria-pressed',String(j===v));tab.toggleAttribute('data-done',j<v);
+      j===v?tab.setAttribute('aria-current','step'):tab.removeAttribute('aria-current');
+      tab.hidden=j===2&&noCover();
+    });
+    el('step-track').style.setProperty('--step',v);
+    stepKicker.textContent=v===6?t.design:t.stepOf.replace('{n}',v+1);
+    const following=v===1&&noCover()?3:v+1;
+    nextHint.textContent=v<5?t.nextStep.replace('{krok}',t.plusTabs[following]):v===5?t.nextStep.replace('{krok}',t.review):'';
+    nextLabel.textContent=v===5?t.finish:t.next;
+    requestAnimationFrame(fitCards);
+  }
+  // Cards spread over the panel: two choices share one row, four make a square, more go three abreast.
+  // A short list that would still scroll on a desktop gains one column; long lists scroll.
+  let cardsFrame=0;
+  function fitCards(){
+    const box=el('step-scroll'),phone=matchMedia('(max-width:760px)').matches;
+    const grids=[...box.querySelectorAll('#product,#profile,#samples,#cover')].filter(g=>g.getClientRects().length);
+    for(const g of grids){
+      const n=[...g.children].filter(c=>!c.hidden).length;
+      const cols=phone?Math.min(n,2):n<=3?n:n===4?2:3;g.dataset.cols=cols;
+    }
+    if(phone)return;
+    for(let round=0;round<2&&box.scrollHeight>box.clientHeight+1;round++)for(const g of grids){
+      const n=[...g.children].filter(c=>!c.hidden).length,cols=Number(g.dataset.cols);
+      if(n<=8&&cols<4&&cols<n)g.dataset.cols=cols+1;
+    }
+  }
+  if(plus)new ResizeObserver(()=>{cancelAnimationFrame(cardsFrame);cardsFrame=requestAnimationFrame(fitCards);}).observe(el('step-scroll'));
+  const nextLabel=document.createElement('span');
+  if(plus){nextLabel.textContent=t.next;el('next').replaceChildren(nextLabel);}
   function go(i,move=true){
     el('step-track').style.setProperty('--step',i);
     step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
@@ -336,7 +412,7 @@ async function start(){
     };
   }
   el('close-inquiry').onclick=()=>inquiryDialog.close();
-  go(0,false);
+  if(plus)goV(0,false);else go(0,false);
   syncEditor.recommend(recommendedInk());describe();progress.value=3;
   try{await choose(allowed.includes(restored?.environment)?restored.environment:initial);}catch{
     await choose('atelier');el('error').textContent=t.retryEnv;el('error').hidden=false;
@@ -345,7 +421,7 @@ async function start(){
   if(restored)await syncEditor.restore(restored);
   else if(preset)await syncEditor.preset(preset);
   ready=true;
-  if(restored){history.replaceState(null,'',designLink(state()));go(5);}
+  if(restored){history.replaceState(null,'',designLink(state()));plus?goV(6):go(5);}
   window.addEventListener('hashchange',()=>location.reload());
   progress.value=4;await document.fonts.ready;el('loader').hidden=true;
   mark(restored?'front':'angle');

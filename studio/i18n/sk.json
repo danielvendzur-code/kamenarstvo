@@ -8,7 +8,7 @@
   "shape": "Tvar stely",
   "size": "Pôdorys",
   "stone": "Materiál",
-  "finish": "Vyhotovenie písma",
+  "finish": "Zobraziť návrh",
   "views": "Pohľad",
   "angle": "Perspektíva",
   "front": "Spredu",
@@ -219,5 +219,13 @@
   "pick": "Vybrať",
   "stepOf": "Krok {n} zo 6",
   "menu": "Menu",
-  "nextStep": "Ďalej: {krok}"
+  "nextStep": "Ďalej: {krok}",
+  "plusTabs": [
+    "Typ",
+    "Profil",
+    "Krycia doska",
+    "Kameň",
+    "Nápis",
+    "Doplnky"
+  ]
 }
