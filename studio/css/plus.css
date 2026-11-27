@@ -6,141 +6,212 @@
 /* Pieces of the second generation stay invisible in earlier previews. */
 #extras .extra-hint,#extras .extra-group,#step-hint{display:none}
 
-/* ---------- Druhá generácia: spoločný pokojný základ ---------- */
+@font-face{font-family:Cormorant;src:url('../fonts/Cormorant.woff2') format('woff2');font-weight:300 700;font-display:swap}
+#step-kicker,#next-hint,.menu-toggle{display:none}
+
+/* ---------- Dielňa: list z kamenárskej dielne ---------- */
 html.plus{
-  --fill:var(--buttonFill,var(--accent));
-  --fill-ink:var(--buttonInk,var(--on-accent));
-  --btn-font:var(--buttonFont,var(--pismoText,Manrope));
-  --r:6px;
-  --select:var(--accent);
+  --d-paper:var(--paper);
+  --d-surface:color-mix(in srgb,var(--ink) 7%,var(--paper));
+  --d-line:color-mix(in srgb,var(--ink) 14%,var(--paper));
+  --d-field-line:color-mix(in srgb,var(--ink) 24%,var(--paper));
+  --d-field:color-mix(in srgb,#fff 60%,var(--paper));
+  --d-muted:color-mix(in srgb,var(--ink) 68%,var(--paper));
+  --d-accent:var(--accent);
+  --d-fill:var(--buttonFill,var(--accent));
+  --d-fill-ink:var(--buttonInk,#fff);
+  --d-head:var(--d-serif,Cormorant),Georgia,serif;
+  --d-text:var(--pismoText,'OpenSans'),system-ui,sans-serif;
+  --d-pad:48px;
 }
-html.plus *,html.plus *::before,html.plus *::after{transition-property:color,background-color,border-color,box-shadow;transition-duration:.15s}
-html.plus :is(button,a,summary,input,select,textarea):focus-visible,
-html.plus .cards label:has(:focus-visible){outline:2px solid var(--metal);outline-offset:2px;box-shadow:none}
+html.plus body{background:var(--d-paper);color:var(--ink);font:400 15px/24px var(--d-text)}
+html.plus *{transition:color .15s,background-color .15s,border-color .15s}
+html.plus :is(button,a,summary,input,select,textarea):focus-visible,html.plus .cards label:has(:focus-visible){outline:2px solid var(--ink);outline-offset:2px;box-shadow:none}
 
-/* Buttons: one flat fill, no motion. */
-html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]){
-  display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;border:0;border-radius:var(--r);
-  background:var(--fill);color:var(--fill-ink);box-shadow:none;font:600 14.5px/1 var(--btn-font),sans-serif;letter-spacing:.01em;text-transform:none}
-html.plus:root #next::after{content:none}
-@media(hover:hover){html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):not(:disabled):hover{background:color-mix(in srgb,var(--fill) 88%,#000)}}
-html.plus:root :is(#back,#copy,#download,#close-inquiry,#review){
-  display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid var(--line-strong);border-radius:var(--r);
-  background:transparent;color:var(--ink);box-shadow:none;font:500 13px/1 var(--sans);letter-spacing:0;text-transform:none;text-decoration:none}
-@media(hover:hover){html.plus:root :is(#back,#copy,#download,#close-inquiry,#review):hover{border-color:var(--ink)}}
-html.plus:root #review{min-height:34px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:color-mix(in srgb,var(--panel) 80%,transparent)}
+/* Header across the page. */
+html.plus .scene-header{position:relative;inset:auto;z-index:4;flex:none;display:flex;align-items:center;gap:32px;height:80px;padding:0 var(--d-pad);
+  background:var(--d-paper);border-bottom:1px solid var(--d-line)}
+html.plus .scene-header::before{content:none}
+html.plus .scene-header :is(.studio,#review){display:none}
+html.plus .brand img{height:46px;width:auto;max-width:220px;padding:0;background:transparent;border-radius:0;object-fit:contain}
+html.plus.client-preview .brand img{height:46px;width:auto;max-width:220px;padding:0;background:var(--logoSurface,transparent)}
+html.plus .site-menu{display:flex;align-items:center;gap:32px;margin-left:auto;white-space:nowrap}
+html.plus .site-menu a{color:var(--ink);font:400 14px/20px var(--d-text);text-decoration:none}
+@media(hover:hover){html.plus .site-menu a:hover{color:var(--d-accent)}}
 
-/* Step track: quiet text tabs with a hairline that fills. */
-html.plus #step-track button{height:46px;font:500 12px/1.2 var(--sans);color:var(--muted)}
-html.plus #step-track button[aria-current]{color:var(--ink);font-weight:650}
-html.plus #step-track button::before{color:inherit;font-weight:500}
-html.plus #step-track:after{height:1px;background:var(--ink)}
-html.plus #step-hint{display:block;margin:-12px 0 22px;color:var(--muted);font:400 14px/1.5 var(--sans)}
+/* Page: 3D on the left, the workshop sheet on the right. */
+html.plus .layout,html.plus .layout.show-result{grid-template-columns:minmax(0,1fr) clamp(400px,34vw,540px);grid-template-rows:minmax(0,1fr);padding:0;gap:0;border:0;align-items:stretch}
+html.plus .viewer,html.plus .show-result .viewer{height:100%;max-height:none;border:0;border-radius:0;box-shadow:none;background:var(--d-surface)}
+html.plus .layout>aside,html.plus .layout.show-result>aside{display:flex;flex-direction:column;min-height:0;max-height:none;margin:0;padding:0;overflow:hidden;
+  border-left:1px solid var(--d-line);border-radius:0;background:var(--d-paper);box-shadow:none}
+html.plus #sheet-content,html.plus .show-result #sheet-content{flex:1;min-height:0;height:auto;display:flex;flex-direction:column;gap:0;padding:0}
+html.plus #step-scroll,html.plus .show-result #step-scroll{display:block;flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:36px var(--d-pad) 28px}
 
-/* Choice cards: identical photographs, selection is a border only. */
+/* Steps: a row of words with numbers; the active one is underlined in the firm colour. */
+html.plus aside>#step-track{flex:none;display:flex;justify-content:space-between;gap:8px;width:auto;margin:0 var(--d-pad);border-bottom:1px solid var(--d-line);counter-reset:phase}
+html.plus #step-track::before,html.plus #step-track::after{content:none}
+html.plus #step-track button{height:auto;min-height:0;display:block;padding:24px 0 14px;margin-bottom:-1px;border-bottom:2px solid transparent;
+  color:var(--d-muted);font:400 14px/20px var(--d-text);letter-spacing:0;white-space:nowrap}
+html.plus #step-track button::before{content:counter(phase) "\00a0";font:inherit;color:inherit;letter-spacing:0}
+html.plus #step-track button[aria-current]{color:var(--d-accent);font-weight:600;border-bottom-color:var(--d-accent)}
+@media(hover:hover){html.plus #step-track button:hover{color:var(--d-accent)}}
+
+html.plus #step-kicker{display:block;margin:0 0 8px;color:var(--d-accent);font:600 11px/16px var(--d-text);letter-spacing:.14em;text-transform:uppercase}
+html.plus #step-title,html.plus .layout:not(.show-result) h1,html.plus .show-result h1{margin:0;font:500 40px/44px var(--d-head);letter-spacing:0;color:var(--ink);max-width:none}
+html.plus #step-hint{display:block;margin:10px 0 28px;color:var(--d-muted);font:400 15px/24px var(--d-text)}
+
+/* Choice cards: photo, name, size. Selection is a thin rim in the firm colour. */
+html.plus .cards,html.plus #samples{gap:16px}
+html.plus #product{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:0}
+html.plus #profile,html.plus #samples{grid-template-columns:repeat(3,minmax(0,1fr))}
+html.plus #cover{grid-template-columns:repeat(2,minmax(0,1fr))}
 html.plus :is(#product,#profile,#cover).cards label,html.plus #samples button{
-  position:relative;padding:6px 6px 10px;gap:6px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);box-shadow:none}
+  position:relative;display:flex;flex-direction:column;align-items:stretch;gap:0;min-height:0;padding:8px;
+  border:1px solid transparent;border-radius:var(--d-r);background:transparent;box-shadow:none;text-align:left}
 html.plus :is(#product,#profile,#cover).cards label::after,html.plus #samples button::after{content:none!important}
-@media(hover:hover){html.plus :is(#product,#profile,#cover).cards label:hover,html.plus #samples button:hover{border-color:var(--line-strong)}}
-html.plus :is(#product,#profile,#cover).cards label:has(:checked),html.plus #samples button[aria-pressed=true]{
-  border-color:var(--select);box-shadow:inset 0 0 0 1px var(--select);background:var(--panel)}
-html.plus :is(#product,#profile,#cover) img,html.plus #samples button img{
-  display:block;width:100%;outline:0!important;border:0;border-radius:calc(var(--r) - 3px);mix-blend-mode:normal;background:#ece7dd}
-html.plus #product img{height:auto;aspect-ratio:558/360;object-fit:cover}
-html.plus #profile img{aspect-ratio:4/3;object-fit:cover}
-html.plus #cover img{aspect-ratio:1.56;object-fit:cover}
-html.plus #samples button img{height:auto;aspect-ratio:1.9;object-fit:cover}
-html.plus #product label span,html.plus #product label small,html.plus #cover label span,html.plus #samples button span,html.plus #profile label span{
-  margin:0;padding:0 4px;align-self:stretch;text-align:left;color:var(--ink);background:none;border-radius:0}
-html.plus #product label span{font:500 17px/1.2 var(--serif)}
-html.plus #product label small{color:var(--muted)}
-html.plus #profile.cards label{min-height:0;align-items:stretch}
-html.plus :is(#profile,#cover,#samples) :is(label,button) span{font:500 13px/1.25 var(--sans)}
-html.plus #profile,html.plus #samples,html.plus #cover{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-html.plus #product{gap:12px}
+html.plus :is(#product,#profile,#cover).cards label:has(:checked),html.plus #samples button[aria-pressed=true]{border-color:var(--d-accent);box-shadow:none;background:transparent}
+html.plus :is(#product,#profile,#cover) img,html.plus #samples button img{display:block;width:100%;height:auto;margin:0 0 10px;outline:0!important;border:0;
+  border-radius:calc(var(--d-r) * .6);background:var(--d-surface);mix-blend-mode:normal;object-fit:cover}
+html.plus #product img{aspect-ratio:1.02}
+html.plus #profile img{aspect-ratio:1.1}
+html.plus #cover img{aspect-ratio:1.56}
+html.plus #samples button img{aspect-ratio:1.3}
+html.plus :is(#product,#profile,#cover) label :is(span,small),html.plus #samples button span{margin:0;padding:0;background:none;border-radius:0;text-align:left;align-self:stretch}
+html.plus :is(#product,#profile,#cover) label span,html.plus #samples button span{color:var(--ink);font:600 15px/20px var(--d-text)}
+html.plus #product label small{color:var(--d-muted);font:400 13px/20px var(--d-text)}
+html.plus :is(#product,#profile,#cover) label:has(:checked) span,html.plus #samples button[aria-pressed=true] span{color:var(--d-accent)}
+@media(hover:hover){html.plus :is(#product,#profile,#cover) label:hover span,html.plus #samples button:hover span{color:var(--d-accent)}}
+html.plus .measure{margin-top:20px;color:var(--d-muted);font:400 13px/20px var(--d-text)}
 
-/* Segmented control. */
-html.plus :is(#shape-tools,#letter-tools){gap:0;padding:0;margin-bottom:18px;border:1px solid var(--line-strong);border-radius:var(--r);background:transparent;overflow:hidden}
-html.plus:root :is(#shape-tools,#letter-tools) button{min-height:38px;border:0;border-radius:0;color:var(--muted);font:500 12.5px/1.2 var(--sans);background:transparent;box-shadow:none;text-transform:none;letter-spacing:0}
-html.plus:root :is(#shape-tools,#letter-tools) button+button{border-left:1px solid var(--line)}
-html.plus:root :is(#shape-tools,#letter-tools) button[aria-pressed=true]{background:var(--ink);color:var(--panel);box-shadow:none}
+/* Segmented switch. */
+html.plus :is(#shape-tools,#letter-tools){display:flex;gap:0;padding:0;margin:0 0 24px;border:1px solid var(--d-field-line);border-radius:var(--d-r);background:transparent;overflow:hidden}
+html.plus:root :is(#shape-tools,#letter-tools) button{flex:1;min-height:40px;padding:0 18px;border:0;border-radius:0;background:transparent;box-shadow:none;
+  color:var(--ink);font:600 13px/16px var(--d-text);letter-spacing:0;text-transform:none}
+html.plus:root :is(#shape-tools,#letter-tools) button+button{border-left:1px solid var(--d-field-line)}
+html.plus:root :is(#shape-tools,#letter-tools) button[aria-pressed=true]{background:var(--d-fill);color:var(--d-fill-ink)}
 
 /* Fields. */
-html.plus input:not([type=radio],[type=checkbox],[type=file]),html.plus textarea,html.plus select{min-height:44px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:var(--r);background:var(--panel);color:var(--ink)}
-html.plus :is(input:not([type=radio],[type=checkbox],[type=file]),textarea,select):focus{outline:0;border-color:var(--ink)}
-html.plus:root .example{min-height:34px;padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r);text-decoration:none;font:500 12.5px/1 var(--sans)}
-html.plus .fonts label,html.plus .inks label{padding:10px 8px 8px;border:1px solid var(--line);border-radius:var(--r)}
-html.plus .fonts label:has(:checked),html.plus .inks label:has(:checked){border-color:var(--select);box-shadow:inset 0 0 0 1px var(--select)}
-html.plus .inks i{width:26px;height:26px;border:1px solid var(--line)}
-html.plus .inks label:has([value=zlata]) i{background-image:linear-gradient(135deg,#8a6a2e,#d9bd7c 50%,#9c7a3c)}
-html.plus .inks label:has([value=strieborna]) i{background-image:linear-gradient(135deg,#8d9396,#e4e7e8 50%,#a2a8ab)}
+html.plus input:not([type=radio],[type=checkbox],[type=file]),html.plus textarea,html.plus select{min-height:44px;padding:10px 12px;border:1px solid var(--d-field-line);border-radius:var(--d-r);
+  background:var(--d-field);color:var(--ink);font:400 15px/22px var(--d-text)}
+html.plus :is(input:not([type=radio],[type=checkbox],[type=file]),textarea,select):focus{outline:2px solid var(--ink);outline-offset:0;border-color:var(--ink)}
+html.plus .letter-part{gap:16px}
+html.plus .letter-part label>span,html.plus #inquiry label>span,html.plus legend{color:var(--ink);font:600 13px/16px var(--d-text);margin-bottom:6px}
+html.plus:root .example{display:inline;min-height:0;padding:0;border:0;color:var(--d-accent);font:600 13px/20px var(--d-text);text-decoration:underline;text-underline-offset:3px;background:none}
+html.plus .fonts,html.plus .inks{gap:12px}
+html.plus .fonts label,html.plus .inks label{padding:12px 10px;border:1px solid var(--d-line);border-radius:var(--d-r);background:transparent}
+html.plus .fonts label:has(:checked),html.plus .inks label:has(:checked){border-color:var(--d-accent)}
+html.plus .fonts label:has(:checked) span,html.plus .inks label:has(:checked) span{color:var(--d-accent);font-weight:600}
+html.plus .fonts i{font-size:22px;color:var(--ink)}
+html.plus .inks i{width:24px;height:24px;border:1px solid var(--d-line);border-radius:50%}
 
-/* Accessories: plain text cards grouped by where they sit. */
-html.plus #extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-html.plus #extras .extra-group{display:block;grid-column:1/-1;margin:14px 0 2px;color:var(--muted);font:600 10.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+/* Accessories: a quiet checklist in three groups. */
+html.plus #extras{display:block}
+html.plus #extras .extra-group{display:block;margin:24px 0 4px;color:var(--d-muted);font:600 11px/16px var(--d-text);letter-spacing:.14em;text-transform:uppercase}
 html.plus #extras .extra-group:first-child{margin-top:0}
-html.plus:root #extras label{display:grid;grid-template-columns:minmax(0,1fr) 18px;gap:2px 10px;align-items:start;min-height:0;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);cursor:pointer}
-html.plus #extras label>span{grid-column:1;grid-row:1;font:600 13.5px/1.25 var(--sans);color:var(--ink)}
-html.plus #extras .extra-hint{display:block;grid-column:1;grid-row:2;font:400 12px/1.35 var(--sans);color:var(--muted)}
-html.plus #extras input[type=checkbox]{grid-column:2;grid-row:1;width:16px;height:16px;margin:1px 0 0;accent-color:var(--select)}
-html.plus:root #extras label:has(:checked){border-color:var(--select);box-shadow:inset 0 0 0 1px var(--select)}
-html.plus #extras>div{grid-column:1/-1}
+html.plus #extras .extra-hint{display:none}
+html.plus:root #extras label{display:flex;align-items:center;gap:14px;min-height:48px;padding:0;border:0;border-bottom:1px solid var(--d-line);border-radius:0;background:transparent;box-shadow:none;cursor:pointer}
+html.plus #extras label>span{order:2;color:var(--ink);font:400 15px/20px var(--d-text)}
+html.plus #extras input[type=checkbox]{order:1;appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin:0;border:1px solid var(--ink);border-radius:calc(var(--d-r) * .4);background:transparent;cursor:pointer}
+html.plus #extras input[type=checkbox]:checked{background:var(--d-accent);border-color:var(--d-accent);box-shadow:inset 0 0 0 3px var(--d-paper)}
+html.plus #extras label:has(:checked)>span{color:var(--d-accent);font-weight:600}
+html.plus #extras>div{margin-top:16px;padding:16px;border:1px solid var(--d-line);border-radius:var(--d-r)}
 
-/* Scene controls: a quiet bar of words. */
-html.plus .camera,html.plus #environments{gap:0;padding:3px;border:0;border-radius:var(--r);color:var(--ink);
-  background:color-mix(in srgb,var(--panel) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 1px 3px rgb(0 0 0 / .12)}
-html.plus:root :is(.camera,#environments) button{min-height:32px;padding:0 11px;border-radius:calc(var(--r) - 2px);color:var(--muted);font:500 12px/1 var(--sans);text-decoration:none}
-html.plus:root :is(.camera,#environments) button[aria-pressed=true]{color:var(--ink);font-weight:650;background:color-mix(in srgb,var(--ink) 8%,transparent);text-decoration:none}
-html.plus .zoom{border-left:1px solid var(--line);margin-left:3px;padding-left:3px}
-html.plus:root .zoom button{width:32px;padding:0;font-size:16px;color:var(--ink)}
+/* Footer of the sheet: back as a word, the next step named beside the button. */
+html.plus .step-actions{flex:none;display:flex;flex-direction:row;align-items:center;gap:16px;padding:20px var(--d-pad) 24px;margin:0 var(--d-pad) 0;padding-inline:0;border-top:1px solid var(--d-line);background:transparent}
+html.plus:root #back{min-height:48px;padding:0;margin:0;border:0;background:none;box-shadow:none;color:var(--ink);font:600 14px/20px var(--d-text);text-decoration:none}
+@media(hover:hover){html.plus:root #back:hover{color:var(--d-accent)}}
+html.plus #next-hint{display:block;margin-left:auto;color:var(--d-muted);font:400 14px/20px var(--d-text)}
+html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]){flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:0;padding:0 28px;margin:0;border:0;border-radius:var(--d-br);
+  background:var(--d-fill);color:var(--d-fill-ink);box-shadow:none;font:600 14px/20px var(--d-text);letter-spacing:0;text-transform:none}
+html.plus:root #next::after{content:none}
+@media(hover:hover){html.plus:root :is(#next,#to-inquiry,#inquiry button[type=submit]):not(:disabled):hover{background:color-mix(in srgb,var(--d-fill) 86%,#000)}}
+html.plus:root :is(#copy,#download){min-height:48px;padding:0 12px;white-space:nowrap;border:1px solid var(--ink);border-radius:var(--d-br);background:transparent;box-shadow:none;color:var(--ink);font:600 14px/20px var(--d-text);text-decoration:none;letter-spacing:0;text-transform:none}
+@media(hover:hover){html.plus:root :is(#copy,#download):hover{color:var(--d-accent);border-color:var(--d-accent)}}
 
-/* Result and inquiry. */
-html.plus #summary{padding:0 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
-html.plus #summary div:first-child{border-top:0}
-html.plus:root #summary button{min-height:28px;padding:0 4px;border:0;font:500 12px/1 var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;background:none}
-html.plus .result-actions{gap:8px;margin-top:18px}
-html.plus:root #to-inquiry{flex:1 1 100%}
-html.plus .show-result .viewer{border-radius:var(--r)}
-html.plus #simulation{padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);font-size:13px}
-html.plus #inquiry .consent input:checked{background:var(--ink);border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--panel)}
+/* 3D controls: words on paper with a hairline. */
+html.plus .camera{position:absolute;inset:0;z-index:2;display:block;padding:0;border:0;border-radius:0;background:none;box-shadow:none;pointer-events:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.plus .camera .tools,html.plus .camera .zoom,html.plus #environments{position:absolute;display:flex;align-items:stretch;gap:0;padding:0;margin:0;pointer-events:auto;
+  background:var(--d-paper);border:1px solid var(--d-line);border-radius:var(--d-r);box-shadow:none;overflow:hidden;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.plus .camera .tools{top:24px;left:24px}
+html.plus .camera .zoom{bottom:24px;left:24px}
+html.plus #environments{top:auto;bottom:24px;right:24px;left:auto;color:var(--ink)}
+html.plus #environments::before{content:attr(aria-label);display:flex;align-items:center;padding:0 14px;border-right:1px solid var(--d-line);color:var(--d-muted);font:600 11px/16px var(--d-text);letter-spacing:.14em;text-transform:uppercase}
+html.plus:root :is(.camera,#environments) button{display:flex;align-items:center;min-height:44px;padding:0 16px;margin:0;border:0;border-radius:0;background:transparent;box-shadow:inset 0 -2px 0 transparent;
+  color:var(--ink);font:400 14px/16px var(--d-text);text-decoration:none;letter-spacing:0;text-transform:none;text-shadow:none}
+html.plus:root :is(.camera,#environments) button[aria-pressed=true]{color:var(--d-accent);font-weight:600;background:transparent;box-shadow:inset 0 -2px 0 var(--d-accent);text-decoration:none}
+@media(hover:hover){html.plus:root :is(.camera,#environments) button:hover{color:var(--d-accent)}}
+html.plus:root .zoom button{width:44px;justify-content:center;padding:0;font-size:18px}
+html.plus:root .zoom button+button{border-left:1px solid var(--d-line)}
+html.plus .show-result :is(.camera,#environments){display:none}
 
-@media(min-width:761px){
-  html.plus .step-actions{gap:10px}
-  html.plus:root #next{flex:1}
-  html.plus:root #back{margin-right:0}
-}
+/* Result: labelled rows with an edit link, actions below. */
+html.plus #summary{margin:0;padding:0;border:0;background:none}
+html.plus #summary div{display:grid;grid-template-columns:120px minmax(0,1fr) auto;align-items:baseline;gap:16px;padding:16px 0;border-top:1px solid var(--d-line)}
+html.plus #summary div:last-child{border-bottom:1px solid var(--d-line)}
+html.plus #summary dt{color:var(--d-muted);font:600 11px/16px var(--d-text);letter-spacing:.14em;text-transform:uppercase}
+html.plus #summary dd{color:var(--ink);font:400 15px/22px var(--d-text);-webkit-line-clamp:3}
+html.plus:root #summary button{min-height:0;padding:0;border:0;background:none;color:var(--d-accent);font:600 13px/20px var(--d-text);text-decoration:underline;text-underline-offset:3px}
+html.plus .result-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+html.plus:root #to-inquiry{grid-column:1/-1;width:100%}
+
+/* Inquiry sheet. */
+html.plus dialog{width:min(600px,100vw);padding:40px var(--d-pad);border:0;border-left:1px solid var(--d-line);border-radius:0;background:var(--d-paper);box-shadow:none}
+html.plus dialog h2{margin:0 0 24px;font:500 32px/36px var(--d-head)}
+html.plus:root #close-inquiry{float:right;min-height:0;padding:8px 0;border:0;background:none;color:var(--d-accent);font:600 13px/20px var(--d-text);text-decoration:underline;text-underline-offset:3px;text-transform:none;letter-spacing:0}
+html.plus #simulation{margin:0 0 24px;color:var(--d-muted);font-size:13px}
+html.plus #inquiry{gap:16px 24px}
+html.plus #inquiry .consent input{width:20px;height:20px;border:1px solid var(--ink);border-radius:0}
+html.plus #inquiry .consent input:checked{background:var(--d-accent);border-color:var(--d-accent);box-shadow:inset 0 0 0 3px var(--d-paper)}
+html.plus:root #inquiry button[type=submit]{justify-self:start;width:auto}
+html.plus #confirmation{border-top:1px solid var(--d-line);font:500 24px/30px var(--d-head)}
+
+/* Loader. */
+html.plus #loader progress{width:200px;height:2px}
+html.plus #loader progress::-webkit-progress-value{background:var(--d-accent)}
+
+@media(max-width:1200px){html.plus .site-menu{gap:20px}html.plus .site-menu a{font-size:13px}}
+@media(max-width:1100px){html.plus{--d-pad:32px}html.plus .site-menu a:nth-child(n+5){display:none}}
+
+/* ---------- Mobil ---------- */
 @media(max-width:760px){
-  html.plus:root #next{min-height:46px}
-  html.plus:root #back{min-height:46px}
-  html.plus #profile,html.plus #samples{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-  html.plus #extras{grid-template-columns:1fr}
-  html.plus:root :is(.camera,#environments) button{padding:0 8px;font-size:11px;min-height:30px}
-  html.plus #product label span{font-size:15px}
-}
-
-/* The header carries only the firm; the steps already lead to the result. */
-html.plus .scene-header :is(.studio,#review){display:none}
-html.plus .site-menu{display:flex;align-items:center;gap:clamp(12px,1.5vw,24px);margin-left:auto;white-space:nowrap}
-html.plus .site-menu a{color:var(--ink);font:500 12.5px/1 var(--sans);text-decoration:none}
-@media(hover:hover){html.plus .site-menu a:hover{text-decoration:underline;text-underline-offset:5px}}
-@media(max-width:1300px){html.plus .site-menu{display:none}}
-
-/* Result keeps the layout of the other steps: the scene on the left, the summary in the panel. */
-@media(min-width:761px){
-  html.plus .layout.show-result{grid-template-columns:minmax(0,1fr) clamp(360px,33.4vw,506px);grid-template-rows:minmax(0,1fr);padding:0;gap:0;align-items:stretch;border-top:1px solid var(--line)}
-  html.plus .show-result .viewer{height:100%;max-height:none;border:0;border-radius:0;box-shadow:none}
-  html.plus .show-result .scene-header{display:flex;padding:18px clamp(16px,2.6vw,40px)}
-  html.plus .show-result>aside{display:flex;flex-direction:column;min-height:0;max-height:none;padding:0;overflow:hidden;border-left:1px solid var(--line);background:var(--panel)}
-  html.plus .show-result aside>#step-track{flex:none;width:auto;margin:16px clamp(22px,2.4vw,38px) 0}
-  html.plus .show-result #sheet-content{display:block;flex:1;min-height:0;overflow:auto;padding:clamp(22px,3.8vh,42px) clamp(22px,2.4vw,38px) 28px}
-  html.plus .show-result h1{max-width:none;margin-bottom:6px;font-size:clamp(28px,2.6vw,38px)}
-  html.plus .show-result #step-hint{margin:0 0 22px}
-  html.plus #summary{padding:0;border:0;background:none}
-  html.plus #summary div{grid-template-columns:96px minmax(0,1fr) auto;padding:13px 0;border-top:1px solid var(--line)}
-  html.plus #summary div:first-child{border-top:1px solid var(--line)}
-  html.plus #summary div:last-child{border-bottom:1px solid var(--line)}
-  html.plus #summary dt{font-size:12px}
-  html.plus #summary dd{font:500 15px/1.35 var(--sans)}
-  html.plus .result-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px}
-  html.plus:root #to-inquiry{grid-column:1/-1;min-height:52px}
+  html.plus{--d-pad:16px}
+  html.plus body{display:flex;flex-direction:column}
+  html.plus .scene-header{height:60px;padding:0 16px;gap:12px}
+  html.plus .brand img,html.plus.client-preview .brand img{height:38px;max-width:150px}
+  html.plus .menu-toggle{display:inline-flex;align-items:center;margin-left:auto;min-height:44px;padding:0 16px;border:1px solid var(--d-line);border-radius:var(--d-br);font:600 14px/20px var(--d-text);color:var(--ink)}
+  html.plus .site-menu{display:none;position:absolute;top:60px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;padding:8px 16px 16px;background:var(--d-paper);border-bottom:1px solid var(--d-line)}
+  html.plus .site-menu.open{display:flex}
+  html.plus .site-menu a,html.plus .site-menu a:nth-child(n+5){display:block;padding:12px 0;border-bottom:1px solid var(--d-line);font-size:15px}
+  html.plus .layout,html.plus .layout.show-result{grid-template-columns:1fr;grid-template-rows:minmax(0,40fr) minmax(0,60fr)}
+  html.plus .layout>aside,html.plus .layout.show-result>aside{border-left:0;border-top:1px solid var(--d-line);margin-top:0}
+  html.plus aside>#step-track{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;order:2;margin:0 16px;padding:0;border:0}
+  html.plus:root aside>#step-track button{height:22px;min-height:0;padding:0;font-size:0;border:0}
+  html.plus #step-track button::before{content:"";display:block;height:3px;margin-top:10px;background:var(--d-line)}
+  html.plus #step-track button[data-done]::before,html.plus #step-track button[aria-current]::before{background:var(--d-accent)}
+  html.plus #sheet-content{order:3}
+  html.plus aside{display:flex;flex-direction:column}
+  html.plus aside::before{content:"";order:1}
+  html.plus #step-scroll,html.plus .show-result #step-scroll{padding:12px 16px 16px}
+  html.plus #step-kicker{margin-bottom:4px}
+  html.plus #step-title,html.plus .layout:not(.show-result) h1,html.plus .show-result h1{font-size:28px;line-height:32px}
+  html.plus #step-hint{margin:6px 0 16px;font-size:14px;line-height:20px}
+  html.plus #product,html.plus #cover{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html.plus #profile,html.plus #samples{grid-template-columns:repeat(3,minmax(0,1fr))}
+  html.plus .cards,html.plus #samples{gap:10px}
+  html.plus :is(#product,#profile,#cover).cards label,html.plus #samples button{padding:5px}
+  html.plus :is(#profile,#samples) :is(label,button) span{font-size:13px;line-height:18px}
+  html.plus .step-actions{margin:0;padding:12px 16px max(12px,env(safe-area-inset-bottom));gap:12px}
+  html.plus #next-hint{display:none}
+  html.plus:root #back{min-height:48px;padding:0 20px;border:1px solid var(--ink);border-radius:var(--d-br)}
+  html.plus:root body .step-actions #next{flex:1}
+  html.plus .camera .tools{top:auto;bottom:0;left:0;right:0;border-width:1px 0 0;border-radius:0}
+  html.plus:root .camera .tools button{flex:1;justify-content:center;padding:0 6px;font-size:13px}
+  html.plus .camera .zoom{bottom:auto;top:12px;left:auto;right:12px}
+  html.plus #environments{bottom:auto;top:12px;left:12px;right:auto}
+  html.plus #environments::before{content:none}
+  html.plus:root #environments button{padding:0 10px;font-size:13px}
+  html.plus #summary div{grid-template-columns:1fr auto;gap:4px 12px;padding:12px 0}
+  html.plus #summary dt{grid-column:1/-1}
+  html.plus .result-actions{margin-top:16px}
+  html.plus dialog{padding:24px 16px}
 }

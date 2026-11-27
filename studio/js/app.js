@@ -45,7 +45,17 @@ async function start(){
         const link=document.createElement('a');link.textContent=label;link.href=firma.web;link.target='_blank';link.rel='noopener';nav.append(link);
       }
       document.querySelector('.scene-header').append(nav);
+      const toggle=document.createElement('button');toggle.type='button';toggle.className='menu-toggle';toggle.textContent=t.menu;
+      toggle.setAttribute('aria-expanded','false');
+      toggle.onclick=()=>toggle.setAttribute('aria-expanded',String(nav.classList.toggle('open')));
+      document.querySelector('.scene-header').append(toggle);
     }
+    // The workshop layout: header across the page, sharp or softened corners after the firm's website.
+    const root=document.documentElement.style,round=Number(tema.zaoblenie)||0,r=round<=4?0:Math.min(Math.round(round*.7),10);
+    root.setProperty('--d-r',r+'px');
+    root.setProperty('--d-br',parseFloat(tema.buttonRadius)>=20?'999px':r+'px');
+    root.setProperty('--d-serif',['Playfair','Cinzel'].includes(tema.pismoNadpis)?tema.pismoNadpis:'Cormorant');
+    document.querySelector('.layout').before(document.querySelector('.scene-header'));
   }
   if(ukazka){
     if(!plus){
@@ -290,7 +300,12 @@ async function start(){
     button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
   let stepHint=null;
-  if(plus){stepHint=document.createElement('p');stepHint.id='step-hint';el('step-title').after(stepHint);}
+  let stepKicker=null,nextHint=null;
+  if(plus){
+    stepHint=document.createElement('p');stepHint.id='step-hint';el('step-title').after(stepHint);
+    stepKicker=document.createElement('p');stepKicker.id='step-kicker';el('step-title').before(stepKicker);
+    nextHint=document.createElement('span');nextHint.id='next-hint';el('next').before(nextHint);
+  }
   el('review').onclick=()=>go(5);
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
   function go(i,move=true){
@@ -299,6 +314,8 @@ async function start(){
     tabs.forEach((tab,j)=>tab.setAttribute('aria-pressed',String(j===i)));
     el('step-title').textContent=t.stepTitles[i];
     if(stepHint)stepHint.textContent=t.stepHints[i];
+    if(stepKicker)stepKicker.textContent=t.stepOf.replace('{n}',i+1);
+    if(nextHint)nextHint.textContent=i<5?t.nextStep.replace('{krok}',t.editTabs[i+1]):'';
     if(i===1)shapeHeading();
     el('back').hidden=i===0;el('next').hidden=i===5;document.querySelector('.step-actions').hidden=i===5;
     tabs.forEach((tab,j)=>j===i?tab.setAttribute('aria-current','step'):tab.removeAttribute('aria-current'));

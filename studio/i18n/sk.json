@@ -217,5 +217,7 @@
   "downloadName": "navrh-pomnika",
   "selected": "vybrané",
   "pick": "Vybrať",
-  "stepOf": "Krok {n} zo 6"
+  "stepOf": "Krok {n} zo 6",
+  "menu": "Menu",
+  "nextStep": "Ďalej: {krok}"
 }
