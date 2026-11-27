@@ -226,13 +226,19 @@ html.plus aside>#step-track{display:grid;grid-template-columns:repeat(6,auto);ju
 html.plus #step-track button{font-size:clamp(12px,.95vw,14px)}
 @media(max-width:1350px){html.plus #step-track button::before{content:none}}
 html.plus .camera .tools,html.plus .camera .zoom,html.plus #environments{border-color:var(--d-line);box-shadow:0 2px 12px rgb(0 0 0 / .10)}
-html.plus #environments button::before{content:"";width:9px;height:9px;margin-right:8px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1px rgb(0 0 0 / .12)}
-html.plus #environments button[value=rano]::before{background:linear-gradient(135deg,#ffe2a8,#f2b45c)}
-html.plus #environments button[value=podvecer]::before{background:linear-gradient(135deg,#f4a46a,#9b4e6b)}
-html.plus #environments button[value=atelier]::before{background:linear-gradient(135deg,#ffffff,#cfcac0)}
-html.plus:root :is(.camera,#environments) button[aria-pressed=true]{background:color-mix(in srgb,var(--d-accent) 8%,var(--d-paper))}
+html.plus:root #environments button[aria-pressed=true]{background:var(--d-fill);color:var(--d-fill-ink);box-shadow:none}
 @media(max-width:760px){
   html.plus .layout,html.plus .layout.show-result{grid-template-columns:1fr}
   html.plus aside>#step-track{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-  html.plus #environments button::before{margin-right:6px}
 }
+
+@media(max-width:760px){
+  /* On phones the sheet takes the height its step needs and the 3D view yields. */
+  html.plus .layout,html.plus .layout.show-result{grid-template-rows:minmax(24dvh,1fr) auto}
+  html.plus .layout>aside,html.plus .layout.show-result>aside{max-height:76dvh}
+}
+
+/* Every choice card has the same size on every step; long lists scroll. */
+html.plus :is(#product,#profile,#samples,#cover){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+html.plus :is(#product,#profile,#cover) img,html.plus #samples button img{aspect-ratio:1.15!important}
+@media(max-width:760px){html.plus :is(#product,#profile,#samples,#cover){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
