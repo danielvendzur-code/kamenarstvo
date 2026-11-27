@@ -120,3 +120,27 @@ html.plus #inquiry .consent input:checked{background:var(--ink);border-color:var
 
 /* The header carries only the firm; the steps already lead to the result. */
 html.plus .scene-header :is(.studio,#review){display:none}
+html.plus .site-menu{display:flex;align-items:center;gap:clamp(12px,1.5vw,24px);margin-left:auto;white-space:nowrap}
+html.plus .site-menu a{color:var(--ink);font:500 12.5px/1 var(--sans);text-decoration:none}
+@media(hover:hover){html.plus .site-menu a:hover{text-decoration:underline;text-underline-offset:5px}}
+@media(max-width:1300px){html.plus .site-menu{display:none}}
+
+/* Result keeps the layout of the other steps: the scene on the left, the summary in the panel. */
+@media(min-width:761px){
+  html.plus .layout.show-result{grid-template-columns:minmax(0,1fr) clamp(360px,33.4vw,506px);grid-template-rows:minmax(0,1fr);padding:0;gap:0;align-items:stretch;border-top:1px solid var(--line)}
+  html.plus .show-result .viewer{height:100%;max-height:none;border:0;border-radius:0;box-shadow:none}
+  html.plus .show-result .scene-header{display:flex;padding:18px clamp(16px,2.6vw,40px)}
+  html.plus .show-result>aside{display:flex;flex-direction:column;min-height:0;max-height:none;padding:0;overflow:hidden;border-left:1px solid var(--line);background:var(--panel)}
+  html.plus .show-result aside>#step-track{flex:none;width:auto;margin:16px clamp(22px,2.4vw,38px) 0}
+  html.plus .show-result #sheet-content{display:block;flex:1;min-height:0;overflow:auto;padding:clamp(22px,3.8vh,42px) clamp(22px,2.4vw,38px) 28px}
+  html.plus .show-result h1{max-width:none;margin-bottom:6px;font-size:clamp(28px,2.6vw,38px)}
+  html.plus .show-result #step-hint{margin:0 0 22px}
+  html.plus #summary{padding:0;border:0;background:none}
+  html.plus #summary div{grid-template-columns:96px minmax(0,1fr) auto;padding:13px 0;border-top:1px solid var(--line)}
+  html.plus #summary div:first-child{border-top:1px solid var(--line)}
+  html.plus #summary div:last-child{border-bottom:1px solid var(--line)}
+  html.plus #summary dt{font-size:12px}
+  html.plus #summary dd{font:500 15px/1.35 var(--sans)}
+  html.plus .result-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px}
+  html.plus:root #to-inquiry{grid-column:1/-1;min-height:52px}
+}

@@ -35,7 +35,18 @@ async function start(){
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
   // The second visual generation is opt-in, so earlier previews keep their look.
   const plus=(ukazka?.dizajn??config.dizajn)==='plus';
-  if(plus)document.documentElement.classList.add('plus');
+  if(plus){
+    document.documentElement.classList.add('plus');
+    // The firm's own menu sits next to its logo and leads back to its website.
+    const items=config.web?.menu??[];
+    if(items.length&&firma.web){
+      const nav=document.createElement('nav');nav.className='site-menu';nav.setAttribute('aria-label',firma.nazov);
+      for(const label of items){
+        const link=document.createElement('a');link.textContent=label;link.href=firma.web;link.target='_blank';link.rel='noopener';nav.append(link);
+      }
+      document.querySelector('.scene-header').append(nav);
+    }
+  }
   if(ukazka){
     if(!plus){
       document.documentElement.dataset.controls=ukazka.ovladanie;
