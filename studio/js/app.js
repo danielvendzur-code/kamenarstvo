@@ -119,7 +119,10 @@ async function start(){
   if(ukazka?.nahlad&&(!plus||ukazka.firemnaKarta)){
     const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
     initialCard.querySelector('img').src=ukazka.nahlad;
-    if(ukazka.zostava)initialCard.querySelector('span').textContent=ukazka.profil.nazov;
+    if(ukazka.zostava){
+      if(plus)initialCard.title=ukazka.profil.nazov;
+      else initialCard.querySelector('span').textContent=ukazka.profil.nazov;
+    }
   }
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
