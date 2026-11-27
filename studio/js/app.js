@@ -35,12 +35,7 @@ async function start(){
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
   // The second visual generation is opt-in, so earlier previews keep their look.
   const plus=(ukazka?.dizajn??config.dizajn)==='plus';
-  if(plus){
-    document.documentElement.classList.add('plus');
-    // Three interface proposals share one markup; ?ui= previews them.
-    const ui=new URLSearchParams(location.search).get('ui')??ukazka?.ui??config.ui??'a';
-    document.documentElement.dataset.ui=/^[abc]$/.test(ui)?ui:'a';
-  }
+  if(plus)document.documentElement.classList.add('plus');
   if(ukazka){
     if(!plus){
       document.documentElement.dataset.controls=ukazka.ovladanie;

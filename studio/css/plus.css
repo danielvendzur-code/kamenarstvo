@@ -118,46 +118,5 @@ html.plus #inquiry .consent input:checked{background:var(--ink);border-color:var
   html.plus #product label span{font-size:15px}
 }
 
-/* ---------- Variant B · katalóg: bez rámov, tmavé tlačidlo ---------- */
-html.plus[data-ui=b]{--r:2px;--select:var(--ink)}
-html.plus[data-ui=b] :is(#product,#profile,#cover).cards label,html.plus[data-ui=b] #samples button{padding:0 0 8px;border:0;background:transparent}
-html.plus[data-ui=b] :is(#product,#profile,#cover).cards label:has(:checked),html.plus[data-ui=b] #samples button[aria-pressed=true]{box-shadow:none;background:transparent}
-html.plus[data-ui=b] :is(#product,#profile,#cover) label:has(:checked) img,html.plus[data-ui=b] #samples button[aria-pressed=true] img{outline:2px solid var(--ink)!important;outline-offset:2px}
-html.plus[data-ui=b] :is(#product,#profile,#cover,#samples) :is(label,button) :is(span,small){padding:0}
-html.plus[data-ui=b] :is(#product,#profile,#cover) label:has(:checked) span,html.plus[data-ui=b] #samples button[aria-pressed=true] span{font-weight:650}
-html.plus[data-ui=b]:root :is(#next,#to-inquiry,#inquiry button[type=submit]){background:var(--ink);color:var(--paper);font:600 12px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase}
-html.plus[data-ui=b] #step-track button::before{content:none}
-html.plus[data-ui=b] #step-track button{height:40px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
-html.plus[data-ui=b] #product label span{font-size:18px}
-html.plus[data-ui=b]:root #extras label{border-width:0 0 1px;border-radius:0;padding:12px 2px;background:transparent}
-html.plus[data-ui=b]:root #extras label:has(:checked){box-shadow:none;border-color:var(--ink)}
-html.plus[data-ui=b] #extras{grid-template-columns:1fr;gap:0}
-html.plus[data-ui=b] .camera,html.plus[data-ui=b] #environments{background:rgb(20 20 20 / .34);box-shadow:none;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-html.plus[data-ui=b]:root :is(.camera,#environments) button{color:#fff;text-shadow:0 1px 3px rgb(0 0 0 / .5);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
-html.plus[data-ui=b]:root :is(.camera,#environments) button[aria-pressed=true]{background:transparent;text-decoration:underline;text-underline-offset:6px;color:#fff}
-html.plus[data-ui=b] .zoom{border-color:rgb(255 255 255 / .4)}
-html.plus[data-ui=b]:root .zoom button{color:#fff}
-
-/* ---------- Variant C · tmavý panel ---------- */
-html.plus[data-ui=c]{--r:4px}
-html.plus[data-ui=c] aside{
-  --ink:#efebe4;--panel:#1d1e1e;--paper:#1d1e1e;--soft:#262828;--soft-strong:#2e3030;
-  --line:rgb(255 255 255 / .12);--line-strong:rgb(255 255 255 / .26);--muted:rgb(239 235 228 / .6);
-  --select:var(--metal);background:#1d1e1e;color:var(--ink)}
-html.plus[data-ui=c] .layout:not(.show-result)>aside{background:#1d1e1e;border-color:#1d1e1e}
-html.plus[data-ui=c] aside h1{color:#f6f3ee}
-html.plus[data-ui=c]:root :is(#next,#to-inquiry,#inquiry button[type=submit]){background:#efebe4;color:#1d1e1e}
-html.plus[data-ui=c] #step-track:after{background:var(--metal);height:2px}
-html.plus[data-ui=c] #step-track button[aria-current]::before{color:var(--metal)}
-html.plus[data-ui=c] .step-actions{border-color:rgb(255 255 255 / .1);background:#1d1e1e}
-html.plus[data-ui=c] :is(#product,#profile,#cover).cards label,html.plus[data-ui=c] #samples button,html.plus[data-ui=c]:root #extras label{background:#232525}
-html.plus[data-ui=c] :is(#product,#profile,#cover) img{background:#ece7dd}
-html.plus[data-ui=c] .show-result{background:#1d1e1e}
-html.plus[data-ui=c] dialog{--ink:#262c26;--panel:#f8f6f0;--line:rgb(0 0 0 / .12);--line-strong:rgb(0 0 0 / .28);--muted:#6b6f69;color:#262c26;background:#f8f6f0}
-html.plus[data-ui=c]:root dialog :is(#close-inquiry){color:#262c26}
-html.plus[data-ui=c]:root dialog #inquiry button[type=submit]{background:#1d1e1e;color:#efebe4}
-html.plus[data-ui=c] .camera,html.plus[data-ui=c] #environments{background:rgb(29 30 30 / .82);color:#efebe4}
-html.plus[data-ui=c]:root :is(.camera,#environments) button{color:rgb(239 235 228 / .7)}
-html.plus[data-ui=c]:root :is(.camera,#environments) button[aria-pressed=true]{color:#fff;background:rgb(255 255 255 / .12)}
-html.plus[data-ui=c]:root .zoom button{color:#efebe4}
-html.plus[data-ui=c] .zoom{border-color:rgb(255 255 255 / .16)}
+/* The header carries only the firm; the steps already lead to the result. */
+html.plus .scene-header :is(.studio,#review){display:none}
