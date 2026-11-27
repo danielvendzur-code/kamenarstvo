@@ -8,7 +8,7 @@ export function readDesign(){
     const d=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0))));
     if(d?.v===1)return d;
     if(d?.v!==2)return null;
-    return {type:d.t,shape:d.s,cover:d.c,stone:d.k,environment:d.e,font:d.f,
+    return {model:d.m,type:d.t,shape:d.s,cover:d.c,stone:d.k,environment:d.e,font:d.f,
       finish:d.i,customFinish:d.u===1,people:d.p,epitaph:d.n,extras:d.x,nameAt:d.a,verseAt:d.b};
   }catch{return null;}
 }
@@ -16,7 +16,7 @@ export function readDesign(){
 export function designLink(state){
   const people=state.people.map(person=>Object.fromEntries(
     ['first','last','birth','death'].filter(key=>person[key]).map(key=>[key,person[key]])));
-  const payload={v:2,t:state.type,s:state.shape,c:state.cover||undefined,k:state.stone,
+  const payload={v:2,m:state.model,t:state.type,s:state.shape,c:state.cover||undefined,k:state.stone,
     e:state.environment,f:state.font,i:state.finish,u:state.customFinish?1:undefined,
     p:people.some(person=>Object.keys(person).length)?people:undefined,
     a:state.nameAt,b:state.verseAt,n:state.epitaph||undefined,x:state.extras.length?state.extras:undefined};
@@ -46,7 +46,8 @@ export function resultPanel(t,settings,catalog,edit){
     const stone=catalog.kamene[state.stone].nazov;
     const tablet=state.shape==='atelierovy' && catalog.pomniky[state.type]?.kamenStely?.nazov;
     const materials=tablet && tablet!==stone ? stone+' · '+t.face+' '+tablet : stone;
-    const rows=[[t.product,t[state.type]],[t.profile,t[state.shape]]];
+    const productName=state.modelName?[t[state.type],state.modelName].join(' · '):t[state.type];
+    const rows=[[t.product,productName],[t.profile,t[state.shape]]];
     if(state.cover)rows.push([t.cover,t[state.cover]]);
     rows.push([t.stone,materials],[t.font,t[state.font]],[t.finish,t[state.finish]]);
     for(const p of people){
@@ -61,7 +62,7 @@ export function resultPanel(t,settings,catalog,edit){
     byId('step-title').textContent=t[state.type]+' · '+catalog.kamene[state.stone].nazov;
     const names=people.map(p=>[p.first,p.last,[p.birth,p.death].filter(Boolean).join(' – ')].filter(Boolean).join(' ')).filter(Boolean);
     const inscription=[...names,state.epitaph].filter(Boolean).join(' · ')||t.emptyInscription;
-    const groups=[[t.product,t[state.type]],[t.profile,[t[state.shape],t[state.cover]].filter(Boolean).join(' · ')],[t.stone,materials],[t.person,inscription],[t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none]];
+    const groups=[[t.product,productName],[t.profile,[t[state.shape],t[state.cover]].filter(Boolean).join(' · ')],[t.stone,materials],[t.person,inscription],[t.accessories,state.extras.map(id=>t[id]).join(', ')||t.none]];
     summary.replaceChildren(...groups.map(([key,value],index)=>{
       const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd'),button=document.createElement('button');
       dt.textContent=key;dd.textContent=value;dd.title=value;button.textContent=t.edit;button.type='button';button.setAttribute('aria-label',t.edit+' · '+key);button.onclick=()=>edit(index);

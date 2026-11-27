@@ -2,7 +2,7 @@ import {profileIcon} from './ikony.js';
 const inks={zlata:'#b18b49',strieborna:'#b4b9bb',biela:'#f5f2e9',cierna:'#202122',piesokovana:'#a59a8a'};
 export const families={cinzel:'Cinzel',manrope:'Manrope',playfair:'Playfair','great-vibes':'GreatVibes'};
 
-export function choiceSet(container,ids,t,kind){
+export function choiceSet(container,ids,t,kind,models){
   const name=container.id;
   container.classList.add('cards',kind);
   function fill(values,dimensions){
@@ -10,11 +10,12 @@ export function choiceSet(container,ids,t,kind){
     container.replaceChildren(...values.map((id,i)=>{
       const label=document.createElement('label'),input=document.createElement('input'),caption=document.createElement('span');
       input.type='radio';input.name=name;input.value=id;input.checked=values.includes(previous)?id===previous:i===0;
-      caption.textContent=t[id];label.append(input);
+      const model=models?.get(id);
+      caption.textContent=model?.name??t[id];label.append(input);
       if(name==='profile')label.append(profileIcon(id,dimensions));
       if(name==='product'||name==='cover'){
         const folder=name==='product'?'vyhotovenia':'dosky';
-        const image=document.createElement('img');image.alt='';image.src=new URL('../assets/'+folder+'/'+id+'.webp',import.meta.url).href;
+        const image=document.createElement('img');image.alt='';image.src=model?.image??new URL('../assets/'+folder+'/'+(model?.type??id)+'.webp',import.meta.url).href;
         label.append(image);
       }
       if(kind==='fonts'){
