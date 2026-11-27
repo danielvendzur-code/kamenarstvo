@@ -1,10 +1,11 @@
 const byId=id=>document.getElementById(id);
 
 export function readDesign(){
-  if(!location.hash.startsWith('#navrh='))return null;
   try{
-    const payload=location.hash.slice(7).split('&',1)[0];
-    if(payload.length>200000)return null;
+    const encoded=new URLSearchParams(location.hash.slice(1)).get('navrh');
+    if(!encoded || encoded.length>200000)return null;
+    // Older shared links can contain unescaped plus signs in standard Base64.
+    const payload=encoded.replaceAll(' ','+');
     const d=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0))));
     if(d?.v===1)return d;
     if(d?.v!==2)return null;
@@ -82,7 +83,13 @@ export function resultPanel(t,settings,catalog,edit){
   }
   copy.onclick=async()=>{
     try{await navigator.clipboard.writeText(link.value);copy.textContent=t.copied;}
-    catch{link.hidden=false;link.focus();link.select();const copied=document.execCommand('copy');link.hidden=copied;copy.textContent=copied?t.copied:t.copyManual;if(copied)copy.focus();}
+    catch{
+      link.hidden=false;link.focus();link.select();
+      let copied=false;
+      try{copied=document.execCommand?.('copy')===true;}catch{/* Keep the link selected for manual copying. */}
+      link.hidden=copied;copy.textContent=copied?t.copied:t.copyManual;
+      if(copied)copy.focus();
+    }
   };
   form.onsubmit=async event=>{
     event.preventDefault();
