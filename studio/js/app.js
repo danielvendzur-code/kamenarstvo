@@ -42,7 +42,7 @@ async function start(){
     if(items.length&&firma.web){
       const nav=document.createElement('nav');nav.className='site-menu';nav.setAttribute('aria-label',firma.nazov);
       for(const label of items){
-        const link=document.createElement('a');link.textContent=label;link.href=firma.web;link.target='_blank';link.rel='noopener';nav.append(link);
+        const link=document.createElement('a');link.textContent=label;link.href=new URL(config.web?.odkazy?.[label]??'',firma.web).href;link.target='_blank';link.rel='noopener';nav.append(link);
       }
       document.querySelector('.scene-header').append(nav);
       const toggle=document.createElement('button');toggle.type='button';toggle.className='menu-toggle';toggle.textContent=t.menu;
@@ -116,7 +116,7 @@ async function start(){
   }
   // One stone and one framing for every thumbnail in the second generation.
   if(plus)for(const label of product.container.children)label.querySelector('img').src='./assets/typy/'+label.querySelector('input').value+'.webp';
-  if(ukazka?.nahlad&&!plus){
+  if(ukazka?.nahlad&&(!plus||ukazka.firemnaKarta)){
     const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
     initialCard.querySelector('img').src=ukazka.nahlad;
     if(ukazka.zostava)initialCard.querySelector('span').textContent=ukazka.profil.nazov;
