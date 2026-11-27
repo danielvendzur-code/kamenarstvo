@@ -8,6 +8,7 @@
     "adresa": "Hlavná 1, 000 00 Mesto",
     "logo": "logo.svg"
   },
+  "dizajn": "plus",
   "tema": {
     "pozadie": "#f8f6f0",
     "text": "#262c26",
@@ -21,7 +22,9 @@
     "zaklad": "zaklad",
     "pomniky": [
       "jednohrob",
-      "dvojhrob"
+      "dvojhrob",
+      "urnovy",
+      "detsky"
     ],
     "dosky": [
       "urna",
@@ -30,6 +33,11 @@
     "tvary": [
       "rovny",
       "obluk",
+      "srdce",
+      "dvojity-obluk",
+      "vrstveny",
+      "lomeny",
+      "goticky",
       "kniha",
       "vlna",
       "ramena",
@@ -39,12 +47,19 @@
       "oval",
       "zaobleny",
       "stupnovity",
-      "slza"
+      "slza",
+      "obelisk",
+      "krizova"
     ],
     "kamene": [
       "impala",
       "absolute-black",
+      "star-galaxy",
+      "blue-pearl",
       "aurora",
+      "multicolor-red",
+      "paradiso",
+      "steel-grey",
       "viscont-white",
       "tan-brown",
       "indian-juparana"
@@ -67,11 +82,21 @@
       "lampas",
       "fotokeramika",
       "kriz",
-      "ornament-ruza"
+      "ornament-ruza",
+      "holubica",
+      "klasy",
+      "kamenne-srdce",
+      "kamenna-kniha",
+      "kahance",
+      "zardiniera",
+      "kamenny-lampas",
+      "lavicka"
     ],
     "krycieDosky": [
       "cela",
       "delena",
+      "polovicna",
+      "strk",
       "kvety",
       "priecne-delena",
       "skosene-celo",

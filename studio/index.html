@@ -7,6 +7,7 @@
   <title>Konfigurátor kamenárstvo</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./css/studio.css">
+  <link rel="stylesheet" href="./css/plus.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
 </head>
 <body>
@@ -36,7 +37,7 @@
           <section data-step="5" id="result" hidden>
             <dl id="summary"></dl>
             <input id="design-link" type="url" readonly hidden data-label="designLink">
-            <div class="result-actions"><button type="button" id="to-inquiry" class="primary" data-t="toInquiry"></button><button type="button" id="copy" data-t="copyLink"></button></div>
+            <div class="result-actions"><button type="button" id="to-inquiry" class="primary" data-t="toInquiry"></button><button type="button" id="copy" data-t="copyLink"></button><button type="button" id="download" data-t="download" hidden></button></div>
             <dialog id="inquiry-dialog" aria-labelledby="inquiry-title"><button id="close-inquiry" data-t="close"></button><h2 id="inquiry-title" data-t="inquiry"></h2><p id="simulation" data-t="simulation" hidden></p>
             <form id="inquiry">
               <label><span data-t="contactName"></span><input required name="name" autocomplete="name" maxlength="120"></label>

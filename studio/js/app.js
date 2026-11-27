@@ -5,6 +5,7 @@ import {loadStone,vzorka} from './kamen.js';
 import {readDesign,designLink,resultPanel} from './vysledok.js';
 import {editor} from './editor.js';
 import {scena} from './scena.js';
+import {pictogram} from './ikony.js';
 
 async function json(path){
   const response=await fetch(path);
@@ -33,9 +34,14 @@ async function start(){
     return;
   }
   const {firma,tema,katalog,prostredia,dopyt,ukazka}=config;
+  // The second visual generation is opt-in, so earlier previews keep their look.
+  const plus=(ukazka?.dizajn??config.dizajn)==='plus';
+  if(plus)document.documentElement.classList.add('plus');
   if(ukazka){
-    document.documentElement.dataset.controls=ukazka.ovladanie;
-    if(ukazka.vzhlad==='galeria')document.documentElement.classList.add('gallery-ui');
+    if(!plus){
+      document.documentElement.dataset.controls=ukazka.ovladanie;
+      if(ukazka.vzhlad==='galeria')document.documentElement.classList.add('gallery-ui');
+    }
     setStudioProfile(ukazka.profil);
     t.atelierovy=ukazka.profil.nazov;
     document.documentElement.classList.add('client-preview');
@@ -82,7 +88,7 @@ async function start(){
   const product=choiceSet(el('product'),types,t,'profiles');
   for(const label of product.container.children){
     const model=definition(label.querySelector('input').value),dim=document.createElement('small');
-    if(ukazka?.vzhlad==='galeria'){
+    if(ukazka?.vzhlad==='galeria'&&['jednohrob','dvojhrob','urna','pamatna'].includes(label.querySelector('input').value)){
       const image=label.querySelector('img');
       image.src=image.src.replace('/vyhotovenia/','/galeria/');
     }
@@ -96,8 +102,11 @@ async function start(){
   const profile=choiceSet(el('profile'),[],t,'profiles');
   const cover=choiceSet(el('cover'),katalog.krycieDosky??['cela'],t,'profiles');
   const restored=readDesign();
-  if(types.includes(restored?.type))product.select(restored.type);
-  let stoneId=katalog.kamene.includes(restored?.stone)?restored.stone:katalog.kamene[0];
+  // A firm may open on its own typical build instead of the bare default.
+  const preset=restored?null:ukazka?.navrh??config.navrh??null;
+  const start=restored??preset;
+  if(types.includes(start?.type))product.select(start.type);
+  let stoneId=katalog.kamene.includes(start?.stone)?start.stone:katalog.kamene[0];
   function shapeHeading(){
     const isCover=el('profile-field').hidden;
     el('step-title').textContent=isCover?t.cover:t.stepTitles[1];
@@ -110,7 +119,7 @@ async function start(){
   for(const button of el('shape-tools').children)button.onclick=()=>{showShapePart(button.dataset.shapePart);};
   function profiles(savedShape){
     const available=ukazka?.zostava && product.value!=='jednohrob'?katalog.tvary.filter(id=>id!=='atelierovy'):katalog.tvary;
-    const featured = ['atelierovy', 'kniha', 'slza', 'ramena', 'stupnovity', 'vlna'];
+    const featured = ukazka?.profily ?? ['atelierovy', 'kniha', 'slza', 'ramena', 'stupnovity', 'vlna'];
     const sculpted = ukazka ? available.filter(id => featured.includes(id) || id === savedShape) : available;
     profile.fill(sculpted.length ? sculpted : available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
@@ -122,9 +131,9 @@ async function start(){
     }
     el('shape-tools').hidden=katalog.dosky?.includes(product.value);
   }
-  profiles(restored?.shape);
-  if([...profile.container.querySelectorAll('input')].some(input=>input.value===restored?.shape))profile.select(restored.shape);
-  if(katalog.krycieDosky?.includes(restored?.cover))cover.select(restored.cover);
+  profiles(start?.shape);
+  if([...profile.container.querySelectorAll('input')].some(input=>input.value===start?.shape))profile.select(start.shape);
+  if(katalog.krycieDosky?.includes(start?.cover))cover.select(start.cover);
   function describe(){
     if(ukazka)document.querySelector('.studio').textContent=catalog.kamene[stoneId].nazov;
     const m=definition(product.value);
@@ -195,14 +204,15 @@ async function start(){
     const material=profile.value==='atelierovy' && syncEditor.state().nameAt!=='slab' && definition(product.value).kamenStely;
     return (material||catalog.kamene[stoneId]).odporucanePismo;
   }
-  const syncEditor=editor(katalog,t,product,viewer,detail,persist,()=>profile.value);
+  const syncEditor=editor(katalog,t,product,viewer,detail,persist,()=>profile.value,()=>viewer.hasCoverField());
 
-  product.container.onchange=()=>{profiles();syncEditor();syncEditor.recommend(recommendedInk());apply();syncEditor.flush();mark('angle');};
+  product.container.onchange=()=>{profiles();syncEditor();syncEditor.recommend(recommendedInk());apply();syncEditor();syncEditor.flush();mark('angle');};
   profile.container.onchange=()=>{syncEditor();syncEditor.recommend(recommendedInk());apply();syncEditor.flush();};
   el('letters').addEventListener('change',event=>{
     if(event.target.matches('[data-placement=nameAt]'))syncEditor.recommend(recommendedInk());
   });
-  cover.container.onchange=apply;
+  // Gravel covers can remove the lettering field, so placements follow the new cover.
+  cover.container.onchange=()=>{apply();syncEditor();syncEditor.flush();};
   let materialRequest=0,requestedStone=stoneId;
   for(const id of katalog.kamene){
     const button=document.createElement('button'),img=document.createElement('img');
@@ -262,6 +272,8 @@ async function start(){
     button.textContent=label;
     button.onclick=()=>go(i);el('step-track').append(button);return button;
   });
+  let stepHint=null;
+  if(plus){stepHint=document.createElement('p');stepHint.id='step-hint';el('step-title').after(stepHint);}
   el('review').onclick=()=>go(5);
   el('next').onclick=()=>go(step+1);el('back').onclick=()=>go(step-1);
   function go(i,move=true){
@@ -269,17 +281,34 @@ async function start(){
     step=i;panels.forEach((panel,j)=>panel.hidden=i!==j);
     tabs.forEach((tab,j)=>tab.setAttribute('aria-pressed',String(j===i)));
     el('step-title').textContent=t.stepTitles[i];
+    if(stepHint)stepHint.textContent=t.stepHints[i];
     if(i===1)shapeHeading();
     el('back').hidden=i===0;el('next').hidden=i===5;document.querySelector('.step-actions').hidden=i===5;
     tabs.forEach((tab,j)=>j===i?tab.setAttribute('aria-current','step'):tab.removeAttribute('aria-current'));
+    tabs.forEach((tab,j)=>tab.toggleAttribute('data-done',j<i));
     el('step-scroll').scrollTop=0;
     layout.classList.toggle('show-result',i===5);
-    if(i===5)renderResult().catch(()=>{el('error').hidden=false;});
+    if(i===5)renderResult().catch(error=>{console.error(error);el('error').hidden=false;});
     else{resultVersion++;el('print').hidden=true;}
     if(move){const view=i===3&&syncEditor.focus()==='slab'?'slab':stepViews[i];viewer.view(view);mark(view);}
   }
   const inquiryDialog=el('inquiry-dialog');
   el('to-inquiry').onclick=()=>{inquiryDialog.showModal();el('inquiry').elements.name.focus();};
+  if(plus){
+    // Pictograms carry no meaning on their own; every control keeps its visible label.
+    for(const button of views)button.prepend(pictogram(button.dataset.view));
+    for(const button of document.querySelectorAll('[data-action]'))button.replaceChildren(pictogram(button.dataset.action));
+    for(const button of group.children)button.prepend(pictogram(button.value));
+    el('to-inquiry').prepend(pictogram('send'));
+    const copyLabel=document.createElement('span');copyLabel.className='label';copyLabel.textContent=t.copyLink;
+    el('copy').replaceChildren(pictogram('link'),copyLabel);
+    el('back').prepend(pictogram('back'));el('next').append(pictogram('next'));
+    const download=el('download');download.hidden=false;download.prepend(pictogram('download'));
+    download.onclick=()=>{
+      const link=document.createElement('a');link.href=el('rendered').src;link.download=t.downloadName+'.jpg';
+      document.body.append(link);link.click();link.remove();
+    };
+  }
   el('close-inquiry').onclick=()=>inquiryDialog.close();
   go(0,false);
   syncEditor.recommend(recommendedInk());describe();progress.value=3;
@@ -288,6 +317,7 @@ async function start(){
   }
   if(product.value!=='jednohrob'||profile.value!=='rovny'||cover.value!=='cela')apply();
   if(restored)await syncEditor.restore(restored);
+  else if(preset)await syncEditor.preset(preset);
   ready=true;
   if(restored){history.replaceState(null,'',designLink(state()));go(5);}
   window.addEventListener('hashchange',()=>location.reload());

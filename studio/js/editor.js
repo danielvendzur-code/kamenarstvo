@@ -1,6 +1,12 @@
 import {choiceSet,families as fonts} from './volby.js';
+import {extraIcon} from './ikony.js';
+// Accessories are grouped by where they sit. Loose ones need a grave cover to stand on.
+const extraGroups={fotokeramika:'stela',kriz:'stela','ornament-ruza':'stela',holubica:'stela',klasy:'stela',
+  vaza:'doska',lampas:'doska','kamenne-srdce':'doska','kamenna-kniha':'doska',kahance:'doska',zardiniera:'doska','kamenny-lampas':'doska',
+  lavicka:'okolie'};
+const graveOnly=new Set(['kamenne-srdce','kamenna-kniha','kahance','zardiniera','kamenny-lampas','lavicka']);
 const el=id=>document.getElementById(id);
-export function editor(config,t,product,viewer,detail,changed,shape){
+export function editor(config,t,product,viewer,detail,changed,shape,slabOk=()=>true){
   const letters=el('letters'),extras=el('extras'),people=[],selected=new Set();
   let photo=null,photoVersion=0,version=0;
   function field(parent,key,input){
@@ -49,11 +55,11 @@ export function editor(config,t,product,viewer,detail,changed,shape){
   }
   placement(first,'nameAt');placement(parts.epitaph,'verseAt');
   function syncPlacements(){
-    const grave=['jednohrob','dvojhrob'].includes(product.value);
+    const grave=!['urna','pamatna'].includes(product.value);
     const leaves=shape()==='kniha'&&product.value!=='dvojhrob';
     for(const [key,{select,label}] of Object.entries(locations)){
       const ids=leaves?['leftPage','rightPage']:['face'];
-      if(grave)ids.push('slab');
+      if(grave&&slabOk())ids.push('slab');
       const preferred=key==='verseAt'&&leaves?'rightPage':ids[0];
       const old=select.value;select.replaceChildren(...ids.map(id=>new Option(t[id],id)));
       select.value=ids.includes(old)?old:preferred;label.hidden=ids.length===1;
@@ -99,11 +105,22 @@ export function editor(config,t,product,viewer,detail,changed,shape){
     }catch{if(revision===photoVersion){error.textContent=t.badPhoto;input.value='';}}
   };
   input.onchange=()=>pendingPhoto=loadPhoto();
-  for(const id of config.doplnky??[]){
+  const plus=document.documentElement.classList.contains('plus');
+  const order=Object.keys(t.extraGroups??{});
+  const ids=plus?[...config.doplnky??[]].sort((a,b)=>order.indexOf(extraGroups[a]??'doska')-order.indexOf(extraGroups[b]??'doska')):config.doplnky??[];
+  let group;
+  for(const id of ids){
+    const where=extraGroups[id]??'doska';
+    if(plus&&where!==group){
+      if(group==='stela')extras.append(photoBox);
+      group=where;const heading=document.createElement('p');heading.className='extra-group';heading.textContent=t.extraGroups[where];extras.append(heading);
+    }
     const check=document.createElement('input');check.type='checkbox';check.value=id;field(extras,id,check);
+    const label=check.parentElement;label.dataset.extra=id;label.prepend(extraIcon(id));
+    const hint=document.createElement('small');hint.className='extra-hint';hint.textContent=t.extraHints?.[id]??'';label.querySelector('span').after(hint);
     check.onchange=()=>{if(check.checked)selected.add(id);else selected.delete(id);photoBox.hidden=!selected.has('fotokeramika');update();};
   }
-  extras.append(photoBox);
+  if(!photoBox.isConnected)extras.append(photoBox);
   el('letter-panel').hidden=!font.value||!finish.value;el('extra-panel').hidden=!config.doplnky?.length;
   function sampleVisibility(){
     const activePeople=product.value==='dvojhrob'?people:people.slice(0,1);
@@ -111,6 +128,13 @@ export function editor(config,t,product,viewer,detail,changed,shape){
   }
   function sync(){
     syncPlacements();
+    const grave=!['urna','pamatna'].includes(product.value);
+    for(const check of extras.querySelectorAll('input[type=checkbox]')){
+      const off=!grave&&graveOnly.has(check.value);check.parentElement.hidden=off;
+      if(off&&check.checked){check.checked=false;selected.delete(check.value);}
+    }
+    for(const heading of extras.querySelectorAll('.extra-group'))
+      heading.hidden=![...extras.querySelectorAll('label[data-extra]')].some(label=>!label.hidden&&extraGroups[label.dataset.extra]===Object.keys(t.extraGroups).find(k=>t.extraGroups[k]===heading.textContent));
     const double=product.value==='dvojhrob';tabs.second.hidden=!double;
     tabs.first.textContent=double?t.firstPerson:t.letterTabs.first;
     if(!double&&active==='second')open('first');refreshPreview();
@@ -145,6 +169,14 @@ export function editor(config,t,product,viewer,detail,changed,shape){
       input.parentElement.toggleAttribute('data-recommended',input.value===id);
     }
     if(!chosen&&config.farbyPisma?.includes(id)){finish.select(id);update();}
+  };
+  sync.preset=async p=>{
+    if(config.pisma.includes(p.font))font.select(p.font);
+    if(config.farbyPisma.includes(p.finish))finish.select(p.finish);
+    for(const check of extras.querySelectorAll('input[type=checkbox]'))if(p.extras?.includes(check.value)){
+      check.checked=true;selected.add(check.value);
+    }
+    photoBox.hidden=!selected.has('fotokeramika');sync();await update();
   };
   sync.flush=async()=>{await pendingPhoto;await update();};
   sync.state=()=>({

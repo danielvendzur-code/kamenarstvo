@@ -33,6 +33,8 @@ export function designLink(state){
 export function resultPanel(t,settings,catalog,edit){
   const summary=byId('summary'),link=byId('design-link'),form=byId('inquiry');
   const confirmation=byId('confirmation'),copy=byId('copy'),policy=byId('policy');
+  // Keep a leading pictogram when the label changes.
+  const say=(button,text)=>{const label=button.querySelector('.label');if(label)label.textContent=text;else button.textContent=text;};
   let current;
   if(settings?.gdprUrl&&settings.gdprUrl!=='#'){
     const url=new URL(settings.gdprUrl,location.href);
@@ -74,15 +76,15 @@ export function resultPanel(t,settings,catalog,edit){
       }
       row.append(dt,dd,button);return row;
     }));
-    if(current?.url!==url){confirmation.textContent='';copy.textContent=t.copyLink;}
+    if(current?.url!==url){confirmation.textContent='';say(copy,t.copyLink);}
     const lines=rows.map(([k,v])=>k+' — '+v);
     if(state.extras.includes('fotokeramika'))lines.push(t.photoLater);
     current={url,summary:lines.join('\n')};
     link.value=url;link.hidden=true;
   }
   copy.onclick=async()=>{
-    try{await navigator.clipboard.writeText(link.value);copy.textContent=t.copied;}
-    catch{link.hidden=false;link.focus();link.select();const copied=document.execCommand('copy');link.hidden=copied;copy.textContent=copied?t.copied:t.copyManual;if(copied)copy.focus();}
+    try{await navigator.clipboard.writeText(link.value);say(copy,t.copied);}
+    catch{link.hidden=false;link.focus();link.select();const copied=document.execCommand('copy');link.hidden=copied;say(copy,copied?t.copied:t.copyManual);if(copied)copy.focus();}
   };
   form.onsubmit=async event=>{
     event.preventDefault();

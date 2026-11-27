@@ -21,6 +21,30 @@
       "sirkaObruby": 0.12,
       "vyskaObruby": 0.145,
       "zrazenie": 0.004
+    },
+    "urnovy": {
+      "sirka": 0.8,
+      "dlzka": 1.0,
+      "vyskaStely": 0.62,
+      "hrubkaStely": 0.08,
+      "vyskaPodstavca": 0.1,
+      "hrubkaDosky": 0.035,
+      "sirkaObruby": 0.1,
+      "vyskaObruby": 0.13,
+      "zrazenie": 0.004,
+      "kamera": 0.6
+    },
+    "detsky": {
+      "sirka": 0.7,
+      "dlzka": 1.4,
+      "vyskaStely": 0.6,
+      "hrubkaStely": 0.08,
+      "vyskaPodstavca": 0.1,
+      "hrubkaDosky": 0.035,
+      "sirkaObruby": 0.1,
+      "vyskaObruby": 0.13,
+      "zrazenie": 0.004,
+      "kamera": 0.76
     }
   },
   "tvary": {
@@ -35,7 +59,14 @@
     "oval": {},
     "zaobleny": {},
     "stupnovity": {},
-    "slza": {}
+    "slza": {},
+    "srdce": {},
+    "dvojity-obluk": {},
+    "goticky": {},
+    "lomeny": {},
+    "obelisk": {},
+    "krizova": {},
+    "vrstveny": {}
   },
   "kamene": {
     "absolute-black": {
@@ -73,6 +104,36 @@
       "farba": "#bd927c",
       "textura": "indian-juparana",
       "odporucanePismo": "cierna"
+    },
+    "star-galaxy": {
+      "nazov": "Star Galaxy",
+      "farba": "#0e0e0e",
+      "textura": "star-galaxy",
+      "odporucanePismo": "zlata"
+    },
+    "blue-pearl": {
+      "nazov": "Blue Pearl",
+      "farba": "#3b424e",
+      "textura": "blue-pearl",
+      "odporucanePismo": "strieborna"
+    },
+    "multicolor-red": {
+      "nazov": "Multicolor Red",
+      "farba": "#60312a",
+      "textura": "multicolor-red",
+      "odporucanePismo": "zlata"
+    },
+    "paradiso": {
+      "nazov": "Paradiso",
+      "farba": "#685a65",
+      "textura": "paradiso",
+      "odporucanePismo": "zlata"
+    },
+    "steel-grey": {
+      "nazov": "Steel Grey",
+      "farba": "#4d4f51",
+      "textura": "steel-grey",
+      "odporucanePismo": "biela"
     }
   },
   "dosky": {
@@ -93,7 +154,9 @@
     "kvety": {},
     "priecne-delena": {},
     "skosene-celo": {},
-    "bocny-zahon": {}
+    "bocny-zahon": {},
+    "strk": {},
+    "polovicna": {}
   },
   "pisma": {
     "cinzel": {},
@@ -113,6 +176,14 @@
     "lampas": {},
     "fotokeramika": {},
     "kriz": {},
-    "ornament-ruza": {}
+    "ornament-ruza": {},
+    "holubica": {},
+    "klasy": {},
+    "kamenne-srdce": {},
+    "kamenna-kniha": {},
+    "kahance": {},
+    "zardiniera": {},
+    "kamenny-lampas": {},
+    "lavicka": {}
   }
 }

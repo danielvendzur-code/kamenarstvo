@@ -143,11 +143,14 @@ export function scena(host,model,stone,onOrbit){
   const directions={angle:[1.65,1.13,2.22],front:[0,0.48,3],side:[3,0.8,0]};
   function distance(){
     const plaque=selection.type==='urna'||selection.type==='pamatna';
-    const fit=plaque?(selection.type==='urna'?.34:.43):1+.30*(model.sirka-1);
+    const fit=plaque?(selection.type==='urna'?.34:.43):model.kamera??1+.30*(model.sirka-1);
     return Math.max(4.72,4.74/camera.aspect)*fit;
   }
   let flight=0;
   function view(key,duration=640){
+    let fieldFound=false;
+    monument.traverse(mesh=>{if(mesh.userData.coverField)fieldFound=true;});
+    if(key==='slab'&&!fieldFound)key='detail';
     const slab=key==='slab',detail=key==='detail'||slab, outside=active&&active!=='atelier';
     const plaque=['urna','pamatna'].includes(selection.type);
     const bounds=new T.Box3();
@@ -328,7 +331,8 @@ export function scena(host,model,stone,onOrbit){
   let design,decoration,shadowExtras;
   function decorate(next){
     design=next;odstran(decoration);
-    decoration=personalizuj(monument,design,selection,model,Math.min(8,renderer.capabilities.getMaxAnisotropy()),mobile?1024:1536);
+    decoration=personalizuj(monument,design,selection,model,Math.min(8,renderer.capabilities.getMaxAnisotropy()),mobile?1024:1536,
+      ()=>[vytvorZulu(stone),vytvorZulu(stone,{satin:true})]);
     const extras=[...next.extras].sort().join(',');
     if(extras!==shadowExtras)renderer.shadowMap.needsUpdate=true;
     shadowExtras=extras;invalidate();
@@ -402,5 +406,8 @@ export function scena(host,model,stone,onOrbit){
       return canvas.toDataURL('image/jpeg',.92);
     }finally{renderer.setPixelRatio(ratio);renderer.setSize(size.x,size.y,false);invalidate();}
   }
-  return {view,zoom,canvas,environment,change,decorate,frontImage};
+  function hasCoverField(){
+    let found=false;monument.traverse(mesh=>{if(mesh.userData.coverField)found=true;});return found;
+  }
+  return {view,zoom,canvas,environment,change,decorate,frontImage,hasCoverField};
 }

@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {vytvorZulu} from './kamen.js';
-import {outline,tabletSize,bookLeaf} from './profily.js';
+import {outline,tabletSize,bookLeaf,layered} from './profily.js';
 
 // A single closed perimeter avoids coincident end faces and seams at the corners.
 function blockGeometry(w, h, d, bevel, openTop) {
@@ -155,8 +155,9 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
         const jamb=block(w*pillar.sirka,h*pillar.vyska,depth+.012,bottom,z,faces);
         jamb.position.x=w*pillar.x;
       }
-      if(signature?.vrstvy){
-        for(let i=1;i<=signature.vrstvy;i++){
+      const layers=signature?.vrstvy??layered[shape];
+      if(layers){
+        for(let i=1;i<=layers;i++){
           const layer=add(sheet(path,.024,.004),tabletFaces,-i*.022,bottom+.004+i*.018,z-depth/2-i*.026+.004);
           layer.userData.part='stone';
         }
@@ -228,6 +229,30 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const halfW=w/2+overhang,halfD=d/2+overhang,gap=.0025+bevel;
   const crossSeam=d*.09;
   let covers=[perimeter(halfW,halfD)];
+  // Gravel covers keep a head slab under the pedestal and fill the rest with chippings.
+  const gravelBed=cover==='strk'||cover==='polovicna';
+  const pedestalReach=overhang+.195+(assembly?.hlbkaPodstavca??.32)/2;
+  const slabDepth=cover==='strk'?pedestalReach+.07:Math.max(pedestalReach+.07,halfD);
+  if(gravelBed){
+    covers=[rectangle(-halfW,halfD-slabDepth,halfW,halfD)];
+    const x=w/2-rail,z0=-halfD+slabDepth-.012,z1=d/2-rail;
+    const bedMat=new T.MeshStandardMaterial({color:0x8f8a80,roughness:1});
+    const bed=add(new T.PlaneGeometry(2*x,z1-z0),bedMat,0,shoulder-.012,(z0+z1)/2);
+    bed.rotation.x=-Math.PI/2;bed.castShadow=false;
+    const chips=new T.InstancedMesh(new T.IcosahedronGeometry(1,0),
+      new T.MeshStandardMaterial({roughness:.58}),Math.round(2*x*(z1-z0)*2300));
+    const chip=new T.Object3D(),tone=new T.Color();
+    let seed=9157;
+    const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+    for(let i=0;i<chips.count;i++){
+      const r=.0075+random()*.0075;
+      chip.position.set((random()*2-1)*(x-.006),shoulder-.006+random()*.011,z0+.006+random()*(z1-z0-.012));
+      chip.rotation.set(random()*3,random()*3,random()*3);chip.scale.set(r,r*.62,r*.86);
+      chip.updateMatrix();chips.setMatrixAt(i,chip.matrix);
+      const light=.70+random()*.24;tone.setRGB(light,light*.985,light*.95);chips.setColorAt(i,tone);
+    }
+    chips.receiveShadow=true;group.add(chips);
+  }
   if(cover==='delena'){
     covers=[rectangle(-halfW,-halfD,-gap,halfD),rectangle(gap,-halfD,halfW,halfD)];
   }else if(cover==='priecne-delena'){
@@ -307,8 +332,14 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   face.userData.part='cover';
   // Reserve a continuous engraving field away from the split, flower bed and footing.
   const fieldWidth=w*(cover==='delena'?.44:sideBed?.49:.82),cx=cover==='delena'?-w*.25:sideBed?-w*.20:0;
-  const fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:cover==='priecne-delena'?-d*.20:0;
-  face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
+  let fieldHeight=d*(cover==='kvety'?.31:.50),cy=cover==='kvety'?d*.12:cover==='priecne-delena'?-d*.20:0;
+  if(gravelBed){
+    // Only the part of the head slab in front of the pedestal can carry lettering.
+    const low=halfD-slabDepth+.035,high=halfD-pedestalReach-.035;
+    fieldHeight=high-low;cy=(low+high)/2;
+  }
+  if(!gravelBed||fieldHeight>.2)
+    face.userData.coverField={left:cx-fieldWidth/2,right:cx+fieldWidth/2,height:fieldHeight,bottom:cy-fieldHeight/2};
   face.rotation.x=-Math.PI/2;face.position.y=top;group.add(face);
   const z=-d/2+.195,baseHeight=model.vyskaPodstavca;
   block(w*(assembly?.podstavec??.89),baseHeight,assembly?.hlbkaPodstavca??.32,top,z,signature?.tmavyPodstavec?tabletFaces:faces);
@@ -327,6 +358,11 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     back.position.x=w*detail.posun;
   }
   addTablet(model.hrubkaStely,top+baseHeight,z,shape==='kniha'?-.018:0);
+  // Decorations read the free surfaces of the grave from here.
+  group.userData.surface={top,pedestalFront:z+(assembly?.hlbkaPodstavca??.32)/2,
+    gravelFrom:gravelBed?-halfD+slabDepth:null,gravelTop:shoulder+.004,
+    recess:cover==='kvety'?{x0:-w*.29,x1:w*.29,z0:d*.08,z1:d*.35}
+      :sideBed?{x0:w*.095,x1:w*.385,z0:-d*.255,z1:d*.365}:null};
   return group;
 }
 

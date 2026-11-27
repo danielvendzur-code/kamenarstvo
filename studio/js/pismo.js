@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {holubica,klas,srdce,kniha,kahance,zardiniera,kamennyLampas,lavicka} from './doplnky.js';
 
 const finishes={
   zlata:[0xf4d79b,.32,.34],strieborna:[0xd3d7d9,.60,.32],
@@ -151,7 +152,7 @@ function standingAccessory(id){
   return g;
 }
 
-export function personalizuj(monument,state,selection,model,aniso,resolution){
+export function personalizuj(monument,state,selection,model,aniso,resolution,stoneFaces){
   const faces=[];monument.traverse(mesh=>{if(mesh.userData.face)faces.push(mesh);});
   monument.updateMatrixWorld(true);
   const group=new T.Group();group.userData.release=[];monument.add(group);
@@ -218,13 +219,67 @@ export function personalizuj(monument,state,selection,model,aniso,resolution){
           const petals=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*4,r=.004+.017*i/96+.003*Math.sin(5*a);petals.push([.012+r*Math.cos(a),.030+r*Math.sin(a)]);}twig(petals);
         }
       }
+      const lift=z+.002+(mesh.userData.face.curveWidth?.014:0);
+      if(state.extras.has('holubica')){
+        // The dove takes the first free place in the crown band and faces the centre.
+        const photo=state.extras.has('fotokeramika');
+        const at=!rose?.73:!sign?.27:!photo?.5:.73;
+        const dove=holubica(height*.21);
+        dove.position.set(decorLeft+decorWidth*at,height*(at===.5?.79:.74),lift);
+        if(at<.5)dove.scale.x=-1;
+        surface.add(dove);
+      }
+      if(state.extras.has('klasy')){
+        const contourBase=contour?fitColumn(contour,height*.05,height*.30,left,right):[left,right];
+        const span=contourBase[1]-contourBase[0];
+        for(const side of [-1,1]){
+          const ear=klas(height*.27,-side);
+          ear.position.set(side<0?contourBase[0]+span*.085:contourBase[1]-span*.085,height*.05,lift);
+          surface.add(ear);
+        }
+      }
     }
   }
+  const grave=!['urna','pamatna'].includes(selection.type),bed=monument.userData.surface;
+  // Small graves bring the pedestal forward; keep the vase and lantern in front of it.
+  const headZ=grave?Math.max(-model.dlzka*.23,(bed?.pedestalFront??-Infinity)+.09):.075;
   for(const [id,side] of [['vaza',-1],['lampas',1]])if(state.extras.has(id)){
-    const obj=standingAccessory(id),grave=!['urna','pamatna'].includes(selection.type);
-    obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.038),grave?.035+model.vyskaObruby+model.hrubkaDosky:.058,grave?-model.dlzka*.23:.075);
+    const obj=standingAccessory(id);
+    obj.position.set(side*(grave?model.sirka*.365:model.sirka*.50+.038),grave?.035+model.vyskaObruby+model.hrubkaDosky:.058,headZ);
     if(selection.type==='pamatna')obj.position.y=.755;
     if(!grave)obj.scale.setScalar(.58);group.add(obj);
+  }
+  const loose=[['zardiniera',zardiniera,['F','ML','MR']],['kamenna-kniha',kniha,['F','FL','FR','ML','MR']],
+    ['kamenne-srdce',srdce,['FL','FR','ML','MR','F']],['kahance',kahance,['FR','FL','MR','ML','F']],
+    ['kamenny-lampas',kamennyLampas,['HR','HL','FR','FL','MR','ML']]].filter(([id])=>state.extras.has(id));
+  if(grave&&bed&&(loose.length||state.extras.has('lavicka'))){
+    const faces=stoneFaces();
+    const w=model.sirka,d=model.dlzka,blocked=[];
+    const rect=(x,z,fx,fz)=>[x-fx,x+fx,z-fz,z+fz];
+    const overlaps=(a,b)=>a[0]<b[1]&&b[0]<a[1]&&a[2]<b[3]&&b[2]<a[3];
+    if(bed.recess)blocked.push([bed.recess.x0-.02,bed.recess.x1+.02,bed.recess.z0-.02,bed.recess.z1+.02]);
+    const slabText=cover&&((nameAt==='slab'&&people.length)||(verseAt==='slab'&&state.epitaph.trim()));
+    if(slabText){const f=cover.userData.coverField;blocked.push([f.left,f.right,-(f.bottom+f.height),-f.bottom]);}
+    if(state.extras.has('vaza'))blocked.push(rect(-w*.365,headZ,.07,.07));
+    if(state.extras.has('lampas'))blocked.push(rect(w*.365,headZ,.07,.07));
+    const slots={F:[0,.40*d],FL:[-.28*w,.38*d],FR:[.28*w,.38*d],ML:[-.30*w,.10*d],MR:[.30*w,.10*d],HL:[-.365*w,headZ],HR:[.365*w,headZ]};
+    for(const [,build,order] of loose){
+      const obj=build(faces),[fx,fz]=obj.userData.footprint;
+      let spot;
+      for(const key of order){
+        const x=T.MathUtils.clamp(slots[key][0],-w/2+fx+.02,w/2-fx-.02);
+        const z=T.MathUtils.clamp(slots[key][1],bed.pedestalFront+fz+.03,d/2-fz-.02);
+        const r=rect(x,z,fx,fz);
+        if(!blocked.some(b=>overlaps(b,r))){spot=[x,z,r];break;}
+      }
+      if(!spot){const [x,z]=slots[order[0]];spot=[x,z,rect(x,z,fx,fz)];}
+      blocked.push(spot[2]);
+      const onGravel=bed.gravelFrom!=null&&spot[1]-fz>bed.gravelFrom;
+      obj.position.set(spot[0],onGravel?bed.gravelTop:bed.top,spot[1]);group.add(obj);
+    }
+    if(state.extras.has('lavicka')){
+      const bench=lavicka(faces);bench.position.set(w/2+.47,0,Math.min(.05,d*.1));group.add(bench);
+    }
   }
   return group;
 }
@@ -233,6 +288,6 @@ export function odstran(group){
   if(!group)return;
   group.removeFromParent();group.userData.release.forEach(release=>release());
   const materials=new Set();
-  group.traverse(o=>{o.geometry?.dispose();if(o.material)materials.add(o.material);});
+  group.traverse(o=>{o.geometry?.dispose();for(const m of [o.material??[]].flat())materials.add(m);});
   for(const m of materials){m.map?.dispose();m.bumpMap?.dispose();m.dispose();}
 }

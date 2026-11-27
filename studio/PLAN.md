@@ -86,3 +86,13 @@ Katalóg firmy je výber z `katalog/zaklad.json` (len to, čo firma naozaj pred�
 3. V `katalog` nechať len to, čo predávajú (tvary, kamene, doplnky).
 4. Pridať logo. Skontrolovať `ukazka.html?k=<slug>` na mobile a desktope.
 5. Poslať súkromný odkaz s textom „návrh pre vás“.
+
+## Druhá generácia (dizajn „plus“)
+Zapína sa v configu: `"dizajn":"plus"` (verejná vzorka) alebo `"ukazka":{"dizajn":"plus"}` (súkromné ukážky). Staré ukážky bez tohto kľúča vyzerajú ako doteraz.
+- **Vzhľad:** `css/plus.css` – tlačidlá s leskom a šípkou, kroky s fajkami, karty s odznakom výberu, sklenené ovládanie kamery a prostredia s ikonami, doplnky ako karty v skupinách (na stele / na doske / pri hrobe), nápoveda pod nadpisom kroku, tlačidlo „Stiahnuť obrázok“ vo výsledku. Písma Montserrat a OpenSans (OFL) sú lokálne.
+- **Nové typy:** `urnovy` (80×100), `detsky` (70×140).
+- **Nové stely:** `srdce`, `dvojity-obluk`, `goticky`, `lomeny`, `obelisk`, `krizova`, `vrstveny`.
+- **Nové krycie dosky:** `strk` (hlavová doska + biela drť), `polovicna` (polovičná doska + drť).
+- **Nové doplnky (`js/doplnky.js`):** `holubica`, `klasy`, `kamenne-srdce`, `kamenna-kniha`, `kahance`, `zardiniera`, `kamenny-lampas`, `lavicka`. Doplnky na doske si samy hľadajú voľné miesto (mimo nápisu, záhonu, vázy).
+- **Nové žuly:** `star-galaxy`, `blue-pearl`, `multicolor-red`, `paradiso`, `steel-grey` (`assets/kamene/generuj.py <id>`).
+- **Nové kľúče `ukazka`:** `profily` (poradie zobrazených siluet), `navrh` (úvodný návrh firmy: `cover`, `stone`, `extras`, `font`, `finish`).
