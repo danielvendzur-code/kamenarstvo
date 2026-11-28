@@ -196,6 +196,19 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
   const top=shoulder+model.hrubkaDosky;
   // Mitre the plinth, border and lid together so no square corners protrude.
   function perimeter(x,z,inset=0){
+    if(cover==='makke-celo'||cover==='fazetove-celo'){
+      const path=new T.Shape(),radius=Math.min(x*.52,z*.34);
+      path.moveTo(-x,z);path.lineTo(x,z);path.lineTo(x,-z+radius);
+      if(cover==='makke-celo'){
+        path.quadraticCurveTo(x,-z,x-radius,-z);path.lineTo(-x+radius,-z);
+        path.quadraticCurveTo(-x,-z,-x,-z+radius);
+      }else{
+        path.lineTo(x-radius*.36,-z+radius*.34);path.lineTo(x-radius,-z);
+        path.lineTo(-x+radius,-z);path.lineTo(-x+radius*.36,-z+radius*.34);
+        path.lineTo(-x,-z+radius);
+      }
+      path.closePath();return path;
+    }
     if(assembly?.oblukCela && cover==='cela'){
       const bow=assembly.oblukCela;
       const path=new T.Shape();
@@ -214,7 +227,7 @@ export function pomnik(model,polished,satin,makeCoverFace,selection={}){
     const course=assembly.listovanie;
     block(w+.012,course,d+.012,shoulder-course,0,faces);
   }
-  if(cover==='skosene-celo'){
+  if(['skosene-celo','makke-celo','fazetove-celo'].includes(cover)){
     add(sheet(perimeter(w/2-.029,d/2-.029,.029),footing,.004),satin,0,.004,0).rotation.x=-Math.PI/2;
   }else if(assembly?.sokel){
     const lip=assembly.sokel;

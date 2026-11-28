@@ -70,7 +70,9 @@ async function start(){
       document.documentElement.dataset.controls=ukazka.ovladanie;
       if(ukazka.vzhlad==='galeria')document.documentElement.classList.add('gallery-ui');
     }
-    setStudioProfile(ukazka.profil);
+    setStudioProfile(ukazka.profil,ukazka.dalsieProfily);
+    for(const variant of ukazka.dalsieProfily??[])t[variant.id]=variant.nazov;
+    if(ukazka.jednotneNahlady)document.documentElement.classList.add('uniform-previews');
     t.atelierovy=ukazka.profil.nazov;
     document.documentElement.classList.add('client-preview');
   }
@@ -123,7 +125,10 @@ async function start(){
     dim.textContent=[model.sirka,label.querySelector('input').value==='pamatna'?model.vyskaStely:model.dlzka].map(v=>Math.round(v*100)).join(' × ')+' '+t.unit;label.append(dim);
   }
   // One stone and one framing for every thumbnail in the second generation.
-  if(plus)for(const label of product.container.children)label.querySelector('img').src='./assets/typy/'+label.querySelector('input').value+'.webp';
+  if(plus)for(const label of product.container.children){
+    const id=label.querySelector('input').value;
+    label.querySelector('img').src=(id==='jednohrob' && ukazka?.jednotneNahlady && ukazka.nahlad)||'./assets/typy/'+id+'.webp';
+  }
   if(ukazka?.nahlad&&!plus){
     const initialCard=product.container.querySelector('input[value="jednohrob"]').closest('label');
     initialCard.querySelector('img').src=ukazka.nahlad;
@@ -158,14 +163,16 @@ async function start(){
       // The firm's own profiles lead; a universal set completes at least ten.
       const universal=['rovny','obluk','srdce','dvojity-obluk','vlna','kniha','goticky','ramena','zaobleny','vrstveny','slza','lomeny'];
       const own=[...available.filter(id=>id==='atelierovy'),...featured.filter(id=>id!=='atelierovy'&&available.includes(id))];
-      sculpted=[...new Set([...own,...universal,...(savedShape&&savedShape!=='atelierovy'?[savedShape]:[])])];
+      sculpted=[...new Set([...own,...universal,...(available.includes(savedShape)?[savedShape]:[])])];
       if(own.length+universal.length>12)sculpted=sculpted.slice(0,Math.max(12,own.length+6));
+      if(available.includes(savedShape)&&!sculpted.includes(savedShape))sculpted.push(savedShape);
     }
     profile.fill(sculpted.length ? sculpted : available,tabletSize(definition(product.value),product.value));
     showShapePart('profile');
     if(plus)for(const label of profile.container.children){
       const id=label.querySelector('input').value,image=document.createElement('img');image.alt='';
-      image.src=id==='atelierovy'?ukazka?.nahladProfilu??profileThumb??'./assets/profily/rovny.webp':'./assets/profily/'+id+'.webp';
+      const variant=ukazka?.dalsieProfily?.find(item=>item.id===id);
+      image.src=variant?.nahlad??(id==='atelierovy'?ukazka?.nahladProfilu??profileThumb??'./assets/profily/rovny.webp':'./assets/profily/'+id+'.webp');
       label.querySelector('svg')?.replaceWith(image);
     }
     if(ukazka?.nahladyDosiek&&!plus){

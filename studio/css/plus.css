@@ -283,3 +283,11 @@ html.plus #summary dd{-webkit-line-clamp:2}
 html.plus .result-actions{margin-top:20px}
 @media(min-width:761px){html.plus .site-menu{flex:0 1 auto;min-width:0;margin-left:auto;justify-content:flex-start;overflow:hidden;gap:24px}html.plus .site-menu a[hidden]{display:none}}
 html.plus:not(.client-preview) .brand img{width:42px;height:42px;padding:8px;background:var(--accent);border-radius:var(--d-r)}
+
+/* Use the native frame of the workshop renders, including the selected single grave. */
+html.plus.uniform-previews #product.cards label img{
+  width:100%;height:auto;aspect-ratio:558 / 360!important;
+  object-fit:contain;background:#edeae4;
+}
+html.plus.uniform-previews #profile.cards label img{aspect-ratio:4 / 3!important;object-fit:contain;background:#edeae4}
+html.plus.uniform-previews #cover.cards label img{aspect-ratio:512 / 328!important;object-fit:contain;background:#edeae4}

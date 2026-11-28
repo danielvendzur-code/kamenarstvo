@@ -7,8 +7,12 @@ export function tabletSize(model,type){
   return {width:model.sirka*(model.zostava?.sirkaStely??.78),height:model.vyskaStely};
 }
 
-let studioProfile;
-export function setStudioProfile(profile){studioProfile=profile;}
+const studioProfiles=new Map();
+export function setStudioProfile(profile,variants=[]){
+  studioProfiles.clear();
+  studioProfiles.set('atelierovy',profile);
+  for(const variant of variants)studioProfiles.set(variant.id,variant);
+}
 
 // Narrow feet for profiles that do not rest on the full pedestal width.
 const feet={oval:.64,obelisk:.5,krizova:.4,srdce:.6};
@@ -17,18 +21,18 @@ export const layered={vrstveny:2};
 
 export function outline(width,height,profile){
   const shape=new Shape(),half=width/2,h=height;
-  const foot=profile==='atelierovy'?studioProfile.foot:feet[profile]??1;
+  const custom=studioProfiles.get(profile);
+  const foot=custom?.foot??feet[profile]??1;
   shape.moveTo(-half*foot,0);shape.lineTo(half*foot,0);
   function line(x,y){shape.lineTo(x*half,y*h);}
   function quad(x1,y1,x,y){shape.quadraticCurveTo(x1*half,y1*h,x*half,y*h);}
   function curve(x1,y1,x2,y2,x,y){shape.bezierCurveTo(x1*half,y1*h,x2*half,y2*h,x*half,y*h);}
-  switch(profile){
-    case 'atelierovy':
-      for(const segment of studioProfile.outline){
-        if(segment.length===2)line(...segment);
-        else curve(...segment);
-      }
-      break;
+  if(custom){
+    for(const segment of custom.outline){
+      if(segment.length===2)line(...segment);
+      else curve(...segment);
+    }
+  }else switch(profile){
     case 'obluk':
       line(1,.86);curve(.52,1.045,-.52,1.045,-1,.86);break;
     case 'ramena':
