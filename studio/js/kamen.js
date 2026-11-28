@@ -7,7 +7,8 @@ export function loadStone(stone){
   const id=stone.textura;
   if(!maps.has(id)){
     const pending=Promise.all(['','-drsnost'].map(async suffix=>{
-      const map=await loader.loadAsync(new URL(id+suffix+'.webp',root).href);
+      const texture=suffix?(stone.drsnostTextura??id):id;
+      const map=await loader.loadAsync(new URL(texture+suffix+'.webp',root).href);
       map.wrapS=map.wrapT=T.RepeatWrapping;map.anisotropy=8;map.minFilter=T.LinearMipmapLinearFilter;
       if(!suffix)map.colorSpace=T.SRGBColorSpace;
       return map;
